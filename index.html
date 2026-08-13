@@ -1,0 +1,3800 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한월 공략소 · 대장장이 &amp; 화로</title>
+<style>
+:root{
+  --bg:#0f1115; --bg2:#161a21; --bg3:#1d232c; --line:#2a323d;
+  --tx:#e6eaf0; --tx2:#9aa6b6; --tx3:#6b7686;
+  --acc:#f0a04b; --acc2:#ffc477; --ok:#4ec98a; --warn:#e8b84b; --bad:#ef6b6b; --info:#5aa9e6;
+  --sh:0 2px 10px rgba(0,0,0,.35);
+  --r:10px;
+}
+html[data-theme="light"]{
+  --bg:#f4f6f9; --bg2:#ffffff; --bg3:#eef1f6; --line:#d9dfe8;
+  --tx:#1a1f27; --tx2:#5b6675; --tx3:#8b95a3;
+  --acc:#c2701a; --acc2:#9c5a12; --ok:#1f9d63; --bad:#d13c3c; --warn:#a8760a; --info:#2b7cc4;
+  --sh:0 2px 10px rgba(20,30,50,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  min-height:100vh;display:flex;flex-direction:column;
+  font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:700}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--info)}
+
+/* ---------- 상단바 ---------- */
+.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--line);box-shadow:var(--sh)}
+.top h1{font-size:16px;letter-spacing:-.3px}
+.top h1 small{display:block;font-size:11px;color:var(--tx3);font-weight:400}
+.top .sp{flex:1}
+.btn{background:var(--bg3);border:1px solid var(--line);color:var(--tx);padding:6px 11px;
+  border-radius:8px;cursor:pointer;white-space:nowrap;transition:.12s}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#14181e;font-weight:700}
+.btn.primary:hover{background:var(--acc2);border-color:var(--acc2);color:#14181e}
+.btn.sm{padding:3px 8px;font-size:12px;border-radius:6px}
+.btn.ghost{background:transparent}
+
+/* ---------- 레이아웃 ---------- */
+.wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;align-items:start;
+  max-width:1600px;margin:0 auto;width:100%;flex:1}
+/* 그리드 칸은 기본이 min-width:auto 라, 안에 긴 <select>·표가 있으면 칸이 화면보다 넓어진다.
+ * 0으로 낮춰야 좁은 화면에서 가로 스크롤이 안 생긴다. */
+.wrap > *{min-width:0}
+.side, .main{min-width:0}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr}}
+.side{position:sticky;top:64px;max-height:calc(100vh - 80px);overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media(max-width:1000px){.side{position:static;max-height:none}}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card > h2{font-size:13px;color:var(--tx2);text-transform:none;letter-spacing:.2px;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px}
+.card > h2 .tag{font-size:10px;color:var(--tx3);font-weight:400}
+/* 카드 묶음 머리말 — 비슷한 카드끼리 나눠 준다 */
+.sechead{margin:18px 0 0;font-size:12px;font-weight:600;color:var(--tx2);
+  letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.sechead::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ---------- 폼 ---------- */
+.row{display:flex;gap:8px;align-items:center;min-width:0}
+.row > *{min-width:0}
+.row + .row{margin-top:8px}
+input[type=number],input[type=text],select{background:var(--bg3);border:1px solid var(--line);
+  border-radius:7px;padding:6px 8px;width:100%;outline:none;min-width:0;max-width:100%}
+input:focus,select:focus{border-color:var(--acc)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+label.chk{display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:5px 0;font-size:13px}
+label.chk input{margin-top:3px;accent-color:var(--acc);flex:none}
+label.chk span small{display:block;color:var(--tx3);font-size:11px}
+.hint{color:var(--tx3);font-size:11px;margin-top:4px}
+
+/* ---------- 목표 칩 ---------- */
+.targets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:20px;padding:3px 4px 3px 11px;font-size:13px}
+.chip b{color:var(--acc)}
+.chip input{width:52px;padding:2px 4px;text-align:center;border-radius:5px}
+.chip .x{cursor:pointer;color:var(--tx3);border:none;background:none;padding:0 6px;font-size:15px}
+.chip .x:hover{color:var(--bad)}
+.quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+
+/* ---------- 탭 ---------- */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:7px 13px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);cursor:pointer;font-size:13px}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#14181e;font-weight:700}
+/* ---------- 홈 (첫 화면) ---------- */
+body.onhome .side{display:none}
+body.onhome .wrap{grid-template-columns:1fr}
+.hero{background:linear-gradient(180deg,var(--bg3),var(--bg2))}
+.hlead{margin:6px 0 0;color:var(--tx2);font-size:13px;line-height:1.7}
+.hbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.hstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:14px}
+.hstat{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:9px 11px}
+.hstat b{display:block;color:var(--acc);font-size:16px}
+.hstat span{color:var(--tx3);font-size:11px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
+.hcard{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;
+  background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px 13px;cursor:pointer;color:var(--tx);transition:.12s}
+.hcard:hover{border-color:var(--acc);transform:translateY(-1px)}
+.hcard .hi{font-size:19px}
+.hcard .ht{font-weight:700;font-size:14px}
+.hcard .hd{color:var(--tx3);font-size:11.5px;line-height:1.5;white-space:normal}
+.hnews{padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.hnews:last-child{border-bottom:0}
+.htips{display:grid;gap:6px;color:var(--tx2);font-size:12.5px;line-height:1.7}
+
+/* 탭 묶음 구분 — 홈 / 계산 / 자료 / 소식·지도 */
+.tabsep{flex:none;width:1px;align-self:stretch;background:var(--line);margin:2px 5px}
+.pane{display:none}
+.pane.on{display:block}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.kpi .k{font-size:11px;color:var(--tx3)}
+.kpi .v{font-size:19px;font-weight:700;margin-top:3px;letter-spacing:-.4px}
+.kpi .s{font-size:11px;color:var(--tx2);margin-top:2px}
+.kpi.bad .v{color:var(--bad)} .kpi.ok .v{color:var(--ok)} .kpi.acc .v{color:var(--acc)}
+
+/* ---------- 표 ---------- */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--tx3);font-weight:600;font-size:11px;text-align:right;position:sticky;top:0;background:var(--bg2)}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--bg3)}
+tbody tr:last-child td{border-bottom:none}
+.tw{overflow-x:auto}
+.mono{font-variant-numeric:tabular-nums}
+.dim{color:var(--tx3)}
+.bad{color:var(--bad)} .ok{color:var(--ok)} .warn{color:var(--warn)} .acc{color:var(--acc)}
+.bar{height:5px;border-radius:3px;background:var(--bg3);overflow:hidden;min-width:60px}
+.bar > i{display:block;height:100%;background:var(--ok)}
+.bar > i.part{background:var(--warn)}
+
+/* ---------- 제작 순서 ---------- */
+.step{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg2);margin-bottom:6px}
+.step.done{opacity:.45}
+.step.done .nm{text-decoration:line-through}
+.step input{accent-color:var(--ok);margin-top:3px;flex:none;width:16px;height:16px}
+.step .nm{font-weight:600}
+.step .meta{font-size:11px;color:var(--tx3);margin-top:2px}
+.badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line);
+  color:var(--tx2);background:var(--bg3);margin-right:5px}
+.badge.f{border-color:var(--info);color:var(--info)}
+.badge.s{border-color:var(--acc);color:var(--acc)}
+.badge.b{border-color:var(--tx3);color:var(--tx3)}
+
+/* ---------- 트리/레시피 ---------- */
+.tree{font-size:13px}
+.tree ul{list-style:none;margin:0;padding-left:16px;border-left:1px dashed var(--line)}
+.tree li{padding:2px 0}
+.tree .n{cursor:pointer}
+.tree .n:hover{color:var(--acc)}
+.rec{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.rec h3{font-size:14px;display:flex;gap:8px;align-items:center}
+.rec .m{color:var(--tx2);font-size:12px;margin-top:6px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+
+/* ---------- 광산 / 장비 / 부적 ---------- */
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.mtabs{display:flex;flex-wrap:wrap;gap:6px}
+.mtab{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer}
+.mtab:hover{color:var(--tx)}
+.mtab.on{border-color:var(--acc);color:var(--acc)}
+.pill{display:inline-block;background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  border-radius:6px;padding:2px 7px;font-size:11px;margin:0 4px 4px 0}
+.pill.hit{border-color:var(--acc);color:var(--acc)}
+.mini{background:var(--bg3);border:1px solid var(--line);color:var(--tx2);
+  border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;
+  display:inline-block;text-decoration:none;line-height:1.4}
+.mini:hover{border-color:var(--acc);color:var(--acc)}
+#p-map iframe{background:var(--bg2)}
+
+/* ---------- 히스토그램 ---------- */
+.hist{display:flex;align-items:flex-end;gap:2px;height:120px;margin-top:10px}
+.hist > i{flex:1;background:var(--acc);opacity:.75;border-radius:2px 2px 0 0;min-height:1px}
+.hist > i:hover{opacity:1}
+
+/* ---------- 모달 ---------- */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;
+  align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.mbox{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+  max-width:620px;width:100%;max-height:80vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.mbox h2{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ver{border-left:2px solid var(--acc);padding:0 0 10px 12px;margin-bottom:12px}
+.ver h3{font-size:14px;display:flex;gap:8px;align-items:baseline}
+.ver h3 .d{font-size:11px;color:var(--tx3);font-weight:400}
+.ver ul{margin:6px 0 0;padding-left:16px}
+.ver li{font-size:13px;color:var(--tx2);margin-bottom:3px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bad);margin-left:2px;vertical-align:top}
+
+/* ---------- 로그 ---------- */
+.res-ok{color:var(--ok);font-weight:700}
+.res-no{color:var(--bad);font-weight:700}
+.res-dn{color:var(--tx3)}
+
+.notes li{font-size:12px;color:var(--tx2);margin-bottom:4px}
+.empty{color:var(--tx3);text-align:center;padding:40px 10px;font-size:13px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--acc);color:#14181e;
+  padding:9px 18px;border-radius:20px;font-weight:700;z-index:99;box-shadow:var(--sh);opacity:0;
+  pointer-events:none;transition:.2s}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+details summary{cursor:pointer;color:var(--tx2);font-size:12px;padding:4px 0}
+/* 긴 표는 화면 밖이면 그리지 않게 (스크롤·리렌더 비용 절감) */
+.tw{content-visibility:auto;contain-intrinsic-size:auto 320px}
+.grid2{content-visibility:auto;contain-intrinsic-size:auto 420px}
+/* 통합검색 */
+.gwrap{position:relative;flex:1 1 200px;min-width:150px;max-width:420px;margin-left:12px}
+.gwrap input{width:100%}
+/* 검색창이 좁아도 결과는 넓게 — 이름이 잘리면 고를 수가 없다 */
+.gres{position:absolute;top:100%;left:0;right:auto;z-index:60;margin-top:4px;display:none;
+  min-width:min(440px,92vw);max-width:min(620px,92vw);
+  max-height:min(70vh,560px);overflow:auto;background:var(--bg2);border:1px solid var(--line);
+  border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.gres.on{display:block}
+.gres .gi{display:flex;gap:8px;align-items:center;padding:7px 10px;cursor:pointer;font-size:13px;
+  border-bottom:1px solid var(--line)}
+.gres .gi:last-child{border-bottom:0}
+.gres .gi:hover,.gres .gi.sel{background:var(--bg3)}
+.gres .gk{flex:none;font-size:11px;color:var(--tx2);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.gres .gn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gres .gd{flex:none;color:var(--tx2);font-size:11px;max-width:45%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.gres .ghead{padding:6px 10px;font-size:11px;color:var(--tx2);background:var(--bg3)}
+/* 고른 항목 미리보기 — 옮겨가기 전에 무엇인지 먼저 보여 준다 */
+.gprev{position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--line);
+  padding:9px 10px;font-size:12px}
+.gprev .pt{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.gprev .pn{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gprev .pd{color:var(--tx2);white-space:normal;word-break:break-all;line-height:1.5}
+.gprev .pxy{color:var(--tx3);font-size:11px;margin-top:3px}
+.gprev .pb{display:flex;gap:6px;margin-top:7px}
+/* 무엇을 찾을 수 있는지 훑어보기 */
+.gcats{padding:8px 10px}
+.gcats .gct{display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer;border-radius:6px}
+.gcats .gct:hover{color:var(--acc)}
+.gcats .gcn{flex:none;font-size:11px;color:var(--tx2);border:1px solid var(--line);
+  border-radius:6px;padding:1px 6px;min-width:78px;text-align:center}
+.gcats .gce{flex:1;color:var(--tx3);font-size:11px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+/* 공략 이미지 뷰어 */
+#guideBox img{width:100%;max-width:900px;display:block;margin:0 auto 10px;border-radius:8px}
+@media (max-width:900px){.gwrap{max-width:none;order:9;flex-basis:100%;margin:6px 0 0}}
+/* ---------- 접이식 카드 ---------- */
+.card > h2.fold{cursor:pointer;user-select:none}
+.card > h2.fold .arw{transition:.15s;font-size:11px;color:var(--tx3)}
+.card > h2.fold.off .arw{transform:rotate(-90deg)}
+.foldbox.off{display:none}
+
+/* ---------- 푸터 ---------- */
+.foot{border-top:1px solid var(--line);background:var(--bg2);
+  margin-top:auto;padding:28px 16px 40px}
+.foot::before{content:'';display:block;height:0}
+.foot-in{max-width:1600px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.foot-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.foot p{margin:0;font-size:12px;line-height:1.6}
+.foot a{word-break:break-all}
+.foot-contact{font-size:13px;color:var(--tx);border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;background:var(--bg3);display:inline-block;margin-top:4px !important}
+
+/* ---------- 태블릿 (1000px 이하) ---------- */
+@media(max-width:1000px){
+  .wrap{padding:12px;gap:12px}
+  .top{padding:8px 12px;flex-wrap:wrap}
+  .top h1{font-size:15px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:thin}
+  .tab{flex:0 0 auto}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .grid2{grid-template-columns:1fr}
+}
+
+/* ---------- 모바일 (640px 이하) ---------- */
+@media(max-width:640px){
+  body{font-size:13px}
+  .wrap{padding:8px;gap:10px}
+  .card{padding:11px;border-radius:8px}
+  .top{gap:6px;padding:7px 10px}
+  .top h1 small{display:none}
+  .top .btn{padding:5px 8px;font-size:12px}
+  .top .sp{display:none}
+  .tab{padding:8px 12px;font-size:13px}
+  /* 터치 목표 크기 확보 */
+  .btn,.mini,.mtab{min-height:32px}
+  input[type=number],input[type=text],select{padding:8px;font-size:16px} /* iOS 확대 방지 */
+  table{font-size:12px}
+  th,td{padding:5px 6px !important}
+  .mbox{padding:14px;border-radius:10px;max-height:88vh}
+  .foot{padding:20px 12px 32px}
+  /* 지도는 화면 높이에 맞춰 */
+  #mapFrame{height:min(70vh,520px) !important}
+}
+
+/* ---------- 인쇄 (Ctrl+P) — 보이는 탭만 깔끔하게 ---------- */
+@media print{
+  .side,.top,.tabs,.foot,.fab,.modal,.tblbtn,#undoBar{display:none !important}
+  .wrap{grid-template-columns:1fr;padding:0;max-width:none}
+  body{background:#fff;color:#000;font-size:11px}
+  .card{border:1px solid #bbb;box-shadow:none;break-inside:avoid;page-break-inside:avoid}
+  th,td{border-bottom:1px solid #ccc}
+  th{position:static;background:#fff}
+  a{color:#000;text-decoration:none}
+  .tw{overflow:visible}
+}
+
+/* ---------- 글자 크기 (보기 편하게) ---------- */
+html[data-fs="s"] body{font-size:13px}
+html[data-fs="l"] body{font-size:15.5px}
+html[data-fs="xl"] body{font-size:17px}
+html[data-fs="l"] table,html[data-fs="xl"] table{font-size:1em}
+
+/* ---------- 표: 얼룩무늬 · 정렬 가능한 머리글 ---------- */
+tbody tr:nth-child(even){background:color-mix(in srgb, var(--tx) 3%, transparent)}
+tbody tr:hover{background:var(--bg3)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--acc)}
+th.sortable::after{content:'⇅';opacity:.35;margin-left:4px;font-size:10px}
+th.sortable.asc::after{content:'▲';opacity:1;color:var(--acc)}
+th.sortable.desc::after{content:'▼';opacity:1;color:var(--acc)}
+
+/* 표 위 작은 도구 (복사) */
+.tblbar{display:flex;justify-content:flex-end;margin:-2px 0 4px}
+.tblbtn{opacity:.55}
+.tblbtn:hover{opacity:1}
+
+/* ---------- 맨 위로 ---------- */
+.fab{position:fixed;right:18px;bottom:18px;z-index:60;display:none;
+  width:42px;height:42px;border-radius:50%;font-size:17px;line-height:1;
+  background:var(--bg2);border:1px solid var(--line);color:var(--tx);cursor:pointer;box-shadow:var(--sh)}
+.fab:hover{border-color:var(--acc);color:var(--acc)}
+.fab.on{display:block}
+
+/* ---------- 되돌리기 막대 ---------- */
+#undoBar{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:70;display:none;
+  align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--acc);
+  border-radius:10px;padding:9px 12px;box-shadow:var(--sh);font-size:13px}
+#undoBar.on{display:flex}
+
+/* ---------- 단축키 표 ---------- */
+.keys2{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 18px}
+.keyrow{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid var(--line)}
+.keyrow kbd{background:var(--bg3);border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:1px 7px;font-size:11px;font-family:inherit;min-width:22px;text-align:center}
+.keyrow span{color:var(--tx2);font-size:12px}
+
+/* ---------- 최근 검색어 ---------- */
+.recentq{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.recentq b{color:var(--tx3);font-size:11px;font-weight:600;align-self:center;margin-right:2px}
+.rq{background:var(--bg3);border:1px solid var(--line);border-radius:20px;padding:2px 9px;
+  font-size:12px;cursor:pointer}
+.rq:hover{border-color:var(--acc);color:var(--acc)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>한월 공략소</h1>
+  <div class="gwrap">
+    <input type="text" id="globalQ" placeholder="전체 검색 (Ctrl+K) — 재료·NPC·사냥터·약초·부적·웨이포인트…" autocomplete="off">
+    <div class="gres" id="gRes"></div>
+  </div>
+  <div class="sp"></div>
+  <a class="btn sm" href="https://forky-g.github.io/HANWOL-WEBMAP/" target="_blank" rel="noopener"
+     title="한월 웹 지도 (원본 데이터 출처)">🗺️ 웹 지도</a>
+  <a class="btn sm" href="https://jeongsh214.github.io/herb_calculator/index.html" target="_blank" rel="noopener"
+     title="약초 조합 계산기 원본">🧪 약초 계산기</a>
+  <button class="btn sm" id="btnVer">업데이트 내역</button>
+  <button class="btn sm" id="btnCopy">요약 복사</button>
+  <button class="btn sm" id="btnExport">내보내기</button>
+  <button class="btn sm" id="btnImport">불러오기</button>
+  <button class="btn sm" id="btnFontDown" title="글자 작게 (Shift+-)">가-</button>
+  <button class="btn sm" id="btnFontUp" title="글자 크게 (+)">가+</button>
+  <button class="btn sm" id="btnKeys" title="단축키 보기 (?)">단축키</button>
+  <button class="btn sm" id="btnPrint" title="지금 탭 인쇄 (Ctrl+P)">인쇄</button>
+  <button class="btn sm" id="btnTheme">🌗</button>
+  <button class="btn sm" id="btnReset">초기화</button>
+</div>
+
+<div class="wrap">
+  <!-- ================= 사이드 ================= -->
+  <div class="side">
+    <div class="card">
+      <h2 class="fold" data-fold="targets">🎯 목표 아이템<span class="sp" style="flex:1"></span><span class="arw">▾</span></h2>
+      <div class="foldbox" data-foldbox="targets">
+      <div class="row">
+        <select id="selItem"></select>
+        <input type="number" id="qty" value="1" min="1" step="1" style="width:76px">
+        <button class="btn primary" id="btnAdd">추가</button>
+      </div>
+      <div class="quick" id="quick"></div>
+      <div class="targets" id="targets"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm" id="btnPresetSave" title="지금 목표 조합을 이름 붙여 저장">💾 조합 저장</button>
+        <span class="hint" style="margin:0">눌러서 불러오기 · × 로 삭제</span>
+      </div>
+      <div class="targets" id="presets"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="fold" data-fold="opts">⚙️ 옵션<span class="sp" style="flex:1"></span><span class="arw">▾</span></h2>
+      <div class="foldbox" data-foldbox="opts">
+      <div class="row"><span style="flex:none;width:44px">화력</span>
+        <input type="range" id="fire" min="0" max="50" value="0">
+        <input type="number" id="fireN" min="0" max="50" value="0" style="width:62px">
+      </div>
+      <div class="hint" id="fireHint"></div>
+
+      <div style="margin-top:8px">
+        <label class="chk"><input type="checkbox" id="successUp"><span>일반제작성공률증가<small>원래 확률 ×1.1 (70%→77%, 5%→5.5%)</small></span></label>
+        <label class="chk"><input type="checkbox" id="costDown"><span>일반제작비용 -10%<small>대장장이 제작비만 (상점 구매가 제외)</small></span></label>
+        <label class="chk"><input type="checkbox" id="furnaceTimeDown"><span>화로시간감소 -10%<small>화력과 곱연산</small></span></label>
+        <label class="chk"><input type="checkbox" id="vip"><span>대장장이 VIP -10%<small>화로 대기시간 감소 · 화력/화로시간감소와 곱연산</small></span></label>
+      </div>
+
+      <div class="row" style="margin-top:10px"><span style="flex:none;width:80px">화로 슬롯</span>
+        <input type="number" id="slots" min="1" max="20" value="1">
+      </div>
+      <div class="hint">동시에 돌릴 수 있는 화로 개수. 병렬 소요시간 추정에 사용.</div>
+
+      <div class="row" style="margin-top:10px"><span style="flex:none;width:80px">한 셋</span>
+        <input type="number" id="stack" min="1" max="9999" value="64"><span style="flex:none">개</span>
+      </div>
+      <label class="chk"><input type="checkbox" id="useStack" checked><span>셋 단위로 표시<small>필요·보유·부족 수량을 "89셋 4개"로</small></span></label>
+
+      <details style="margin-top:10px">
+        <summary>고급 설정</summary>
+        <label class="chk"><input type="checkbox" id="ignoreFail"><span>실패 없다고 가정<small>최소 소요량(이론 하한) 계산</small></span></label>
+        <label class="chk"><input type="checkbox" id="integer" checked><span>단계마다 개수 올림<small>끄면 소수점 기대값 그대로</small></span></label>
+        <label class="chk"><input type="checkbox" id="failConsumesMats" checked><span>실패 시 재료 소모</span></label>
+        <label class="chk"><input type="checkbox" id="failConsumesBase" checked><span>실패 시 하위 곡괭이 소실</span></label>
+      </details>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= 본문 ================= -->
+  <div class="main">
+    <div class="tabs">
+      <div class="tab on" data-p="home">🏠 홈</div>
+      <div class="tabsep" title="계산"></div>
+      <div class="tab" data-p="sum">📊 요약</div>
+      <div class="tab" data-p="mat">⛏️ 재료</div>
+      <div class="tab" data-p="ord">📋 제작 순서</div>
+      <div class="tab" data-p="tree">🌳 전개도</div>
+      <div class="tab" data-p="sim">🎲 확률 시뮬</div>
+      <div class="tab" data-p="rec">📖 레시피</div>
+      <div class="tabsep" title="자료"></div>
+      <div class="tab" data-p="mine">🗺️ 광산</div>
+      <div class="tab" data-p="npc">🧙 NPC·영단</div>
+      <div class="tab" data-p="gear">⚔️ 장비 제작</div>
+      <div class="tab" data-p="prob">🎯 확률·부적</div>
+      <div class="tab" data-p="loc">📍 위치·웨이포인트</div>
+      <div class="tabsep" title="소식·지도"></div>
+      <div class="tab" data-p="news">📢 한월RPG 업데이트</div>
+      <div class="tab" data-p="map">🗺️ 지도</div>
+    </div>
+
+    <div class="pane on" id="p-home"></div>
+    <div class="pane" id="p-sum"></div>
+    <div class="pane" id="p-mat"></div>
+    <div class="pane" id="p-ord"></div>
+    <div class="pane" id="p-tree"></div>
+    <div class="pane" id="p-sim"></div>
+    <div class="pane" id="p-rec"></div>
+    <div class="pane" id="p-mine"></div>
+    <div class="pane" id="p-npc"></div>
+    <div class="pane" id="p-gear"></div>
+    <div class="pane" id="p-prob"></div>
+    <div class="pane" id="p-loc"></div>
+    <div class="pane" id="p-news"></div>
+    <div class="pane" id="p-map"></div>
+  </div>
+</div>
+
+<div style="height:32px"></div>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="foot-row">
+      <b>한월 공략소</b>
+      <span class="dim" id="footVer"></span>
+    </div>
+    <p class="dim">
+      팬이 만든 <b>비공식</b> 도구입니다. 게임사·운영진과 무관하며, 게임 관련 문의는 받지 않습니다.
+      계산 결과는 <b>기댓값</b>이라 실제는 운에 따라 크게 달라집니다.
+      입력한 값은 <b>이 브라우저에만</b> 저장되고 서버로 보내지 않습니다.
+    </p>
+    <p class="dim">
+      데이터 출처:
+      <a href="https://forky-g.github.io/HANWOL-WEBMAP/" target="_blank" rel="noopener">HANWOL-WEBMAP</a> ·
+      <a href="https://docs.google.com/spreadsheets/d/1bXZ8gICXNbS6Wn0z-YfMnqHLxjpEbSnrWbf854Lj9xY/edit?gid=0#gid=0" target="_blank" rel="noopener">확률 공개 시트</a> ·
+      <a href="https://docs.google.com/spreadsheets/d/1sXR0Dq3tM-S_O94Qu1vA_uXdDxM8cln7AR77iM0WsPw/edit?gid=1075389289#gid=1075389289" target="_blank" rel="noopener">부적표 시트</a> ·
+      <a href="https://jeongsh214.github.io/herb_calculator/index.html" target="_blank" rel="noopener">약초 조합 계산기</a> ·
+      <a href="https://discord.gg/yA6MnmqGzy" target="_blank" rel="noopener">한월RPG 디스코드</a> ·
+      인게임 확인
+      <br>관련 링크:
+      <a href="https://github.com/Pro-Days/SkillMacro/releases" target="_blank" rel="noopener">[ProDays] 매크로 및 최적화 계산기</a> ·
+      <a href="https://yasu2947.github.io/" target="_blank" rel="noopener">[_Ya_Su] 도깨비 스텟 계산기</a>
+      <span class="dim">(별개 도구 — 문의는 만든 분들께)</span>
+      <br>지도·공략 이미지·약초 자생지 색칠은 웹맵(FORKY_G) 자료를 가져온 것입니다.
+    </p>
+    <p class="foot-contact">
+      문의 · 오류 제보 · 자료 사용 관련: <b>디스코드 79youngsoul</b>
+    </p>
+  </div>
+</footer>
+
+<div class="modal" id="modal"><div class="mbox">
+  <h2>🆕 업데이트 내역 <span class="dim" style="font-size:12px;font-weight:400" id="verNow"></span>
+    <span class="sp" style="flex:1"></span>
+    <button class="btn sm" id="btnModalClose">닫기</button></h2>
+  <div id="verList"></div>
+</div></div>
+
+<div class="modal" id="guideModal"><div class="mbox">
+  <h2 id="guideTitle">공략</h2>
+  <div style="display:flex;gap:6px;margin-bottom:8px">
+    <span class="sp" style="flex:1"></span>
+    <button class="btn sm" id="btnGuideClose">닫기</button>
+  </div>
+  <div id="guideBox"></div>
+</div></div>
+
+<div class="modal" id="keyModal"><div class="mbox">
+  <h2>⌨️ 단축키
+    <span class="sp" style="flex:1"></span>
+    <button class="btn sm" id="btnKeyClose">닫기</button></h2>
+  <div class="keys2" id="keyList"></div>
+  <div class="hint" style="margin-top:10px">글자 입력 중에는 숫자·글자 단축키가 안 먹습니다 (입력을 방해하지 않으려고).</div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<div id="undoBar"><span id="undoMsg"></span><button class="btn sm primary" id="btnUndo">되돌리기</button></div>
+<button class="fab" id="btnTop" title="맨 위로 (Home)">↑</button>
+<input type="file" id="fileIn" accept="application/json" style="display:none">
+<input type="file" id="wpFileIn" accept="application/json" style="display:none">
+
+<script src="craft-core.js"></script>
+<script src="game-data.js"></script>
+<!-- 지도 프로젝트 웨이포인트 (없어도 동작함) — node import-map-waypoints.js 로 생성 -->
+<script src="map-waypoints.js" onerror="window.MapWaypoints=null"></script>
+<!-- 한월RPG 게임 업데이트 내역 (없어도 동작함) — node import-discord-updates.js 로 생성 -->
+<script src="game-updates.js" onerror="window.GameUpdates=null"></script>
+<script>
+(function(){
+'use strict';
+var C = window.Craft;
+var $ = function(s){return document.querySelector(s);};
+var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+var KEY = 'hanwol-craft-v1';
+
+/* ---------------- 버전 / 업데이트 내역 ---------------- */
+var APP_VERSION = '2.14.0';
+var CHANGELOG = [
+  { v:'2.14.0', d:'2026-08-13', items:[
+    '📱 <b>모바일 가로 스크롤 버그 수정</b> — 390px 화면에서 문서 폭이 736px로 늘어나 '
+      + '화면이 잘려 보이던 문제. 목표 목록의 긴 항목(<b>찬란한오색금강진연옥</b> 등)이 '
+      + '레이아웃 칸을 밀어내고 있었음 (그리드/플렉스 칸에 <code>min-width:0</code>)',
+    '🧪 <b>화면 3종 자동 검사 추가</b> — <code>node test-viewports.js</code> 로 '
+      + 'PC 1440 · 태블릿 820 · 모바일 390에서 탭 14개를 전부 열어 가로 넘침·콘솔 오류를 확인(108항목)',
+    '🌐 <b>깃허브 Pages 업로드용 폴더</b> — <code>docs/</code> 를 그대로 올리면 사이트가 됨 '
+      + '(364MB · 지도 배율 0~6 전부). <code>node test-docs-site.js</code> 로 실제 크롬 확인, '
+      + '방법은 <b>깃허브-업로드.md</b>'
+  ]},
+  { v:'2.13.0', d:'2026-08-13', items:[
+    '🗂️ <b>NPC 탭 정리</b> — 비슷한 것끼리 <b>⚒️ 대장간 / 🧾 그 밖의 제작 NPC / 📖 도감</b> '
+      + '세 묶음으로 나눔. NPC 카드도 같은 기준으로 묶임',
+    '🔨 <b>명인대장장이 제작 18종 한 표로</b> — 보검 복원 재료 15종(회당 1,000전)과 '
+      + '조각 3개로 되돌리는 3종(회당 100만전)을 같은 <b>제작</b> 메뉴에 함께. '
+      + '이 NPC에서 <b>목걸이 강화</b>도 가능(수치·비용 미확인)',
+    '🔗 <b>관련 링크 6개 추가 · 분류 정리</b> — <b>전용 런처 다운로드</b>, <b>이용약관</b>, '
+      + '<b>한월 위키</b>(노션), <b>한월 랭킹</b>, <b>마인리스트</b>, <b>유저 공략</b>',
+    '분류를 처음 접하는 순서대로 <b>시작하기 → 커뮤니티 → 지도·자료 → 계산기·도구 → 랭킹</b> 5개로 재배치',
+    '디스코드 채널 링크에는 <b>"디스코드 · 인증 필요"</b> 배지 — 로그인·가입·인증 없이는 안 열림',
+    '📚 서고관리인 비급 안내 추가 — <b>제작 목록에 안 보이면 조건(레벨·선행 퀘스트·승급)이 '
+      + '충족되지 않은 것</b>'
+  ]},
+  { v:'2.12.0', d:'2026-08-13', items:[
+    '📚 <b>서고관리인 비급 제작 18종</b>으로 확장 — 빙설검법·압축무공정수(0전)부터 '
+      + '<b>사혼검결(300만전)</b>까지 전부 성공률 100%',
+    '🔗 <b>비급이 다른 NPC 제작과 이어짐</b> — 사혼검결 하나를 넣으면 '
+      + '서고관리인 → 대장장이(오색금강진연옥 30%) → 명인대장장이 재료 → 무림맹주(무림맹비급)까지 '
+      + '한 번에 역산',
+    '📜 비급 도감에 <b>마혼검결·폭마공</b> 추가, 매화중검 제작법 반영 (25종 → 27종)',
+    '🐛 원문 오타 정정 — 파천검법 "도끼내단"→토끼내단, 천살검법 "설멸검법"→섬멸검법, '
+      + '마혼검결 "무랭맹비급"→무림맹비급 (천살검법의 <b>혈사검법</b>은 오타 아님 · 검성 드랍)'
+  ]},
+  { v:'2.11.0', d:'2026-08-13', items:[
+    '🌾 <b>낫 1~5성 추가</b> — 곡괭이와 똑같이 계산됩니다(실패 소모 옵션·확률 시뮬 포함). '
+      + '1성부터 대장장이 제작(상점 구매 없음) · 100/80/60/40/20% · 1~5만전 · '
+      + '단계마다 돌덩어리·철·정철광이 10씩 증가',
+    '⚒️ <b>대장장이 일반 제작 9종 추가</b> — 탐령구 · 강화주머니(소) · 청환단 · 열화신공 · '
+      + '오색수정 · 진연옥 · <b>오색진연옥 → 오색금강진연옥 → 찬란한오색금강진연옥</b>(각 30%)',
+    '💎 <b>목걸이 조각 합성</b> — 30% 제작에 실패하면 남는 <b>조각 3개</b>를 명인대장장이가 '
+      + '100%로 완성품으로 붙여 준다 (각 100만전). 목표 목록엔 "(조각3)" 이름으로',
+    '📚 <b>서고관리인 추가</b> — 월섬검법·단섬검법 상점 각 5,000전, '
+      + '섬멸검법·부화검결·홍매지폭·매화초검 제작(전부 100% · 회당 3만전)',
+    '🏯 무림맹주 제작(토벌패·시공단·무림맹비급) 유지 · 조선장 좌표 반영',
+    '🔧 계산기 내부를 <b>도구 계열</b> 구조로 바꿔 곡괭이·낫을 같은 규칙으로 처리 '
+      + '(목표 목록·전개도·레시피·제작 순서 전부 자동 반영)'
+  ]},
+  { v:'2.10.0', d:'2026-08-13', items:[
+    '⛵ <b>조선장 배장비 추가</b> — 동력(외륜)·대포·갑판·그물 <b>2~5성 승급 제작 16종</b>. '
+      + '1성은 상점 5,000전, 2~5성은 70/60/50/40% · 1만/3만/5만/10만전, '
+      + '단계마다 <b>무공정수 10/20/30/40</b> + 명인대장장이 재료 1개',
+    '<b>목표로 바로 넣을 수 있음</b> — 목록·빠른 버튼(5성 배장비 4종)·통합검색에 전부 추가. '
+      + '5성외륜 하나를 넣으면 4성→3성→2성과 접합제·기문부적까지 한 번에 역산',
+    '🐉 <b>주작단</b> — 고래기름 1개 · 10만전 · 95% (실패 시 현무단 1개)로 추가',
+    '📍 <b>조선장 좌표</b> x -1023 / y 71 / z -1077 — 지도 웨이포인트·검색 "지도에서 보기"에 반영',
+    '🏯 <b>무림맹주 제작 추가</b> — 토벌패(토벌석1 + 무공정수20 + 정철광3 · 1만전), '
+      + '시공단(흉폭한영기10), 무림맹비급(흉폭한영기40) · 전부 100%',
+    '🛒 <b>상점 구매가 반영</b> — 1성 배장비처럼 상점에서 사야 하는 재료는 '
+      + '"직접 구해야 하는 재료" 표에 <b>상점가</b>가 뜨고 총 비용에도 합산된다',
+    '✅ <b>부가 옵션이 NPC 제작에도 적용</b> — "일반제작성공률증가"(원래 확률 ×1.1)와 '
+      + '"제작비용감소 -10%"가 이제 명인대장장이·조선장·무림맹주 제작에도 반영됨',
+    '📖 레시피 도감에 <b>NPC 제작 칸</b> 추가 (NPC별로 묶어서 재료·확률·제작비)',
+    '🐛 성공률이 77.00000000000001% 처럼 나오던 표기 정리'
+  ]},
+  { v:'2.9.0', d:'2026-08-13', items:[
+    '🏠 <b>메인 화면(홈) 추가</b> — 열면 계산기 대신 <b>홈</b>이 먼저. '
+      + '무엇이 들어있는지(광산·웨이포인트·부적·업데이트 수), 어디로 갈지(바로가기 8개), '
+      + '최근 업데이트 3건, 쓰는 요령을 한 장에',
+    '홈에서는 목표·옵션 사이드가 숨어 <b>첫 화면답게</b> 넓게 보인다',
+    '🔎 <b>검색 미리보기</b> — 결과를 고르면 아래에 <b>무엇인지 · 설명 · 좌표</b>가 뜨고, '
+      + '거기서 바로 <b>탭에서 보기 / 지도에서 보기</b>',
+    '🗂️ <b>분류 훑어보기</b> — 검색창을 비우면 무엇을 찾을 수 있는지 분류별 개수와 예시를 보여 준다',
+    '검색 결과 목록이 <b>넓어져</b> 이름이 안 잘린다 (검색창이 좁아도)',
+    '⌨️ 탭이 14개가 되면서 숫자키가 한 칸씩 밀림 — <kbd>1</kbd>=홈 … <kbd>9</kbd>=NPC·영단, '
+      + '<kbd>0</kbd>=장비, <kbd>-</kbd>=확률·부적, <kbd>[</kbd>=위치, <kbd>]</kbd>=업데이트, <kbd>\</kbd>=지도',
+    '🐛 검색창 테두리 색이 글자색으로 잘못 나오던 것 수정 (정의 안 된 CSS 변수)'
+  ]},
+  { v:'2.8.0', d:'2026-08-13', items:[
+    '🔤 <b>글자 크기 조절</b> — 상단 <b>가⁻ / 가⁺</b> (또는 <kbd>+</kbd>·<kbd>Shift+-</kbd>). 4단계, 저장됨',
+    '↕️ <b>표 정렬</b> — 아무 표나 머리글을 누르면 정렬 (다시 누르면 반대로). '
+      + '숫자 열은 숫자 순서, 글자 열은 가나다 순서',
+    '📋 <b>표 복사</b> — 표마다 "표 복사" 버튼. 엑셀에 그대로 붙여넣기(탭 구분)',
+    '⌨️ <b>단축키 목록</b> — 상단 ⌨️ 버튼 또는 <kbd>?</kbd>',
+    '🔍 <b>검색이 편해짐</b> — 결과를 <kbd>↑</kbd><kbd>↓</kbd> 로 고르고 <kbd>Enter</kbd>, '
+      + '빈 검색창을 누르면 <b>최근 검색어</b>',
+    '💾 <b>목표 조합 저장</b> — 자주 쓰는 목표 묶음을 이름 붙여 저장하고 한 번에 불러오기',
+    '↩️ <b>되돌리기</b> — 초기화·조합 삭제·조합 불러오기를 실수해도 되돌릴 수 있음',
+    '📍 <b>지도 좌표 편의</b> — "-969, -965" 통째로 붙여넣기, <kbd>Enter</kbd> 로 이동, '
+      + '<b>최근 좌표</b> 8개를 눌러서 다시 이동',
+    '🖨️ <b>인쇄</b> — 상단 🖨️ 버튼. 지금 보는 탭만 깔끔하게 (사이드·버튼 숨김)',
+    '⬆️ <b>맨 위로</b> 버튼 · 표 <b>얼룩무늬</b> · 탭 <b>묶음 구분선</b> 으로 보기 정리'
+  ]},
+  { v:'2.7.2', d:'2026-08-13', items:[
+    '🔍 <b>전체판 지도를 원본 화질로</b> — 배율 0~6 을 전부 담는다 (타일 17298장, 약 490MB). '
+      + '확대해도 흐려지지 않음',
+    '수백 MB 파일을 만들 수 있게 빌드를 <b>조각내어 흘려 쓰는 방식</b>으로 바꿈 '
+      + '(예전 방식은 문자열 한계 512MB에서 깨짐)',
+    '브라우저에서도 지도를 <b>조각 Blob 으로 이어 붙여</b> 띄운다 — 메모리 몇 배로 튀던 문제 해결',
+    '가볍게 만들려면 <code>--levels 3,4,5,6</code> (70MB) 처럼 배율을 지정',
+    '🧪 <b>진짜 크롬으로 여는 검사</b> 추가 (<code>node test-browser.js</code> 19항목) — '
+      + '캔버스에 지도가 실제로 그려졌는지 픽셀로 확인. 예전 화면 검사는 이걸 못 봐서 빈 지도를 통과시켰음'
+  ]},
+  { v:'2.7.1', d:'2026-08-13', items:[
+    '🐛 <b>단일 파일에서 지도가 빈 화면이던 문제 수정</b> — 타일을 파일 안에 넣어 놓고도 '
+      + '지도가 <b>바깥 파일 주소로 찾고 있었음</b> (줄바꿈 차이로 코드 바꿔치기가 조용히 실패)',
+    '이제 못 바꾼 곳이 있으면 빌드가 <b>크게 알리고 실패</b>한다 — 조용히 깨진 파일이 안 나옴',
+    '넣은 배율만 있다고 지도에 알려주는 처리(2.6.1)를 <b>단일 파일에도</b> 적용',
+    '🖼️ <b>가벼운 버전</b>: 죽은 지도 창 대신 <b>안내와 웹 지도 링크</b>를 띄우고, '
+      + '공략 이미지는 없는 <code>guides/</code> 를 거치지 않고 바로 원본에서 불러옴',
+    '검사 추가: 타일 주소 바꿔치기 · 지도 메타 배율 일치 · 안내 문구 (단일 파일 24항목 · 전체판 24항목)'
+  ]},
+  { v:'2.7.0', d:'2026-08-13', items:[
+    '📦 <b>지도까지 넣은 단일 파일</b> — <code>node build-standalone.js --full</code> → '
+      + '<code>dist/한월공략소-전체.html</code> (70MB) <b>파일 하나로 전부</b>',
+    '지도 타일 576장(배율 3~6) · 약초 자생지 색칠 19장 · 커서 높이 데이터 · 공략 이미지 34장 전부 내장',
+    '타일·이미지를 data 주소로 바꿔 지도 페이지에 박고, 그 페이지를 blob으로 띄우는 방식 — 외부 파일 0개',
+    '<code>--levels 2,3,4,5,6</code> 로 더 선명하게, <code>--no-guides</code> 로 이미지 빼기 가능',
+    '가벼운 버전(0.3MB, 지도 없음)은 <code>node build-standalone.js</code> 그대로'
+  ]},
+  { v:'2.6.1', d:'2026-08-13', items:[
+    '🐛 <b>업로드용 지도가 안 보이던 문제 수정</b> — 타일을 일부만 담았는데 '
+      + '지도는 "전부 있다"고 알고 있어서 확대 시 빈 화면이 됐음',
+    '이제 <b>담긴 배율만 있다고 지도에 알려줌</b> → 더 확대해도 비지 않고 조금 흐릿해질 뿐',
+    '📁 업로드 폴더 이름을 <code>--out</code> 으로 지정 가능 (깃허브는 <code>docs</code> 권장)'
+  ]},
+  { v:'2.6.0', d:'2026-08-13', items:[
+    '📦 <b>사이트 업로드용 폴더 만들기</b> — <code>node build-site.js</code> → '
+      + '<b>사이트 업로드용/</b> 폴더 (기본 20MB 한도)',
+    '지도 타일 321MB 중 <b>멀리서 본 배율부터</b> 한도까지 골라 담고, 뺀 것은 폴더 안 설명서에 기록',
+    '기본 20MB에 지도(레벨 3~6) · 자생지 색칠 · 커서 높이 · 음영/깊이까지 들어감',
+    '<code>--limit 50</code> 처럼 한도를 올리면 더 자세한 타일까지 담김'
+  ]},
+  { v:'2.5.1', d:'2026-08-13', items:[
+    '⚡ <b>약초 자생지 색칠 최적화</b> — 여러 개를 켜도 지도가 버벅이지 않음',
+    '켠 자생지를 <b>한 장으로 합쳐두고</b> 화면에는 1번만 그림 (19개 켜면 19번 → <b>1번</b>)',
+    '합성은 켜고 끌 때만 다시 함. 끈 자생지의 큰 이미지는 메모리에서 바로 해제'
+  ]},
+  { v:'2.5.0', d:'2026-08-13', items:[
+    '🗑️ <b>디스코드 로그인(클라우드 저장) 제거</b> — 서버 없이 도는 앱으로 되돌림',
+    '설정은 계속 브라우저에 자동 저장되고, 기기 옮길 땐 <b>내보내기 / 불러오기</b>(JSON)를 쓰면 됩니다',
+    '🏷️ 상단 제목을 <b>한월 공략소</b>만 남기고 부제 제거, 푸터의 옛 이름도 정정'
+  ]},
+  { v:'2.4.1', d:'2026-08-13', items:[
+    '📐 <b>푸터를 화면 맨 아래로</b> — 내용이 짧아도 푸터가 위로 딸려 올라오지 않음',
+    '본문과 푸터 사이 여백 확보, 푸터 안쪽 여백도 넉넉하게 (모바일 포함)',
+    '🏷️ 푸터에 남아 있던 옛 이름(제작 계산기)을 <b>한월 공략소</b>로 정정'
+  ]},
+  { v:'2.4.0', d:'2026-08-13', items:[
+    '🔽 <b>목표 아이템·옵션 카드 접기</b> — 제목을 누르면 접었다 펼 수 있음',
+    '접은 상태는 저장돼서 다시 열어도 그대로 (모바일에서 표를 더 넓게 볼 때 유용)'
+  ]},
+  { v:'2.3.2', d:'2026-08-13', items:[
+    '➕ <b>이류주문서상자 제작 추가</b> — 삼류주문서상자 10 + 무공정수 5 · 0전 · 100%',
+    '🔧 <b>일류주문서상자 정정</b> — 이류주문서상자 10 + 무공정수 10 (기존 삼류 → 이류)',
+    '두 단계가 이어져서 <b>일류 1개 = 삼류 100 + 무공정수 60</b>으로 자동 역산됨'
+  ]},
+  { v:'2.3.0', d:'2026-08-13', items:[
+    '🗑️ <b>제작 기록(로그) 탭 제거</b> — 탭 14개 → 13개, 관련 코드·저장 데이터 전부 정리',
+    '📋 <b>제작 순서에 NPC 제작 단계 통합</b> — 체크박스로 진행 체크 (재료 → 화로 → NPC 순)',
+    'NPC 단계에도 성공률·기대 시도·비용 표시, 완료 개수에 함께 반영',
+    '제작 순서 탭 하단에 <b>직접 구해야 하는 재료</b> 표 같이 표시',
+    '🐛 카드 안에 카드가 겹쳐 들어가던 구조 오류 수정 (제작 순서 탭)',
+    '🧹 안 쓰는 상태(보유 재료)·CSS·단축키 매핑 정리 — 단축키가 실제 탭 순서와 다시 일치',
+    '🧪 <b>무결성 점검 추가</b> (<code>node test-integrity.js</code>) — 탭↔패널↔렌더 함수, '
+      + '버튼↔핸들러, 죽은 상태 필드, 없는 API 호출을 자동으로 잡음'
+  ]},
+  { v:'2.2.1', d:'2026-08-12', items:[
+    '🔗 <b>관련 링크 정리</b> — 커뮤니티 / 지도·자료 / 계산기·도구 <b>3분류 7개</b>로 묶음',
+    '각 링크에 <b>한 줄 설명</b> 추가, 데이터를 가져온 곳은 <b>출처</b> 배지 표시',
+    '푸터에도 별개 도구임을 명시 (문의는 만든 분들께)'
+  ]},
+  { v:'2.2.0', d:'2026-08-12', items:[
+    '🎬 <b>성장 가이드 영상 4편</b> 추가 — 요약 탭에서 카드로 보고 새 탭에서 유튜브로 열림',
+    '설치·접속 / 채널입장·튜토리얼 / 성장가이드 Lv.11~60 / Lv.60~120',
+    '통합검색(<b>Ctrl+K</b>)에서 "성장가이드" 같은 말로도 찾을 수 있음'
+  ]},
+  { v:'2.1.2', d:'2026-08-12', items:[
+    '🔗 <b>관련 링크</b> 카드 추가 — 요약 탭 하단 · 푸터',
+    '<b>[ProDays] 매크로 및 최적화 계산기</b> (github.com/Pro-Days/SkillMacro/releases)',
+    '<b>[_Ya_Su] 도깨비 스텟 계산기</b> (yasu2947.github.io)'
+  ]},
+  { v:'2.1.0', d:'2026-08-12', items:[
+    '📦 <b>단일 파일 빌드</b> — <code>node build-standalone.js</code> → '
+      + '<code>dist/한월공략소.html</code> 하나만 올려도 전부 동작 (IPFS·Pinata·USB용)',
+    'index.html만 따로 올리면 스크립트를 못 찾아 백지가 되는 문제 해결',
+    '🔗 출처에 <b>한월RPG 디스코드</b> 초대 링크 추가 (요약 탭 출처표 · 푸터 · 업데이트 탭)',
+    '단일 파일 자동 검증 추가 — <code>node test-standalone.js</code> 19항목'
+  ]},
+  { v:'2.0.0', d:'2026-08-12', items:[
+    '🏷️ 이름을 <b>한월 공략소</b>로 변경 — 계산기를 넘어 지도·위치·확률·업데이트까지 담고 있어서',
+    '🧙 <b>NPC 제작을 목표로 추가</b> — 명인대장장이 15종 + 대장장이 조수 3종을 목표에 넣으면 '
+      + '재료·성공률·기대 시도·비용까지 역산',
+    '연쇄 제작도 자동 (한철단조석 ← 접합제2 ← 송진칠료1). 소비자부터 순서대로 표시',
+    '화로·광산으로 못 만드는 재료(향목가루·연마사 등)는 <b>직접 구해야 하는 재료</b> 표로 분리, '
+      + '항아리 좌표·필요 도구까지 같이 표시',
+    '총 비용 = 화로/대장장이 비용 + NPC 제작비 합계',
+    '🗑️ <b>보유 재료 입력 제거</b> — 사이드가 단순해지고, 재료 탭은 "필요량 + 산출 광산"만 보여줌',
+  ]},
+  { v:'1.8.0', d:'2026-08-12', items:[
+    '📜 <b>비급 25종 추가</b> — 획득처·제작 재료를 NPC·영단 탭에서 검색 (통합검색에서도 잡힘)',
+    '🗿 <b>동상 3곳 · 🪨 비석 17곳</b> 추가 — 위치 탭 + 지도 웨이포인트([웹맵] 동상/비석 세트)',
+    '지도 주입 271개 → <b>291개</b>',
+    '원본 웹맵과 전 항목 대조 검수 완료 (비급 문구·좌표 100% 일치)'
+  ]},
+  { v:'1.7.2', d:'2026-08-12', items:[
+    '📱 <b>모바일·태블릿 대응</b> — 탭은 가로 스크롤, 카드·표는 1단으로, 터치 버튼 크기 확보',
+    '입력칸 글자 16px로 올려 <b>iOS에서 화면이 확대되는 문제</b> 방지',
+    '모바일에서 지도 높이를 화면에 맞게(최대 70vh) 자동 조절',
+    '📄 <b>푸터 추가</b> — 비공식 도구 안내 · 기댓값 안내 · 브라우저 저장 안내 · 출처 링크 · 버전/갱신일',
+    '📮 문의처 표기: <b>디스코드 79youngsoul</b> (오류 제보·자료 사용 문의)'
+  ]},
+  { v:'1.7.1', d:'2026-08-12', items:[
+    '⚡ <b>지연 렌더</b> — 보고 있는 탭만 그림. 입력 반응 <b>420ms → 7ms</b>, DOM 노드 12,500 → 650',
+    '⚡ 위치 탭을 데이터/웨이포인트 두 덩어리로 나눠 필요한 쪽만 다시 그림 (검색 118ms → 6ms)',
+    '⚡ 저장은 몰아서 한 번만 (타이핑 끊김 제거). 창 닫을 때·탭 숨길 때 즉시 기록',
+    '⚡ 지도 높이 데이터를 <b>heights.bin 2.6MB</b>로 분리 — 페이지를 막지 않고, '
+      + '지도를 실제로 만질 때 한 번만 받음',
+    '⚡ 긴 표는 화면 밖이면 그리지 않음(content-visibility), 공략 이미지 디코딩도 비동기',
+    '📄 <b>DEPLOY.md</b> 추가 — 웹사이트로 올릴 때 뭘 올리고 뭘 적어야 하는지 정리'
+  ]},
+  { v:'1.7.0', d:'2026-08-12', items:[
+    '🌿 <b>약초 자생지 색칠</b> — 웹맵과 같은 자생지 이미지를 지도 위에 겹쳐서 표시. '
+      + '지도에서 <b>Y</b>키(약초 패널) → 약초별로 켜고 끄기, 전부 켜기/끄기',
+    '색칠은 <code>node download-overlays.js</code>로 받아옴 (19종, 약 5MB). 켠 목록은 저장됨',
+    '📐 지도 좌표 표기를 <b>X → Y → Z 순서</b>로 정리',
+    '🖥️ <b>지도 큰 창으로 열기</b> — 지도 탭에서 화면 90% 크기 새 창으로 띄우기 (보던 좌표 그대로)',
+    '<b>전체화면</b> 버튼 추가 — 지도 프레임만 전체화면으로'
+  ]},
+  { v:'1.6.2', d:'2026-08-12', items:[
+    '📐 <b>지도에 커서 y(높이) 표시</b> — 원본 리전 파일에서 높이 데이터를 뽑아 상태바에 <b>Y</b> 추가',
+    '8블록 간격 표본이라 근사값(<b>≈</b> 표시). 웨이포인트에 올리면 정확한 y가 그대로 나옴',
+    '생성: <code>python build-heightmap.py</code> → <code>map/heights.js</code> (3.6MB, 없어도 지도는 정상)',
+    '검증(<code>node test-heights.js</code>): 광산 65곳 오차 중앙값 <b>1블록</b>, 사냥터 2블록',
+    '웹맵 원본에 y가 없던 <b>옥향초 2번 자생지</b>를 높이 데이터로 채움 (y=65)'
+  ]},
+  { v:'1.6.1', d:'2026-08-12', items:[
+    '🧭 <b>지도 웨이포인트 하나씩 켜고 끄기</b> — 지도 <b>W</b>키 패널 목록의 체크박스로 개별 on/off',
+    '<b>전부 켜기 / 전부 끄기</b> 버튼 — 세트 필터·검색으로 걸러진 목록에만 적용',
+    '꺼둔 웨이포인트는 브라우저에 저장되어 다시 열어도 유지 (설정 → 기본값으로 누르면 복구)'
+  ]},
+  { v:'1.6.0', d:'2026-08-12', items:[
+    '📢 <b>한월RPG 업데이트 탭 추가</b> — 디스코드 공지 글 <b>67건</b>(2026-05-01 ~ 08-12) 수록',
+    '월별 묶음 · 태그 필터(모드/리소스팩/퀘스트/던전/레이드/사냥터/제작/광산/약초/스킬/부적/펫/캐시샵/UI/오류수정) · 본문 검색',
+    '<b>+추가 공지 · 업데이트 예정 · ※안내</b>를 배지로 구분',
+    '통합검색에서도 업데이트 본문이 검색됨 (결과 클릭 시 해당 글로 이동)',
+    '갱신 방법: 공지 글을 <code>discord-updates.txt</code>에 붙여넣고 '
+      + '<code>node import-discord-updates.js</code> 실행',
+    '탭 단축키 <b>]</b> 추가'
+  ]},
+  { v:'1.5.0', d:'2026-08-12', items:[
+    '🛠️ <b>대장장이 조수 NPC 추가</b> — 장비강화(재련·잠재능력·추가능력·주문서강화), '
+      + '능력이전(잠재 5금화 · 추가 500,000전), 귀속해제 2금화, 제작표',
+    '📍 <b>위치·웨이포인트 탭 추가</b> — 사냥터 20곳, 약초 자생지 19종 38곳, '
+      + '적환단·해태단·기린단 단서, 탐색 항아리 12곳, 의문의 상자 41곳',
+    '🌿 <b>약초는 자생지별 색</b>으로 구분 — 지도 세트도 약초 이름별로 분리',
+    '📋 <b>공략 보기</b> — 해태단·기린단·적환단 공략 이미지 28건을 앱 안에서 바로 확인 '
+      + '(<code>node download-guides.js</code>로 오프라인 저장)',
+    '🧪 <b>약초 조합 계산기</b> — 약초 3~5개 선택 → 등급 점수 합계로 결과 환 표시',
+    '🔎 <b>전체 통합검색</b> — 상단 검색창(<b>Ctrl+K</b>)에서 재료·NPC·사냥터·약초·부적·'
+      + '웨이포인트까지 한 번에, 결과 클릭 시 해당 탭으로 이동',
+    '🧭 <b>웨이포인트 편집기</b> — 앱에서 추가·이름/좌표 수정·삭제·숨김, 브라우저에 자동 저장',
+    '가져온 웨이포인트도 수정 가능 — <b>원본 데이터는 그대로</b> 두고 표시만 덮어씀 (되돌리기 지원)',
+    'JSON 내보내기 → <code>node inject-my-waypoints.js</code>로 <b>[내]</b> 세트로 지도에 주입',
+    '🧷 지도 주입 대상 확대 — 76개 → <b>271개</b> ([웹맵] 세트 42종, 껐다 켜기 가능)',
+    '🔗 <b>데이터 출처 전부 링크로 표시</b> — 웹 지도·확률 시트·부적표·약초 계산기 (요약 탭 하단 + 상단 버튼)',
+    '탭 단축키에 <b>[</b>(위치) 추가 — 지도는 <b>=</b> 유지',
+    '검증 테스트 확대: 코어 329항목 · UI 205항목'
+  ]},
+  { v:'1.4.0', d:'2026-08-11', items:[
+    '🔥 <b>대장장이 VIP</b> 옵션 추가 — 화로 대기시간 -10% (화력·화로시간감소와 곱연산)',
+    '🗺️ <b>광산 탭</b> 추가 — 광산 65곳 좌표, 색깔별 산출 재료, 색깔별 추천 순회 동선',
+    '부족한 광산 재료가 <b>어느 색 광산의 몇 번</b>에서 나오는지 계산 결과와 바로 연결',
+    '🧙 <b>NPC·영단 탭</b> 추가 — 제작 관련 NPC 좌표·요구 재료, 명인대장장이 제작표, 영단 19종 획득처',
+    '명인대장장이 제작은 <b>회당 1,000전</b> 소모 — 성공 1개당 기대비용까지 표시',
+    '⚔️ <b>장비 제작 탭</b> 추가 — 50~180제 방어구/무기 재료·제작서 수량, 티어 확률, 장신구 옵션',
+    '장비 재료를 <b>버튼 한 번으로 목표에 추가</b> (방어구는 4부위 ×4도 지원)',
+    '🎯 <b>확률·부적 탭</b> 추가 — 잠재·추가능력, 제작대 티어, 토벌의뢰, 우물던전, 부적 174종 확률',
+    '🧮 <b>부적 리롤 계산기</b> — 1회 확률, n회 안에 1번 이상, 평균 소요, 90%·99% 도달 횟수',
+    '📌 <b>웨이포인트 출처 분리</b> — 가져온 데이터(webmap)와 인게임 지도 웨이포인트(map)를 별도 관리, 절대 안 섞임',
+    '🧭 <b>인게임 지도(Xaero) 연동</b> — 웨이포인트 361개·세트 38종을 세트별 필터·검색으로 확인',
+    '좌표마다 <b>지도 딥링크</b> — 클릭하면 지도 뷰어가 그 위치로 열림 (광산 65곳 표에도 적용)',
+    '📦 <b>폴더 하나로 통합</b> — 지도 뷰어가 <code>map/</code>에 함께 들어감. 이 폴더만 있으면 전부 동작',
+    '🗺️ <b>지도 탭 추가</b> — 계산기 안에서 바로 지도를 봄. 좌표 이동·스폰 이동·높이 전환',
+    '표의 <b>지도</b> 버튼을 누르면 지도 탭이 그 좌표로 이동 (<b>↗</b>는 새 탭). 단축키 <b>=</b>',
+    '🧷 <b>웹맵 좌표를 지도 웨이포인트로 주입</b> — 광산 65·NPC 10·스폰 1 = 76개, <b>[웹맵]</b> 세트로 분리',
+    '지도 안 <b>W</b>키로 세트별, <b>O</b>키로 전체 <b>웨이포인트 껐다 켜기</b>',
+    '🔀 <b>관련 탭 이동</b> — 웨이포인트의 <b>관련</b> 버튼으로 광산·영단·NPC·레시피 탭으로 바로',
+    '👁️ 지도 웨이포인트 목록 <b>접기/펴기</b>',
+    '딥링크가 <b>상대경로</b>라 폴더째 옮기거나 다른 PC로 복사해도 안 깨짐',
+    '<code>node import-map-waypoints.js</code>로 지도 갱신. 지도 파일이 없어도 앱은 정상 동작',
+    '🌟 <b>신화 부적 13종 추가</b> — 확률 고지 자료에 없어 같은 규칙으로 산출: <b>100÷13 = 7.6923%</b>',
+    '부적 목록을 최신 부적표 기준으로 교체 (174종 → <b>189종</b>), 신화 옵션 표 추가',
+    '부적표 ↔ 확률 시트 <b>불일치 5건</b>을 표로 표시 (영웅 38종 vs 36종 등)',
+    '탭 단축키 <b>1~9 · 0 · -</b>로 확장',
+    '부가 데이터 검증 테스트 51항목 추가 (광산 매핑·동선·확률 합계 자동 대조)'
+  ]},
+  { v:'1.3.0', d:'2026-08-09', items:[
+    '🧺 <b>셋 단위 표기</b> — 64개 = 1셋. 필요·보유·부족 수량이 "89셋 4개"로 표시',
+    '보유 재료 입력도 <b>셋 / 낱개</b> 두 칸으로 분리 (셋 2 + 5개 = 133개)',
+    '한 셋 개수를 64 외 다른 값으로 바꿀 수 있음 (옵션 패널)',
+    '요약·채집목록 복사, 시뮬 재료 분포, 제작 순서 재료에도 셋 표기 적용',
+    '숫자에 마우스를 올리면 원래 개수 표시',
+    '원문 대조 검증 스크립트(verify-source.js) 추가 — 메모와 데이터 90항목 자동 대조',
+    '같은 밀리초에 기록이 여러 건 쌓일 때 삭제가 엉키던 문제 수정',
+    'JSON 불러오기에 손상 데이터 방어 추가'
+  ]},
+  { v:'1.2.0', d:'2026-08-09', items:[
+    '📌 원문 메모 수정본 반영 — <b>오금한철 재료가 오금철5 + 강오금1</b>로 정정 (이전엔 강오금6으로 계산)',
+    '5성곡괭이 제작비 300,000전 · 설화오금 백현철1 확정 (추정 → 확정)',
+    '5성곡괭이 1개 기준 화로 시간 44일 → <b>39일</b>, 화로 제작 8,791 → <b>8,191회</b>로 감소',
+    '갈옥·철광석·돌덩어리·청연광·정철광·매화옥 소요량 감소 (총 비용은 동일)',
+    '원문 해석 메모 정리 — 해결된 오탈자 항목 제거'
+  ]},
+  { v:'1.1.0', d:'2026-08-09', items:[
+    '📜 <b>제작 기록</b> 탭 추가 — 실제 제작 시도를 성공/실패로 기록',
+    '기록 통계: 아이템별 실제 성공률 vs 표기 확률, 누적 지출, "운 지표"(실제 성공 ÷ 기대 성공)',
+    '제작 순서 체크 시 자동 기록 (끌 수 있음)',
+    '기록 CSV 복사 / 내보내기, 개별·전체 삭제',
+    '🆕 업데이트 내역 창 추가 (새 버전이면 버튼에 표시)',
+    '탭 단축키 1~7로 확장'   /* 1.4.0에서 1~9·0·- 로 재확장 */
+  ]},
+  { v:'1.0.2', d:'2026-08-09', items:[
+    '제작 순서 탭에서 하위 곡괭이 소모량이 실패분을 반영하지 않던 문제 수정',
+    '중간 제작물 표의 잘못된 재료 참조 수정'
+  ]},
+  { v:'1.0.0', d:'2026-08-09', items:[
+    '메모(대장장이&화로.txt) 기반 최초 버전',
+    '목표 아이템 → 광산 재료까지 역산, 실패 확률·재료 소모 반영',
+    '보유 재료 차감 및 부족분 표시',
+    '화력/화로시간감소 반영 시간 계산 (직렬·슬롯 병렬·최단)',
+    '제작 순서 체크리스트, 레시피 전개도, 확률 시뮬레이션, 레시피 도감',
+    '다크/라이트 테마, 자동 저장, JSON 내보내기·불러오기, 요약 복사'
+  ]}
+];
+
+/* ---------------- 상태 ---------------- */
+var S = {
+  targets: { '5성곡괭이': 1 },
+  fire: 0, slots: 1,
+  successUp:false, costDown:false, furnaceTimeDown:false, vip:false,
+  ignoreFail:false, integer:true, failConsumesMats:true, failConsumesBase:true,
+  done: {}, theme: 'dark', tab: 'home', treeRoot: null, treeOpen: {}, mineColor: '녹',
+  talGrade: '전설', talKinds: 18, talWant: 1, talRolls: 10,
+  mapSet: '전체', mapQ: '',
+  locQ: '', locKind: '전체', herbPick: [],
+  fold: {},                 // 접어둔 사이드 카드 (targets/opts)
+  wpQ: '', wpOrigin: '전체', wpEditing: null, myWps: [], wpEdit: {},
+  newsQ: '', newsTag: '전체',
+  mapX: 0, mapZ: 0, mapScale: 1, mapH: 620, mapInit: false, showMapWps: true,
+  seenVersion: null,
+  stack: 64, useStack: true,
+  fontScale: 'm',           // 글자 크기 s/m/l/xl
+  recentQ: [],              // 최근 검색어 (최대 8개)
+  mapRecent: [],            // 최근에 본 지도 좌표 (최대 8개)
+  presets: {}               // 이름 → 목표 조합 저장
+};
+/* 초기화 때 되돌아갈 기본값 — 위 S 를 그대로 떠 놓는다 */
+var DEFAULTS = JSON.parse(JSON.stringify(S));
+
+var R = null;      // 마지막 계산 결과
+var SIM = null;    // 마지막 시뮬 결과
+
+/* 저장은 몰아서 한 번만 — 입력할 때마다 JSON 직렬화하면 타이핑이 끊긴다.
+ * 창을 닫거나 탭을 숨기면 즉시 기록한다. */
+var _saveTimer = null;
+function saveNow(){
+  _saveTimer = null;
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
+function save(){
+  if(_saveTimer) return;
+  _saveTimer = setTimeout(saveNow, 250);
+}
+window.flushSave = saveNow;      // 즉시 기록이 필요할 때 (테스트·임베드용)
+window.addEventListener('pagehide', saveNow);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') saveNow();
+});
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY); if(!raw) return;
+    var o = JSON.parse(raw);
+    Object.keys(S).forEach(function(k){ if(o[k]!==undefined) S[k]=o[k]; });
+  }catch(e){}
+}
+function toast(msg){ var t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('on');},1600); }
+
+/* ---------------- 아이템 목록 ---------------- */
+var ALL_ITEMS = C.TOOL_NAMES.filter(function(n){ return !!C.toolItem(n).mats; })
+  .concat(Object.keys(C.FURNACE));
+// 도구는 계열 이름('곡괭이'·'낫')을 종류로 쓴다
+function itemKind(n){ return C.isTool(n) ? C.toolChain(n) : C.isFurnace(n) ? '화로' : '광산'; }
+
+function buildSelect(){
+  var sel = $('#selItem');
+  var g1 = C.CHAIN_NAMES.map(function(chain){
+    return '<optgroup label="'+esc(chain)+'">'
+      + C.CHAINS[chain].map(function(it){ return '<option>'+esc(it.name)+'</option>'; }).join('')
+      + '</optgroup>';
+  }).join('');
+  var fs = C.ORDER.slice().sort(function(a,b){ return C.DEPTH[b]-C.DEPTH[a] || a.localeCompare(b); });
+  var g2 = '<optgroup label="화로 제작">' + fs.map(function(n){return '<option>'+n+'</option>';}).join('') + '</optgroup>';
+  // NPC 제작(명인대장장이·대장장이 조수)도 목표로 넣을 수 있게
+  var g3 = '';
+  if(G){
+    var byNpc = {};
+    G.npcCraftNames().forEach(function(n){
+      var r = G.NPC_RECIPES[n];
+      (byNpc[r.npc] = byNpc[r.npc] || []).push(n);
+    });
+    g3 = Object.keys(byNpc).map(function(npc){
+      return '<optgroup label="'+esc(npc)+' 제작">'
+        + byNpc[npc].map(function(n){ return '<option>'+esc(n)+'</option>'; }).join('')
+        + '</optgroup>';
+    }).join('');
+  }
+  sel.innerHTML = g1+g2+g3;
+  sel.value = '5성곡괭이';
+  var ship = G ? G.SHIP_PARTS.map(function(p){
+    return '<button class="btn sm" data-q="5성'+p.name+'">5성'+p.name+'</button>';
+  }).join('') : '';
+  $('#quick').innerHTML = C.PICK_NAMES.slice(1).map(function(n){
+    return '<button class="btn sm" data-q="'+n+'">'+n.replace('곡괭이','성')+'</button>';
+  }).join('')
+    + '<button class="btn sm" data-q="5성낫">5성낫</button>'
+    + ship + '<button class="btn sm ghost" data-q="__clear">비우기</button>';
+}
+
+/* ---------------- 사이드 렌더 ---------------- */
+function renderTargets(){
+  var ks = Object.keys(S.targets);
+  $('#targets').innerHTML = ks.length ? ks.map(function(k){
+    return '<span class="chip"><b>'+esc(k)+'</b>'
+      + '<input type="number" min="1" step="1" value="'+S.targets[k]+'" data-tq="'+esc(k)+'">'
+      + '<button class="x" data-tx="'+esc(k)+'">×</button></span>';
+  }).join('') : '<span class="dim" style="font-size:12px">목표를 추가하세요.</span>';
+}
+
+
+function syncControls(){
+  $('#fire').value = S.fire; $('#fireN').value = S.fire;
+  var mf = C.timeMultiplier({fire:S.fire});
+  var m = C.timeMultiplier({fire:S.fire, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip});
+  var extra = (m !== mf) ? ' · 옵션 포함 ×' + m.toFixed(4) + ' (' + ((1-m)*100).toFixed(1) + '% 감소)' : '';
+  $('#fireHint').textContent = '화력만 ×' + mf.toFixed(4) + ' (' + ((1-mf)*100).toFixed(1) + '% 감소)' + extra;
+  ['successUp','costDown','furnaceTimeDown','vip','ignoreFail','integer','failConsumesMats','failConsumesBase']
+    .forEach(function(k){ $('#'+k).checked = !!S[k]; });
+  $('#slots').value = S.slots;
+  $('#stack').value = S.stack;
+  $('#useStack').checked = !!S.useStack;
+  document.documentElement.setAttribute('data-theme', S.theme);
+  document.documentElement.setAttribute('data-fs', S.fontScale || 'm');
+}
+
+/* ---------------- 표 도우미 (정렬 · 복사) ----------------
+ * 표를 만드는 곳이 13개 탭에 흩어져 있다. 각 탭을 고치는 대신
+ * 그려진 뒤에 한 번 훑어서 정렬 기능과 복사 버튼을 붙인다. */
+var FS_STEPS = ['s','m','l','xl'];
+
+/** 셀 값 → 정렬용 값. "1,234개"·"12분 30초"·"77%" 같은 것도 숫자로 본다. */
+function sortVal(td){
+  var t = (td.getAttribute('data-sort') != null) ? td.getAttribute('data-sort') : td.textContent;
+  t = String(t).trim();
+  var num = t.replace(/[,\s]/g,'').match(/^-?\d+(\.\d+)?/);
+  if(num && /[\d]/.test(t)) return { n: parseFloat(num[0]), s: t };
+  return { n: null, s: t };
+}
+
+function sortTable(table, idx, dir){
+  var tb = table.tBodies[0]; if(!tb) return;
+  var rows = Array.prototype.slice.call(tb.rows).filter(function(r){
+    return r.cells.length > idx && !r.hasAttribute('data-nosort');
+  });
+  var keep = Array.prototype.slice.call(tb.rows).filter(function(r){ return rows.indexOf(r) < 0; });
+
+  /* 한 열 안에서 숫자와 글자를 섞어 비교하면 순서가 뒤죽박죽이 된다
+   * ("1" vs "1번 발판" 처럼). 그래서 열의 성격을 먼저 정하고 한 가지 방식으로만 비교한다. */
+  var vals = rows.map(function(r){ return sortVal(r.cells[idx]); });
+  var nums = vals.filter(function(v){ return v.n !== null; }).length;
+  var numeric = rows.length > 0 && nums / rows.length >= 0.6;
+
+  rows.sort(function(a,b){
+    var x = sortVal(a.cells[idx]), y = sortVal(b.cells[idx]);
+    if(numeric){
+      if(x.n === null && y.n === null) return 0;
+      if(x.n === null) return 1;            // 숫자 아닌 줄은 항상 아래로
+      if(y.n === null) return -1;
+      return (x.n - y.n) * dir;
+    }
+    return x.s.localeCompare(y.s, 'ko') * dir;
+  });
+  rows.forEach(function(r){ tb.appendChild(r); });
+  keep.forEach(function(r){ tb.appendChild(r); });   // 합계 같은 줄은 맨 아래로
+}
+
+/** 표를 탭으로 구분된 글자로 (엑셀에 그대로 붙여넣기) */
+function tableToText(table){
+  return Array.prototype.map.call(table.rows, function(r){
+    return Array.prototype.map.call(r.cells, function(c){
+      return c.textContent.replace(/\s+/g,' ').trim();
+    }).join('\t');
+  }).join('\n');
+}
+
+/** 방금 그린 탭의 표에 정렬·복사를 붙인다 (이미 붙인 건 건너뜀) */
+function enhanceTables(){
+  $$('.pane.on table').forEach(function(tb){
+    if(tb._enhanced) return;
+    tb._enhanced = true;
+    var head = tb.tHead;
+    if(head && head.rows.length && !tb.classList.contains('nosort')){
+      Array.prototype.forEach.call(head.rows[head.rows.length-1].cells, function(th, i){
+        if(th.colSpan > 1) return;
+        th.classList.add('sortable');
+        th.addEventListener('click', function(){
+          var dir = th.classList.contains('asc') ? -1 : 1;
+          Array.prototype.forEach.call(head.rows[head.rows.length-1].cells, function(o){
+            o.classList.remove('asc','desc');
+          });
+          th.classList.add(dir > 0 ? 'asc' : 'desc');
+          sortTable(tb, i, dir);
+        });
+      });
+    }
+    // 복사 버튼 — 표 바로 위 오른쪽에 (표 안에 넣으면 가로 스크롤에 잘린다)
+    var box = tb.closest('.tw');
+    if(box && box.parentNode && tb.rows.length > 2){
+      var bar = document.createElement('div');
+      bar.className = 'tblbar';
+      var b = document.createElement('button');
+      b.className = 'btn sm tblbtn';
+      b.textContent = '표 복사';
+      b.title = '엑셀에 그대로 붙여넣을 수 있게 복사';
+      b.onclick = function(){ copyText(tableToText(tb)); };
+      bar.appendChild(b);
+      box.parentNode.insertBefore(bar, box);
+    }
+  });
+}
+
+/* ---------------- 계산 ----------------
+ * 1) NPC 제작 목표를 먼저 재료까지 역산한다 (확률·비용 포함)
+ * 2) 그 재료 중 화로/곡괭이/광산 재료는 기존 계산기로 다시 역산
+ * 3) 계산기가 모르는 재료(항아리·퀘스트 아이템 등)는 "직접 구할 재료"로 따로 모은다 */
+var NP = null;        // NPC 제작 계획
+var EXTRA = {};       // 계산기 밖에서 구해야 하는 재료
+
+function isCoreItem(n){
+  return !!C.FURNACE[n] || C.isTool(n) || C.BASE.indexOf(n) >= 0;
+}
+
+function calc(){
+  NP = G ? G.npcPlan(S.targets, { integer:S.integer, ignoreFail:S.ignoreFail,
+                                  successUp:S.successUp, costDown:S.costDown })
+         : { steps:[], external:{}, passthrough:S.targets, cost:0 };
+  EXTRA = {};
+  var coreTargets = {};
+  Object.keys(NP.passthrough).forEach(function(k){
+    coreTargets[k] = (coreTargets[k]||0) + NP.passthrough[k];
+  });
+  Object.keys(NP.external).forEach(function(k){
+    if(isCoreItem(k)) coreTargets[k] = (coreTargets[k]||0) + NP.external[k];
+    else EXTRA[k] = (EXTRA[k]||0) + NP.external[k];
+  });
+  R = C.compute({
+    targets:coreTargets, inventory:{}, fire:S.fire, slots:S.slots,
+    successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
+    ignoreFail:S.ignoreFail, integer:S.integer,
+    failConsumesMats:S.failConsumesMats, failConsumesBase:S.failConsumesBase
+  });
+  R.npcCost = NP.cost;
+  // 상점에서 사야 하는 재료(1성 배장비 등)는 계산기가 못 만드니 EXTRA에 남는다.
+  // 구매가가 있는 것만 따로 합산한다. 상점가는 "제작비용감소" 대상이 아니다.
+  R.shopCost = 0;
+  if(G) Object.keys(EXTRA).forEach(function(k){
+    R.shopCost += G.shopPrice(k) * EXTRA[k];
+  });
+  R.grandCost = R.totalCost + NP.cost + R.shopCost;
+}
+
+/** NPC 제작 단계 표 (요약·제작 순서에서 같이 씀) */
+function npcStepsCard(){
+  if(!NP || !NP.steps.length) return '';
+  return '<div class="card" style="margin-top:12px"><h2>🧙 NPC 제작 '
+    + '<span class="tag">'+NP.steps.length+'단계 · '+N(Math.round(NP.cost))+'전</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>순서</th><th>아이템</th><th>NPC</th>'
+    + '<th>확보</th><th>성공률</th><th>기대 시도</th><th>재료(총량)</th><th>비용</th>'
+    + '</tr></thead><tbody>'
+    + NP.steps.slice().reverse().map(function(st, i){
+        var mats = st.mats.map(function(m){ return esc(m.name)+' '+N(Math.round(m.total)); }).join(', ');
+        return '<tr><td class="mono">'+(i+1)+'</td><td>'+esc(st.name)+'</td>'
+          + '<td class="dim">'+esc(st.npc)+'</td>'
+          + '<td class="mono">'+N(Math.round(st.made))+'</td>'
+          + '<td class="mono '+(st.p<0.5?'bad':(st.p<1?'warn':'ok'))+'">'+pct(st.p)+'</td>'
+          + '<td class="mono">'+N(Math.round(st.attempts))+'</td>'
+          + '<td style="text-align:left;white-space:normal" class="dim">'
+          + mats + (st.fail?' <span class="dim">(실패 시 '+esc(st.fail)+')</span>':'') + '</td>'
+          + '<td class="mono">'+N(Math.round(st.cost))+'전</td></tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div class="hint">위에서부터 만들면 재료가 항상 준비됩니다. '
+    + '기대 시도 = 필요 개수 ÷ 성공률'+(S.integer?' (올림)':'')+'.</div></div>';
+}
+
+/** 계산기가 모르는 재료 (항아리·퀘스트 아이템 등) */
+function extraNeedCard(){
+  var ks = Object.keys(EXTRA);
+  if(!ks.length) return '';
+  ks.sort(function(a,b){ return EXTRA[b]-EXTRA[a]; });
+  var shopCost = R.shopCost || 0;
+  return '<div class="card" style="margin-top:12px"><h2>🎒 직접 구해야 하는 재료 '
+    + '<span class="tag">'+ks.length+'종'+(shopCost?' · 상점 '+N(Math.round(shopCost))+'전':'')+'</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>재료</th><th>필요량</th><th>상점가</th>'
+    + '<th style="text-align:left">구하는 곳</th></tr></thead><tbody>'
+    + ks.map(function(k){
+        var where = whereToGet(k);
+        var price = G ? G.shopPrice(k) : 0;
+        var qty = Math.round(EXTRA[k]);
+        return '<tr><td>'+esc(k)+'</td><td class="mono">'+N(qty)+'</td>'
+          + '<td class="mono'+(price?'':' dim')+'">'+(price?N(price*qty)+'전':'-')+'</td>'
+          + '<td style="text-align:left;white-space:normal" class="dim">'+where+'</td></tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div class="hint">화로·광산으로 못 만드는 재료입니다. 상점가가 적힌 것은 NPC 상점에서 바로 살 수 있고, '
+    + '나머지는 항아리·사냥·퀘스트로 구하세요.</div></div>';
+}
+
+/** 재료 이름으로 획득처 추정 (항아리·약초·비급 데이터에서 찾음) */
+function whereToGet(name){
+  if(!G) return '-';
+  var out = [];
+  var shop = G.SHOP_ITEMS[name];
+  if(shop) out.push(shop.npc+' 상점 '+N(shop.cost)+'전');
+  G.POT_ITEMS.forEach(function(p){
+    if(p.item === name) out.push('항아리 '+p.x+'/'+p.y+'/'+p.z+' ('+p.tool+')');
+  });
+  G.HERBS.forEach(function(h){ if(h.name === name) out.push('약초 자생지 '+h.spots.length+'곳'); });
+  if(!out.length && G.MYSTERY_BOXES.some(function(b){ return b.item === name; })) out.push('의문의 상자');
+  return out.length ? esc(out.slice(0,2).join(' · ')) : '<span class="dim">미확인</span>';
+}
+
+var N = C.fmtNum, T = C.fmtTime;
+// 성공률 표기: 0.77 → "77%", 0.44000000000000006 → "44%" (부동소수점 꼬리 제거)
+function pct(p){
+  var v = (p||0)*100;
+  return (Math.abs(v - Math.round(v)) < 0.05 ? Math.round(v) : v.toFixed(1)) + '%';
+}
+// 수량 표기: 셋 모드면 "89셋 4개", 아니면 "5,700개"
+function Q(n){ return S.useStack ? C.fmtStack(n, S.stack) : N(n)+'개'; }
+// 표 셀용: 셋 표기 + 원래 개수를 툴팁으로
+function QC(n){ return '<span title="'+N(n)+'개">'+Q(n)+'</span>'; }
+
+/* ---------------- 요약 ---------------- */
+/* ---------------- 홈 (첫 화면) ----------------
+ * 열자마자 계산기가 나오면 "뭘 할 수 있는지" 가 안 보인다.
+ * 무엇이 들어있는지 · 어디로 갈지 · 최근 소식을 한 장에 모아 준다. */
+function homeCards(){
+  return [
+    { tab:'sum',  icon:'📊', title:'제작 계산',
+      desc:'목표를 넣으면 광산 재료까지 역산 · 비용 · 시간 · 실패 확률' },
+    { tab:'mine', icon:'🗺️', title:'광산',
+      desc:(G?G.MINES.length:0)+'곳 좌표 · 색깔별 산출 · 순회 동선' },
+    { tab:'loc',  icon:'📍', title:'위치·웨이포인트',
+      desc:'사냥터 '+(G?G.HUNTING_GROUNDS.length:0)+'곳 · 약초 자생지 '+(G?G.HERBS.length:0)+'종 · 단서 공략 이미지' },
+    { tab:'npc',  icon:'🧙', title:'NPC·영단·비급',
+      desc:'제작 NPC 좌표 · 영단 '+(G?G.DAN.length:0)+'종 · 비급 '+(G?G.SKILLS.length:0)+'종' },
+    { tab:'prob', icon:'🎯', title:'확률·부적',
+      desc:'부적 '+(G?G.TALISMAN.reduce(function(a,t){return a+t.list.length;},0):0)+'종 · 리롤 계산기 · 잠재/추가능력' },
+    { tab:'gear', icon:'⚔️', title:'장비 제작',
+      desc:'50~180제 재료·제작서 · 티어 확률 · 장신구 옵션' },
+    { tab:'map',  icon:'🧭', title:'지도',
+      desc:'앱 안에서 인게임 지도 보기 · 표의 좌표를 눌러 이동' },
+    { tab:'news', icon:'📢', title:'한월RPG 업데이트',
+      desc:(window.GameUpdates?window.GameUpdates.count():0)+'건 · 월별·태그별 · 본문 검색' }
+  ];
+}
+
+function paneHome(){
+  var el = $('#p-home');
+  var UP = window.GameUpdates;
+  var ex = G ? G.extraCounts() : {};
+  var wpN = (MW && MW.list ? MW.list.length : 0)
+    + Object.keys(ex).reduce(function(a,k){ return a + ex[k]; }, 0);
+  var latest = UP ? UP.UPDATES.filter(function(u){ return u.date; })[0] : null;
+
+  var cards = homeCards().map(function(c){
+    return '<button class="hcard" data-gotab="'+c.tab+'">'
+      + '<span class="hi">'+c.icon+'</span>'
+      + '<span class="ht">'+esc(c.title)+'</span>'
+      + '<span class="hd">'+esc(c.desc)+'</span></button>';
+  }).join('');
+
+  var stats = [
+    ['광산', (G?G.MINES.length:0)+'곳'],
+    ['웨이포인트', N(wpN)+'개'],
+    ['부적', (G?G.TALISMAN.reduce(function(a,t){return a+t.list.length;},0):0)+'종'],
+    ['업데이트', (UP?UP.count():0)+'건']
+  ].map(function(s){
+    return '<div class="hstat"><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>';
+  }).join('');
+
+  var news = (UP ? UP.UPDATES.filter(function(u){ return u.date; }).slice(0,3) : [])
+    .map(function(u){
+      // 제목이 "2026-08-12 업데이트" 처럼 날짜뿐이면 본문 첫 줄을 보여 준다
+      var t = String(u.title||'').replace(/^\d{4}-\d{2}-\d{2}\s*/, '').trim();
+      if(!t || t === '업데이트') t = (u.body && u.body[0]) || '내용 보기';
+      return '<div class="hnews"><span class="tag">'+esc(u.date)+'</span> '+esc(t)+'</div>';
+    }).join('');
+
+  el.innerHTML = ''
+    + '<div class="card hero">'
+    + '<h2 style="font-size:20px;color:var(--tx)">한월 공략소</h2>'
+    + '<p class="hlead">한월RPG 제작·재료·좌표·확률을 한 곳에서. '
+    + '설치 없이 이 파일 하나로 돌아갑니다.</p>'
+    + '<div class="hbtns">'
+    + '<button class="btn primary" data-gotab="sum">제작 계산 시작 →</button>'
+    + '<button class="btn" id="hSearch">전체 검색 (Ctrl+K)</button>'
+    + '<button class="btn" data-gotab="map">지도 열기</button>'
+    + '</div>'
+    + '<div class="hstats">'+stats+'</div>'
+    + '</div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>무엇을 볼까요</h2>'
+    + '<div class="hgrid">'+cards+'</div></div>'
+
+    + (news ? '<div class="card" style="margin-top:12px"><h2>📢 최근 업데이트 '
+        + '<span class="tag">최신 '+esc(latest?latest.date:'-')+'</span>'
+        + '<span class="sp" style="flex:1"></span>'
+        + '<button class="mini" data-gotab="news">전부 보기</button></h2>'
+        + news + '</div>' : '')
+
+    + '<div class="card" style="margin-top:12px"><h2>이렇게 쓰면 편합니다</h2>'
+    + '<div class="htips">'
+    + '<div>🔎 <b>Ctrl+K</b> — 재료·NPC·약초·부적·웨이포인트를 한 번에 검색. 고르면 미리보기가 뜹니다</div>'
+    + '<div>↕️ <b>표 머리글</b>을 누르면 정렬, <b>표 복사</b>로 엑셀에 그대로 붙여넣기</div>'
+    + '<div>💾 자주 쓰는 목표는 <b>조합 저장</b>, 실수하면 <b>되돌리기</b></div>'
+    + '<div>⌨️ <b>?</b> 를 누르면 단축키 목록이 나옵니다</div>'
+    + '</div></div>';
+  el._built = true;
+}
+
+function paneSum(){
+  var el = $('#p-sum');
+  if(!R.plan.length && !(NP && NP.steps.length)){
+    el.innerHTML = '<div class="card empty">목표 아이템을 추가하면 필요한 재료·비용·시간을 계산합니다.</div>';
+    return;
+  }
+  var craftN = R.furnace.reduce(function(a,b){return a+b.count;},0);
+  var baseN = Object.keys(R.base).reduce(function(a,k){return a+R.base[k].total;},0);
+  var extraN = Object.keys(EXTRA).length;
+  var npcN = NP ? NP.steps.length : 0;
+
+  var kpi = ''
+   + kcard('총 비용', N(Math.round(R.grandCost))+'전',
+       (npcN?'화로/대장장이 '+N(Math.round(R.totalCost))+' + NPC '+N(Math.round(R.npcCost)):'')
+       + (R.shopCost?(npcN?' + ':'')+'상점 '+N(Math.round(R.shopCost)):'')
+       + (S.costDown?((npcN||R.shopCost)?' · ':'')+'제작비 -10% 적용':''), 'acc')
+   + kcard('화로 소요시간', T(R.parallelSec), S.slots+'슬롯 병렬 · 직렬 '+T(R.totalSec), '')
+   + kcard('최단(무한 병렬)', T(R.criticalSec), '의존 관계상 최소', '')
+   + kcard('화로 제작 횟수', N(craftN)+'회', R.furnace.length+'종', '')
+   + kcard('광산 재료', Q(baseN), Object.keys(R.base).length+'종 · '+N(baseN)+'개', '')
+   + kcard(npcN?'NPC 제작':'직접 구할 재료',
+       npcN ? npcN+'단계' : (extraN?extraN+'종':'없음'),
+       npcN ? N(Math.round(R.npcCost))+'전' : (extraN?'항아리·사냥 등':'전부 계산됨'),
+       npcN?'':(extraN?'warn':'ok'));
+
+  var steps = R.steps.length ? ''
+    + '<div class="card"><h2>⚒️ 대장장이 도구 단계</h2><div class="tw"><table><thead><tr>'
+    + '<th>단계</th><th>확보 수량</th><th>성공률</th><th>기대 시도</th><th>회당 비용</th><th>비용 합계</th></tr></thead><tbody>'
+    + R.steps.map(function(s){
+        return '<tr><td>'+esc(s.name)+(s.buy?' <span class="badge b">상점</span>':'')+'</td>'
+          + '<td class="mono">'+N(s.made)+'</td>'
+          + '<td class="mono '+(s.rate<0.4?'bad':s.rate<1?'warn':'ok')+'">'+(s.rate*100).toFixed(1)+'%</td>'
+          + '<td class="mono">'+N(s.attempts)+'</td>'
+          + '<td class="mono dim">'+N(Math.round(s.costEach))+'</td>'
+          + '<td class="mono">'+N(Math.round(s.cost))+'전</td></tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div class="hint">'+(S.ignoreFail?'실패 없음 가정 — 이론상 최소치입니다.'
+        :'기대값 기준. 실제는 운에 따라 크게 흔들립니다 → <b>확률 시뮬</b> 탭 확인.')+'</div></div>'
+    : '';
+
+  var notes = '<div class="card"><h2>📝 원문 해석 메모</h2><ul class="notes" style="margin:0;padding-left:16px">'
+    + C.NOTES.map(function(n){return '<li>'+esc(n)+'</li>';}).join('') + '</ul></div>';
+
+  el.innerHTML = '<div class="kpis">'+kpi+'</div>' + npcStepsCard() + extraNeedCard() + steps
+    + '<div class="card" style="margin-top:12px"><h2>🔥 화로 작업량 상위</h2><div class="tw"><table><thead><tr>'
+    + '<th>아이템</th><th>개수</th><th>1회 시간</th><th>합계 시간</th><th>비중</th></tr></thead><tbody>'
+    + R.furnace.slice().sort(function(a,b){return b.sec-a.sec;}).map(function(f){
+        var pct = R.totalSec? f.sec/R.totalSec*100 : 0;
+        return '<tr><td>'+esc(f.name)+'</td><td class="mono">'+N(f.count)+'</td>'
+          + '<td class="mono dim">'+T(f.eachSec)+'</td><td class="mono">'+T(f.sec)+'</td>'
+          + '<td style="min-width:110px"><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div></td></tr>';
+      }).join('')
+    + '</tbody></table></div></div>' + notes + videosHtml() + sourcesHtml();
+}
+
+/* 카드 제목 옆 출처 링크 태그 */
+function srcTag(src){
+  if(!src) return '';
+  if(!src.url) return '<span class="tag">출처: '+esc(src.name)+'</span>';
+  return '<a class="tag" href="'+esc(src.url)+'" target="_blank" rel="noopener" '
+    + 'title="'+esc(src.url)+'">출처: '+esc(src.name)+' ↗</a>';
+}
+
+/* 성장 가이드 영상 (웹맵 제공) */
+function videosHtml(){
+  if(!G || !G.GUIDE_VIDEOS || !G.GUIDE_VIDEOS.length) return '';
+  return '<div class="card" style="margin-top:12px"><h2>🎬 성장 가이드 영상 '
+    + '<span class="tag">'+G.GUIDE_VIDEOS.length+'편</span></h2>'
+    + '<div class="grid2">'
+    + G.GUIDE_VIDEOS.map(function(v){
+        return '<a class="rec" href="'+esc(v.url)+'" target="_blank" rel="noopener" '
+          + 'style="display:block;text-decoration:none;color:inherit">'
+          + '<h3>▶ '+esc(v.title)+'</h3>'
+          + '<div class="m dim">'+esc(v.tip)+'</div></a>';
+      }).join('')
+    + '</div>'
+    + '<div class="hint">출처: '
+    + '<a href="'+esc(G.SOURCE.url)+'" target="_blank" rel="noopener">'+esc(G.SOURCE.name)+'</a>'
+    + ' · 새 탭에서 유튜브로 열립니다.</div></div>';
+}
+
+/* 데이터 출처 — 가져온 곳 전부 링크로 */
+function sourcesHtml(){
+  if(!G || !G.SOURCES) return '';
+  var rows = G.SOURCES.map(function(s){
+    var link = s.url
+      ? '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.name)+' ↗</a>'
+      : esc(s.name);
+    return '<tr><td style="text-align:left">'+link+'</td>'
+      + '<td style="text-align:left;white-space:normal" class="dim">'+esc(s.items)+'</td>'
+      + '<td class="mono dim">'+esc(s.fetched)+'</td></tr>';
+  }).join('');
+  return '<div class="card" style="margin-top:12px"><h2>🔗 데이터 출처</h2>'
+    + '<div class="tw"><table><thead><tr><th style="text-align:left">출처</th>'
+    + '<th style="text-align:left">가져온 항목</th><th>확인일</th></tr></thead><tbody>'
+    + rows + '</tbody></table></div>'
+    + '<div class="hint">숫자가 게임과 다르면 출처 쪽이 갱신됐을 수 있습니다. '
+    + '공략 이미지는 <code>node download-guides.js</code>로 받아둘 수 있습니다.</div></div>'
+    + linksHtml();
+}
+
+/* 관련 링크 — 분류별로 묶어서 */
+function linksHtml(){
+  if(!G || !G.EXTERNAL_LINKS || !G.EXTERNAL_LINKS.length) return '';
+  var groups = G.linksByCategory().map(function(g){
+    return '<div class="rec"><h3>'+esc(g.cat)
+      + '<span class="badge s">'+g.links.length+'</span></h3>'
+      + g.links.map(function(l){
+          return '<div class="m">'
+            + '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.name)+' ↗</a>'
+            + (l.source ? ' <span class="badge f">출처</span>' : '')
+            + (l.discord ? ' <span class="badge b" title="디스코드 로그인 · 서버 가입 · 인증이 있어야 열립니다">디스코드 · 인증 필요</span>' : '')
+            + (l.desc ? '<div class="dim" style="font-size:12px">'+esc(l.desc)+'</div>' : '')
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }).join('');
+  return '<div class="card" style="margin-top:12px"><h2>🔗 관련 링크 '
+    + '<span class="tag">'+G.EXTERNAL_LINKS.length+'개</span></h2>'
+    + '<div class="grid2">'+groups+'</div>'
+    + '<div class="hint"><b>출처</b> 표시가 붙은 곳은 이 앱의 데이터를 가져온 곳입니다. '
+    + '나머지는 별개 도구라 문의는 만든 분들께 하세요.</div></div>';
+}
+
+function kcard(k,v,s,cls){
+  return '<div class="kpi '+(cls||'')+'"><div class="k">'+k+'</div><div class="v mono">'+v+'</div>'
+    + (s?'<div class="s">'+s+'</div>':'') + '</div>';
+}
+
+/* ---------------- 재료 ---------------- */
+function paneMat(){
+  var el = $('#p-mat');
+  var ks = Object.keys(R.base);
+  if(!ks.length && !Object.keys(EXTRA).length){
+    el.innerHTML='<div class="card empty">계산할 재료가 없습니다.</div>'; return;
+  }
+  ks.sort(function(a,b){ return R.base[b].total - R.base[a].total; });
+  var maxBase = ks.length ? R.base[ks[0]].total : 1;
+  var rows = ks.map(function(k){
+    var b = R.base[k], pct = maxBase ? Math.min(100, b.total/maxBase*100) : 0;
+    var w = G && G.whereToMine(k);
+    return '<tr><td>'+esc(k)+'</td>'
+      + '<td class="mono">'+QC(b.total)+'</td>'
+      + '<td class="dim" style="text-align:left">'
+      + (w ? esc(w.colors.join('·'))+'색 광산' : '<span class="dim">미확인</span>')+'</td>'
+      + '<td style="min-width:120px"><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div></td></tr>';
+  }).join('');
+
+  var mid = R.furnace.slice().sort(function(a,b){return b.count-a.count;}).map(function(f){
+    return '<tr><td>'+esc(f.name)+'</td><td class="mono">'+QC(f.count)+'</td>'
+      + '<td class="dim" style="text-align:left;white-space:normal">'
+      + Object.keys(C.FURNACE[f.name].mats).map(function(m){
+          return esc(m)+'×'+C.FURNACE[f.name].mats[m];
+        }).join(', ') + '</td></tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="card"><h2>⛏️ 광산 재료 (최종 채집 목록)</h2><div class="tw"><table><thead><tr>'
+    + '<th>재료</th><th>필요</th><th style="text-align:left">산출 광산</th><th>비중</th>'
+    + '</tr></thead><tbody>'
+    + (rows||'<tr><td colspan="4" class="dim">광산 재료 없음</td></tr>') + '</tbody></table></div>'
+    + '<div class="row" style="margin-top:10px">'
+    + '<button class="btn sm" id="btnCopyMat">채집 목록 복사</button>'
+    + '<button class="btn sm ghost" data-gotab="mine">광산 위치 보기 ↦</button></div></div>'
+    + extraNeedCard()
+    + '<div class="card" style="margin-top:12px"><h2>🧱 중간 제작물</h2><div class="tw"><table><thead><tr>'
+    + '<th>아이템</th><th>제작 개수</th><th style="text-align:left">1개당 재료</th></tr></thead><tbody>'
+    + (mid||'<tr><td colspan="3" class="dim">없음</td></tr>') + '</tbody></table></div></div>';
+}
+
+/* ---------------- 제작 순서 ---------------- */
+function paneOrd(){
+  var el = $('#p-ord');
+  var npcSteps = (NP && NP.steps.length) ? NP.steps.slice().reverse() : [];   // 재료부터 만들도록
+  if(!R.plan.length && !npcSteps.length){
+    el.innerHTML='<div class="card empty">목표를 추가하세요.</div>'; return;
+  }
+  var allKeys = R.plan.map(function(p){ return p.type+'|'+p.name; })
+    .concat(npcSteps.map(function(st){ return 'NPC|'+st.name; }));
+  var doneN = allKeys.filter(function(k){ return S.done[k]; }).length;
+
+  var html = '<div class="card"><h2>📋 제작 순서 <span class="tag">'+doneN+' / '+allKeys.length+' 완료</span></h2>'
+    + '<div class="row" style="margin-bottom:10px"><button class="btn sm" id="btnDoneClear">진행 초기화</button>'
+    + '<span class="hint" style="margin:0">위에서부터 만들면 재료가 항상 준비된 상태가 됩니다.</span></div>';
+
+  html += R.plan.map(function(p,i){
+    var key = p.type+'|'+p.name, done = !!S.done[key];
+    var bcls = p.type==='화로'?'f':(p.type==='상점'?'b':'s');
+    var meta = [];
+    if(p.type==='화로'){ meta.push('총 '+T(p.sec)); meta.push('1개당 '+T(p.sec/p.count)); }
+    if(p.attempts!==undefined && p.type==='대장장이'){
+      meta.push('성공률 '+(p.rate*100).toFixed(1)+'%');
+      meta.push('기대 시도 '+N(p.attempts)+'회');
+      meta.push('비용 '+N(Math.round(p.cost))+'전');
+    }
+    if(p.type==='상점') meta.push('구매 비용 '+N(p.count*(C.toolItem(p.name)||{buy:0}).buy)+'전');
+    var mats = p.mats ? Object.keys(p.mats).map(function(m){
+      var units;
+      if(p.type==='화로') units = p.count;
+      else if(C.isTool(m)) units = S.failConsumesBase ? p.attempts : p.count;   // 하위 도구(곡괭이·낫)
+      else units = S.failConsumesMats ? p.attempts : p.count;                    // 일반 재료
+      return esc(m)+' '+Q(p.mats[m]*units);
+    }).join(', ') : '';
+    return '<div class="step'+(done?' done':'')+'">'
+      + '<input type="checkbox" data-done="'+esc(key)+'"'+(done?' checked':'')+'>'
+      + '<div style="flex:1"><div class="nm"><span class="badge '+bcls+'">'+p.type+'</span>'
+      + (i+1)+'. '+esc(p.name)+' × '+N(p.count)+'</div>'
+      + (mats?'<div class="meta">재료: '+mats+'</div>':'')
+      + (meta.length?'<div class="meta">'+meta.join(' · ')+'</div>':'')
+      + '</div></div>';
+  }).join('');
+
+  // NPC 제작도 같은 체크리스트에 (화로 재료가 먼저 필요해서 뒤에 온다)
+  html += npcSteps.map(function(st, i){
+    var key = 'NPC|'+st.name, done = !!S.done[key];
+    var mats = st.mats.map(function(m){ return esc(m.name)+' '+N(Math.round(m.total)); }).join(', ');
+    return '<div class="step'+(done?' done':'')+'">'
+      + '<input type="checkbox" data-done="'+esc(key)+'"'+(done?' checked':'')+'>'
+      + '<div style="flex:1"><div class="nm"><span class="badge s">'+esc(st.npc)+'</span>'
+      + (R.plan.length+i+1)+'. '+esc(st.name)+' × '+N(Math.round(st.made))+'</div>'
+      + '<div class="meta">재료: '+mats+'</div>'
+      + '<div class="meta">성공률 '+pct(st.p)+' · 기대 시도 '+N(Math.round(st.attempts))+'회 · 비용 '
+      + N(Math.round(st.cost))+'전'+(st.fail?' · 실패 시 '+esc(st.fail):'')+'</div>'
+      + '</div></div>';
+  }).join('');
+
+  html += '</div>';                       // 제작 순서 카드 닫기
+
+  if(Object.keys(EXTRA).length) html += extraNeedCard();
+  el.innerHTML = html;
+}
+
+/* ---------------- 전개도 ---------------- */
+function paneTree(){
+  var el = $('#p-tree');
+  var roots = Object.keys(S.targets);
+  if(!roots.length){ el.innerHTML='<div class="card empty">목표를 추가하세요.</div>'; return; }
+  var root = S.treeRoot && S.targets[S.treeRoot] ? S.treeRoot : roots[0];
+  S.treeRoot = root;
+  var sel = '<div class="row" style="margin-bottom:10px"><span style="flex:none">대상</span><select id="treeSel" style="width:auto">'
+    + roots.map(function(r){return '<option'+(r===root?' selected':'')+'>'+esc(r)+'</option>';}).join('')
+    + '</select><button class="btn sm" id="btnTreeAll">전부 펼치기</button><button class="btn sm" id="btnTreeNone">접기</button></div>';
+
+  function node(name, qty, path, depth){
+    var mats = C.isFurnace(name) ? C.FURNACE[name].mats
+             : (C.isTool(name) ? (C.toolItem(name).mats||null) : null);
+    var kind = itemKind(name);
+    var badge = '<span class="badge '+(kind==='화로'?'f':C.isTool(name)?'s':'b')+'">'+kind+'</span>';
+    var time = C.isFurnace(name) ? ' <span class="dim">('+T(C.FURNACE[name].sec*R.timeMult)+')</span>' : '';
+    var open = S.treeOpen[path] !== false && depth < 3 || S.treeOpen[path] === true;
+    var head = '<span class="n" data-tg="'+esc(path)+'">'
+      + (mats? (open?'▾ ':'▸ ') : '· ') + badge + esc(name) + ' <b class="acc mono">×'+N(qty)+'</b>' + time + '</span>';
+    if(!mats || !open) return '<li>'+head+'</li>';
+    var kids = Object.keys(mats).map(function(m){
+      return node(m, qty*mats[m], path+'/'+m, depth+1);
+    }).join('');
+    return '<li>'+head+'<ul>'+kids+'</ul></li>';
+  }
+  el.innerHTML = '<div class="card">'+sel
+    + '<div class="tree"><ul style="border:none;padding-left:0">'
+    + node(root, S.targets[root], root, 0) + '</ul></div>'
+    + '<div class="hint">실패 확률·보유 재고를 제외한 <b>순수 레시피 전개</b>입니다. 실제 필요량은 요약/재료 탭 참고.</div></div>';
+}
+
+/* ---------------- 확률 시뮬 ---------------- */
+function paneSim(){
+  var el = $('#p-sim');
+  var hasRandom = R.steps.some(function(s){ return s.rate < 1; });
+  var head = '<div class="card"><h2>🎲 확률 시뮬레이션</h2>'
+    + '<div class="row"><span style="flex:none">시행 횟수</span><input type="number" id="simRuns" value="3000" min="100" max="50000" step="100" style="width:100px">'
+    + '<button class="btn primary" id="btnSim">시뮬 실행</button></div>'
+    + '<div class="hint">' + (hasRandom
+        ? '곡괭이 제작 실패를 실제로 굴려서 비용·재료 분포를 냅니다. p90 = "10번 중 9번은 이 이하".'
+        : '현재 목표에는 확률 요소가 없습니다. (실패 없음 옵션 또는 100% 레시피)') + '</div></div>';
+  if(!SIM){ el.innerHTML = head; return; }
+
+  var a = SIM.attempts;
+  var att = Object.keys(a).sort().map(function(k){
+    return '<tr><td>'+esc(k)+'</td><td class="mono">'+a[k].avg.toFixed(2)+'</td><td class="mono">'+N(a[k].p50)+'</td>'
+      + '<td class="mono warn">'+N(a[k].p90)+'</td><td class="mono bad">'+N(a[k].max)+'</td></tr>';
+  }).join('');
+  var bs = Object.keys(SIM.base).sort(function(x,y){return SIM.base[y].p90-SIM.base[x].p90;}).map(function(k){
+    return '<tr><td>'+esc(k)+'</td><td class="mono">'+QC(SIM.base[k].p50)+'</td><td class="mono warn">'+QC(SIM.base[k].p90)+'</td>'
+      + '<td class="mono bad">'+QC(SIM.base[k].max)+'</td></tr>';
+  }).join('');
+
+  // 히스토그램
+  var cs = SIM.costSamples, bins = 40, lo = cs[0], hi = cs[cs.length-1], h = new Array(bins).fill(0);
+  var span = (hi-lo)||1;
+  cs.forEach(function(v){ h[Math.min(bins-1, Math.floor((v-lo)/span*bins))]++; });
+  var mx = Math.max.apply(null,h);
+  var hist = '<div class="hist">' + h.map(function(v,i){
+      return '<i style="height:'+(v/mx*100)+'%" title="'+N(Math.round(lo+span*i/bins))+'전 · '+v+'회"></i>';
+    }).join('') + '</div>'
+    + '<div class="row dim" style="font-size:11px;justify-content:space-between"><span>'+N(Math.round(lo))+'전</span><span>비용 분포</span><span>'+N(Math.round(hi))+'전</span></div>';
+
+  el.innerHTML = head
+    + '<div class="kpis" style="margin-top:12px">'
+    + kcard('운 좋을 때 (p10)', N(Math.round(SIM.cost.p10))+'전','상위 10%','ok')
+    + kcard('중앙값 (p50)', N(Math.round(SIM.cost.p50))+'전','절반은 이 이하','')
+    + kcard('안전 예산 (p90)', N(Math.round(SIM.cost.p90))+'전','90% 이 안에서 해결','acc')
+    + kcard('최악 (관측 최대)', N(Math.round(SIM.cost.max))+'전', SIM.runs+'회 시행 중','bad')
+    + '</div>'
+    + '<div class="card"><h2>💸 비용 분포</h2>'+hist+'</div>'
+    + '<div class="card" style="margin-top:12px"><h2>🔨 단계별 시도 횟수</h2><div class="tw"><table><thead><tr>'
+    + '<th>단계</th><th>평균</th><th>p50</th><th>p90</th><th>최대</th></tr></thead><tbody>'+att+'</tbody></table></div></div>'
+    + '<div class="card" style="margin-top:12px"><h2>⛏️ 광산 재료 소요 분포</h2><div class="tw"><table><thead><tr>'
+    + '<th>재료</th><th>p50</th><th>p90</th><th>최대</th></tr></thead><tbody>'+bs+'</tbody></table></div>'
+    + '<div class="hint">p90 기준으로 모아두면 대부분의 경우 재료가 모자라지 않습니다.</div></div>';
+}
+
+/* ---------------- 업데이트 내역 ---------------- */
+function renderChangelog(){
+  $('#verNow').textContent = '현재 v'+APP_VERSION;
+  $('#verList').innerHTML = CHANGELOG.map(function(c){
+    return '<div class="ver"><h3>v'+c.v+(c.v===APP_VERSION?' <span class="badge s">현재</span>':'')
+      + '<span class="d">'+c.d+'</span></h3><ul>'
+      + c.items.map(function(i){return '<li>'+i+'</li>';}).join('') + '</ul></div>';
+  }).join('');
+}
+function markVersionSeen(){
+  S.seenVersion = APP_VERSION; save();
+  $('#btnVer').innerHTML = '업데이트 내역';
+}
+function refreshVerBtn(){
+  $('#btnVer').innerHTML = '업데이트 내역' + (S.seenVersion===APP_VERSION ? '' : ' <span class="dot"></span>');
+  var fv = $('#footVer');
+  if(fv) fv.textContent = 'v'+APP_VERSION+' · '+(CHANGELOG[0] ? CHANGELOG[0].d : '')+' 갱신';
+}
+
+/* ---------------- 레시피 ---------------- */
+function paneRec(){
+  var el = $('#p-rec');
+  var q = (el._q||'');
+  var fs = C.ORDER.slice().sort(function(a,b){return C.DEPTH[a]-C.DEPTH[b]||a.localeCompare(b);})
+    .filter(function(n){ return !q || n.indexOf(q)>=0 || Object.keys(C.FURNACE[n].mats).some(function(m){return m.indexOf(q)>=0;}); });
+  var ps = C.CHAIN_NAMES.reduce(function(acc, chain){
+    return acc.concat(C.CHAINS[chain].filter(function(p){ return !q || p.name.indexOf(q)>=0; }));
+  }, []);
+
+  var pickCards = ps.map(function(p){
+    if(!p.mats) return '<div class="rec"><h3>'+esc(p.name)+'<span class="badge b">상점</span></h3>'
+      + '<div class="m">구매 비용 '+N(p.buy)+'전</div></div>';
+    return '<div class="rec"><h3>'+esc(p.name)+'<span class="badge s">대장장이</span>'
+      + '<span class="'+(p.p<0.4?'bad':p.p<1?'warn':'ok')+'" style="font-size:12px">성공 '+pct(p.p)+'</span></h3>'
+      + '<div class="m">'+Object.keys(p.mats).map(function(m){return esc(m)+' ×'+p.mats[m];}).join(' · ')+'</div>'
+      + '<div class="m dim">제작비 '+N(p.cost)+'전</div></div>';
+  }).join('');
+
+  var furCards = fs.map(function(n){
+    var f = C.FURNACE[n];
+    return '<div class="rec"><h3>'+esc(n)+'<span class="badge f">화로</span>'
+      + '<span class="dim" style="font-size:12px">'+T(f.sec)+'</span></h3>'
+      + '<div class="m">'+Object.keys(f.mats).map(function(m){
+          return '<span class="'+(C.isBase(m)?'dim':'')+'">'+esc(m)+' ×'+f.mats[m]+'</span>';
+        }).join(' · ')+'</div></div>';
+  }).join('');
+
+  // NPC 제작(명인대장장이 · 조수 · 조선장 · 무림맹주) — NPC별로 묶어서
+  var npcCards = '';
+  if(G){
+    var byNpc = {};
+    G.npcCraftNames().forEach(function(n){
+      var r = G.NPC_RECIPES[n];
+      if(q && n.indexOf(q) < 0 && Object.keys(r.mats).every(function(m){ return m.indexOf(q) < 0; })) return;
+      (byNpc[r.npc] = byNpc[r.npc] || []).push(r);
+    });
+    npcCards = Object.keys(byNpc).map(function(npc){
+      var shop = (G.SHOP_ITEMS && Object.keys(G.SHOP_ITEMS).filter(function(k){
+        return G.SHOP_ITEMS[k].npc === npc && (!q || k.indexOf(q) >= 0);
+      })) || [];
+      var cards = shop.map(function(k){
+        return '<div class="rec"><h3>'+esc(k)+'<span class="badge b">상점</span></h3>'
+          + '<div class="m">구매 비용 '+N(G.SHOP_ITEMS[k].cost)+'전</div></div>';
+      }).concat(byNpc[npc].map(function(r){
+        return '<div class="rec"><h3>'+esc(r.name)+'<span class="badge s">'+esc(npc)+'</span>'
+          + '<span class="'+(r.p<0.5?'bad':r.p<1?'warn':'ok')+'" style="font-size:12px">성공 '+pct(r.p)+'</span></h3>'
+          + '<div class="m">'+Object.keys(r.mats).map(function(m){return esc(m)+' ×'+r.mats[m];}).join(' · ')+'</div>'
+          + '<div class="m dim">제작비 '+N(r.cost)+'전'+(r.fail?' · 실패 시 '+esc(r.fail):'')+'</div></div>';
+      })).join('');
+      return cards ? '<div class="card" style="margin-top:12px"><h2>🧙 '+esc(npc)
+        + ' <span class="tag">'+(shop.length+byNpc[npc].length)+'종</span></h2>'
+        + '<div class="grid2">'+cards+'</div></div>' : '';
+    }).join('');
+  }
+
+  var used = {};
+  Object.keys(C.FURNACE).forEach(function(f){ Object.keys(C.FURNACE[f].mats).forEach(function(m){
+    if(C.isBase(m)) (used[m]=used[m]||[]).push(f); }); });
+  C.TOOL_NAMES.forEach(function(n){
+    var mats = C.toolItem(n).mats; if(!mats) return;
+    Object.keys(mats).forEach(function(m){ if(C.isBase(m)) (used[m]=used[m]||[]).push(n); });
+  });
+  var baseRows = C.BASE.filter(function(b){return !q||b.indexOf(q)>=0;}).map(function(b){
+    return '<tr><td>'+esc(b)+'</td><td class="dim" style="text-align:left;white-space:normal">'+(used[b]||[]).join(', ')+'</td></tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="card"><h2>📖 레시피 도감</h2>'
+    + '<input type="text" id="recQ" placeholder="아이템·재료 검색…" value="'+esc(q)+'">'
+    + '<div class="hint">화로에 없는 재료는 광산에서 획득합니다.</div></div>'
+    + '<div class="card" style="margin-top:12px"><h2>⚒️ 대장장이</h2><div class="grid2">'+(pickCards||'<div class="dim">없음</div>')+'</div></div>'
+    + '<div class="card" style="margin-top:12px"><h2>🔥 화로 <span class="tag">깊이 순</span></h2><div class="grid2">'+(furCards||'<div class="dim">없음</div>')+'</div></div>'
+    + npcCards
+    + '<div class="card" style="margin-top:12px"><h2>⛏️ 광산 재료 쓰임새</h2><div class="tw"><table><thead><tr>'
+    + '<th>재료</th><th style="text-align:left">사용처</th></tr></thead><tbody>'+(baseRows||'<tr><td colspan="2" class="dim">없음</td></tr>')+'</tbody></table></div></div>';
+}
+
+/* ---------------- 광산 ---------------- */
+var G = (typeof GameData !== 'undefined') ? GameData : null;
+
+// 지도 프로젝트 웨이포인트 주입 (origin: map). webmap 데이터와 합치지 않는다.
+var MW = (typeof MapWaypoints !== 'undefined') ? MapWaypoints : null;
+if(G && MW){
+  G.setMapWaypoints(MW.list || []);
+  if(MW.link) G.setMapLink(MW.link);
+}
+// 지도 첫 위치는 스폰 지점
+if(G && !S.mapInit){ S.mapX = G.SPAWN.x; S.mapZ = G.SPAWN.z; S.mapInit = true; }
+
+function colorDot(c){
+  var info = G.MINE_COLORS[c] || { label:c, hex:'#888' };
+  return '<span class="dot" style="background:'+info.hex+'"></span>';
+}
+function colorLabel(c){
+  var info = G.MINE_COLORS[c] || { label:c, hex:'#888' };
+  return colorDot(c)+esc(info.label);
+}
+/* 표의 "지도" 칸: 앱 안 지도 탭으로 이동 + 새 탭으로 여는 링크 */
+function mapCell(url, x, z){
+  if(!url) return '<span class="dim">-</span>';
+  return '<button class="mini" data-mapjump="'+x+','+z+'">지도</button>'
+    + ' <a href="'+esc(url)+'" target="_blank" rel="noopener" title="새 탭에서 열기">↗</a>';
+}
+
+/* 웨이포인트 세트 → 관련 탭. 없으면 null */
+var RELATED_TAB = [
+  { re: /광산|광물/,                        tab: 'mine', label: '광산' },
+  { re: /사냥터|약초|항아리|상자|보물|탐색/, tab: 'loc',  label: '위치' },
+  { re: /적환단|기린단|해태단/,              tab: 'loc',  label: '단서' },
+  { re: /영단|환단/,                        tab: 'npc',  label: '영단' },
+  { re: /NPC|대장장이|상단주|퀘스트|제작/,   tab: 'npc',  label: 'NPC' },
+  { re: /화로|용광로/,                      tab: 'rec',  label: '레시피' },
+  { re: /부적/,                             tab: 'prob', label: '부적' },
+  { re: /장비|무기|방어구|곡괭이/,           tab: 'gear', label: '장비' }
+];
+function relatedTab(text){
+  var s = String(text||'');
+  for(var i=0;i<RELATED_TAB.length;i++){
+    if(RELATED_TAB[i].re.test(s)) return RELATED_TAB[i];
+  }
+  return null;
+}
+function relatedCell(text){
+  var r = relatedTab(text);
+  if(!r) return '<span class="dim">-</span>';
+  return '<button class="mini" data-gotab="'+r.tab+'" title="'+esc(r.label)+' 탭으로">'
+    + esc(r.label)+' ↦</button>';
+}
+
+function mineRows(list){
+  return list.map(function(m){
+    var url = G.mapUrl(m.x, m.z);
+    return '<tr><td>'+m.n+'번</td><td>'+colorLabel(m.c)+'</td>'
+      + '<td class="mono">'+m.x+' / '+m.y+' / '+m.z+'</td>'
+      + '<td>'+mapCell(url, m.x, m.z)+'</td></tr>';
+  }).join('');
+}
+
+function paneMine(){
+  var el = $('#p-mine');
+  if(!G){ el.innerHTML = '<div class="card empty">game-data.js를 불러오지 못했습니다.</div>'; return; }
+
+  // 1) 지금 계산에 필요한 광산 재료 → 어느 광산으로 가야 하는지
+  var needed = Object.keys(R.base).filter(function(k){ return R.base[k].short > 0; });
+  if(!needed.length) needed = Object.keys(R.base);
+  var needRows = needed.sort(function(a,b){ return R.base[b].short - R.base[a].short; }).map(function(k){
+    var w = G.whereToMine(k);
+    var where = w ? w.colors.map(colorLabel).join(' ') : '<span class="dim">미확인</span>';
+    var nums = w && w.colors[0] !== '공통'
+      ? w.mines.map(function(m){return m.n;}).join(', ')
+      : '아무 광산';
+    var b = R.base[k];
+    return '<tr><td>'+esc(k)+'</td><td>'+QC(b.total)+'</td>'
+      + '<td class="'+(b.short>0?'bad':'ok')+'">'+(b.short>0?QC(b.short):'충족')+'</td>'
+      + '<td>'+where+'</td>'
+      + '<td class="dim" style="text-align:left;white-space:normal">'+nums+'</td></tr>';
+  }).join('');
+
+  // 2) 색깔별 산출
+  var resCards = Object.keys(G.MINE_RESOURCES).map(function(c){
+    var cnt = c==='공통' ? G.MINES.length : G.minesOf(c).length;
+    return '<div class="rec"><h3>'+colorLabel(c)+'<span class="badge b">'+cnt+'곳</span></h3>'
+      + '<div class="m">'+G.MINE_RESOURCES[c].map(esc).join(' · ')+'</div></div>';
+  }).join('');
+
+  // 3) 추천 동선
+  var sel = S.mineColor || '녹';
+  var tabs = ['녹','청','황','적'].map(function(c){
+    return '<button class="mtab'+(c===sel?' on':'')+'" data-mc="'+c+'">'+colorLabel(c)+'</button>';
+  }).join('');
+  var path = G.MINE_PATHS[sel] || [];
+  var byNum = {}; G.MINES.forEach(function(m){ byNum[m.n]=m; });
+  var pathRows = path.map(function(n,i){
+    var m = byNum[n];
+    if(!m) return '';
+    return '<tr><td>'+(i+1)+'</td><td>'+n+'번</td>'
+      + '<td class="mono">'+m.x+' / '+m.y+' / '+m.z+'</td></tr>';
+  }).join('');
+
+  // 웨이포인트 출처 구분 (가져온 데이터 vs 지도 프로젝트)
+  var wc = G.waypointCounts();
+  var wpCard = '<div class="card" style="margin-top:12px"><h2>📌 웨이포인트 출처</h2>'
+    + '<div class="tw"><table><thead><tr><th>출처</th><th>개수</th>'
+    + '<th style="text-align:left">설명</th></tr></thead><tbody>'
+    + '<tr><td>'+esc(G.ORIGIN_LABEL.webmap)+'</td><td class="mono">'+N(wc.webmap)+'</td>'
+    + '<td style="text-align:left;white-space:normal" class="dim">'
+    + esc(G.SOURCE.name)+'에서 가져온 광산·NPC·스폰. game-data.js가 원본</td></tr>'
+    + '<tr><td>'+esc(G.ORIGIN_LABEL.map)+'</td><td class="mono">'+N(wc.map)+'</td>'
+    + '<td style="text-align:left;white-space:normal" class="dim">'
+    + '인게임 지도 웹뷰어(Xaero)의 웨이포인트. 지도 쪽이 원본이며 여기서는 주입만 받음'
+    + (wc.map ? '' : ' — <b>아직 연결 안 됨</b>')+'</td></tr>'
+    + '</tbody></table></div>'
+    + '<div class="hint">두 출처는 <b>따로 관리</b>됩니다. 아래 광산 표는 전부 '
+    + '<b>'+esc(G.ORIGIN_LABEL.webmap)+'</b>이며, 지도 웨이포인트와 합쳐지지 않습니다.'
+    + (wc.map && MW ? ' 지도 데이터 생성: '+esc((MW.generatedAt||'').slice(0,10)) : '')
+    + '</div></div>';
+
+  // 지도 웨이포인트 (별도 카드 — 절대 위 표와 합치지 않음)
+  var mapCard = '';
+  if(wc.map && !S.showMapWps){
+    mapCard = '<div class="card" style="margin-top:12px"><h2>🧭 지도 웨이포인트 '
+      + '<span class="tag">'+N(wc.map)+'개 · 접힘</span></h2>'
+      + '<label class="chk"><input type="checkbox" id="showMapWps"><span>목록 표시</span></label></div>';
+  } else if(wc.map){
+    var mapWps = G.waypoints(G.ORIGIN.MAP);
+    var mset = S.mapSet || '전체';
+    var mq = (S.mapQ||'').trim();
+    var setBtns = [{set:'전체', count:mapWps.length}].concat(G.mapWaypointSets())
+      .map(function(s){
+        return '<button class="mtab'+(s.set===mset?' on':'')+'" data-ms="'+esc(s.set)+'">'
+          + esc(s.set)+' <span class="dim">'+s.count+'</span></button>';
+      }).join('');
+    var shown = mapWps.filter(function(w){
+      if(mset!=='전체' && (w.set||'(없음)')!==mset) return false;
+      if(mq && w.name.indexOf(mq)<0 && String(w.x+' '+w.z).indexOf(mq)<0) return false;
+      return true;
+    });
+    var rows = shown.slice(0, 300).map(function(w){
+      var url = G.mapUrl(w.x, w.z);
+      var dot = w.color ? '<span class="dot" style="background:'+esc(w.color)+'"></span>' : '';
+      return '<tr><td>'+dot+esc(w.name)+'</td><td class="dim">'+esc(w.set||'-')+'</td>'
+        + '<td class="mono">'+w.x+' / '+w.y+' / '+w.z+'</td>'
+        + '<td>'+mapCell(url, w.x, w.z)+'</td>'
+        + '<td>'+relatedCell((w.set||'')+' '+w.name)+'</td></tr>';
+    }).join('');
+    mapCard = '<div class="card" style="margin-top:12px"><h2>🧭 지도 웨이포인트 '
+      + '<span class="tag">'+esc(G.ORIGIN_LABEL.map)+' · '+N(wc.map)+'개</span></h2>'
+      + '<label class="chk"><input type="checkbox" id="showMapWps" checked><span>목록 표시</span></label>'
+      + '<input type="text" id="mapQ" placeholder="이름·좌표 검색…" value="'+esc(mq)+'">'
+      + '<div class="mtabs" style="margin-top:8px">'+setBtns+'</div>'
+      + '<div class="tw" style="margin-top:8px"><table><thead><tr><th style="text-align:left">이름</th>'
+      + '<th>세트</th><th>좌표 (x/y/z)</th><th>열기</th><th>관련</th></tr></thead><tbody>'
+      + (rows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')
+      + '</tbody></table></div>'
+      + '<div class="hint">'+N(shown.length)+'개 표시'
+      + (shown.length>300 ? ' (300개까지만 그림)' : '')
+      + ' · "지도" 링크는 해당 좌표로 지도 뷰어를 엽니다.'
+      + ' 지도를 다시 빌드했으면 <code>node import-map-waypoints.js</code>로 갱신하세요.</div></div>';
+  }
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>🗺️ 광산 '+srcTag(G.SOURCE)+'</h2>'
+    + '<div class="hint">스폰 지점 x '+G.SPAWN.x+' / z '+G.SPAWN.z+' · 좌표는 x / y / z 순서입니다.</div></div>'
+    + wpCard + mapCard
+
+    + '<div class="card" style="margin-top:12px"><h2>🎯 이번 목표에 필요한 광산</h2>'
+    + '<div class="tw"><table><thead><tr><th>재료</th><th>필요</th><th>부족</th><th>광산</th>'
+    + '<th style="text-align:left">광산 번호</th></tr></thead><tbody>'
+    + (needRows || '<tr><td colspan="5" class="dim">필요한 광산 재료가 없습니다.</td></tr>')
+    + '</tbody></table></div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>⛏️ 광산 색깔별 산출</h2><div class="grid2">'+resCards+'</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🧭 추천 순회 동선</h2>'
+    + '<div class="mtabs">'+tabs+'</div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>순서</th><th>광산</th><th>좌표 (x/y/z)</th>'
+    + '</tr></thead><tbody>'+(pathRows||'<tr><td colspan="3" class="dim">동선 정보 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">원본 웹맵의 색깔별 순회 순서입니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>📍 전체 광산 '+G.MINES.length+'곳 '
+    + '<span class="tag">'+esc(G.ORIGIN_LABEL.webmap)+'</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>번호</th><th>종류</th><th>좌표 (x/y/z)</th><th>열기</th>'
+    + '</tr></thead><tbody>'+mineRows(G.MINES)+'</tbody></table></div></div>';
+}
+
+/* ---------------- NPC · 영단 ---------------- */
+function paneNpc(){
+  var el = $('#p-npc');
+  if(!G){ el.innerHTML = '<div class="card empty">game-data.js를 불러오지 못했습니다.</div>'; return; }
+  var q = el._q || '';
+  function hit(s){ return !q || String(s).indexOf(q) >= 0; }
+
+  /* NPC 카드는 하는 일이 비슷한 것끼리 묶어 보여 준다 */
+  var NPC_GROUPS = [
+    { label: '⚒️ 대장간', names: ['대장장이', '명인대장장이', '대장장이 조수', '망한대장장이'] },
+    { label: '🧾 제작 NPC', names: ['조선장', '서고관리인', '무림맹주', '탐령구 제작대',
+                                    '고대의제작대(정적주)', '도공'] }
+  ];
+  function npcCard(n){
+    return '<div class="rec"><h3>'+esc(n.name)+'<span class="badge s">'+esc(n.role)+'</span></h3>'
+      + (G.hasCoords(n)
+          ? '<div class="m mono">x '+n.x+' / y '+n.y+' / z '+n.z+'</div>'
+          : '<div class="m dim">좌표 미확인 (지도 웨이포인트 제외)</div>')
+      + (n.note ? '<div class="m">'+esc(n.note)+'</div>' : '')
+      + (n.reward ? '<div class="m dim">보상: '+esc(n.reward)+'</div>' : '')
+      + '</div>';
+  }
+  var npcHits = G.CRAFT_NPCS.filter(function(n){
+    return hit(n.name) || hit(n.role) || hit(n.note||'');
+  });
+  var npcTaken = {};
+  var npcCards = NPC_GROUPS.map(function(g){
+    var list = npcHits.filter(function(n){ return g.names.indexOf(n.name) >= 0; });
+    list.forEach(function(n){ npcTaken[n.name] = 1; });
+    if(!list.length) return '';
+    return '<div class="m" style="margin:6px 0"><b>'+g.label+'</b></div>'
+      + '<div class="grid2">'+list.map(npcCard).join('')+'</div>';
+  }).join('');
+  var npcRest = npcHits.filter(function(n){ return !npcTaken[n.name]; });
+  if(npcRest.length){
+    npcCards += '<div class="m" style="margin:10px 0"><b>📜 퀘스트 · 기타</b></div>'
+      + '<div class="grid2">'+npcRest.map(npcCard).join('')+'</div>';
+  }
+
+  var smithRows = G.MASTER_SMITH_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      var cls = c.p < 0.5 ? 'bad' : (c.p < 1 ? 'warn' : 'ok');
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="'+cls+'">'+(c.p*100)+'%</td>'
+        + '<td class="mono">'+N(c.cost)+'전</td>'
+        + '<td class="mono dim">'+N(Math.round(c.cost/c.p))+'전</td></tr>';
+    }).join('');
+
+  var asstPills = G.ASSISTANT_ENHANCE.map(function(e){
+    return '<span class="pill">'+esc(e)+'</span>';
+  }).join('');
+
+  var asstRows = G.ASSISTANT_SERVICES.filter(function(s){ return hit(s.name) || hit(s.note||''); })
+    .map(function(s){
+      return '<tr><td>'+esc(s.name)+'</td>'
+        + '<td class="mono">'+N(s.cost)+esc(s.unit)+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(s.note||'')+'</td></tr>';
+    }).join('');
+
+  var asstCraftRows = G.ASSISTANT_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="mono">'+(c.cost ? N(c.cost)+'전' : '0전')+'</td>'
+        + '<td class="ok">'+(c.p*100)+'%</td></tr>';
+    }).join('');
+
+  // 대장장이 — 도구 승급 외 일반 제작 (목걸이 계열은 실패 시 조각)
+  var smithCraftRows = G.SMITH_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      var cls = c.p < 0.5 ? 'bad' : (c.p < 1 ? 'warn' : 'ok');
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="'+cls+'">'+pct(c.p)+'</td>'
+        + '<td class="mono">'+N(c.cost)+'전</td>'
+        + '<td class="dim">'+(c.fail?esc(c.fail)+' 1개':'-')+'</td></tr>';
+    }).join('');
+
+  // 조각 3개로 되돌리는 제작 — 같은 "제작" 메뉴라 위 재료 표에 이어 붙는다
+  var neckRows = G.MASTER_SMITH_NECKLACE.filter(function(c){ return hit(c.makes) || hit(c.mats); })
+    .map(function(c){
+      return '<tr><td>'+esc(c.makes)+' <span class="badge b">조각 3개</span></td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="ok">'+pct(c.p)+'</td>'
+        + '<td class="mono">'+N(c.cost)+'전</td>'
+        + '<td class="mono dim">'+N(Math.round(c.cost/c.p))+'전</td></tr>';
+    }).join('');
+
+  // 조선장 — 배장비 승급 (부위별 4단계) + 주작단
+  var shipRows = G.SHIPWRIGHT_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      var cls = c.p < 0.5 ? 'bad' : (c.p < 1 ? 'warn' : 'ok');
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td class="dim">'+esc(c.slot||'-')+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)
+        + (c.fail?' <span class="dim">(실패 시 '+esc(c.fail)+')</span>':'')+'</td>'
+        + '<td class="'+cls+'">'+pct(c.p)+'</td>'
+        + '<td class="mono">'+N(c.cost)+'전</td>'
+        + '<td class="mono dim">'+N(Math.round(c.cost/c.p))+'전</td></tr>';
+    }).join('');
+
+  var shipShopRows = G.SHIP_SHOP.filter(function(s){ return hit(s.name) || hit(s.slot); })
+    .map(function(s){
+      return '<tr><td>'+esc(s.name)+'</td><td class="dim">'+esc(s.slot)+'</td>'
+        + '<td class="mono">'+N(s.cost)+'전</td></tr>';
+    }).join('');
+
+  // 서고관리인 — 비급 상점 + 비급 제작 (전부 100%)
+  var libShopRows = G.LIBRARIAN_SHOP.filter(function(s){ return hit(s.name); })
+    .map(function(s){
+      return '<tr><td>'+esc(s.name)+'</td><td class="mono">'+N(s.cost)+'전</td></tr>';
+    }).join('');
+  var libRows = G.LIBRARIAN_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="mono">'+N(c.cost)+'전</td>'
+        + '<td class="ok">'+pct(c.p)+'</td></tr>';
+    }).join('');
+
+  // 무림맹주 — 토벌패 · 시공단 · 무림맹비급 (전부 100%)
+  var leaderRows = G.LEADER_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+    .map(function(c){
+      return '<tr><td>'+esc(c.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
+        + '<td class="mono">'+(c.cost ? N(c.cost)+'전' : '0전')+'</td>'
+        + '<td class="ok">'+pct(c.p)+'</td></tr>';
+    }).join('');
+
+  var skillRows = G.SKILLS.filter(function(k){ return hit(k.name) || hit(k.info); })
+    .map(function(k){
+      return '<tr><td>'+esc(k.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(k.info)+'</td></tr>';
+    }).join('');
+
+  var danRows = G.DAN.filter(function(d){ return hit(d.name) || hit(d.effect) || hit(d.source); })
+    .map(function(d){
+      return '<tr><td>'+esc(d.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+esc(d.effect)+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(d.source)+'</td></tr>';
+    }).join('');
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>🧙 제작 NPC · 영단 '+srcTag(G.SOURCE)+'</h2>'
+    + '<input type="text" id="npcQ" placeholder="NPC·아이템·획득처 검색…" value="'+esc(q)+'"></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>📌 제작 관련 NPC '
+    + '<span class="tag">'+G.CRAFT_NPCS.length+'명</span></h2>'
+    + (npcCards||'<div class="dim">검색 결과 없음</div>')+'</div>'
+
+    /* --- 대장간 계열 --- */
+    + '<div class="sechead">⚒️ 대장간</div>'
+
+    + '<div class="card" style="margin-top:8px"><h2>⚒️ 대장장이 제작 '
+    + '<span class="tag">도구 승급 외 '+G.SMITH_CRAFTS.length+'종</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>아이템</th><th style="text-align:left">재료</th>'
+    + '<th>성공률</th><th>비용</th><th>실패 시</th></tr></thead><tbody>'
+    + (smithCraftRows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">곡괭이(1성 상점 1,000전 · 2~5성 제작)와 낫(1~5성 제작)은 '
+    + '<b>레시피</b> 탭과 계산기에서 다룹니다. 목걸이 계열은 실패해도 조각이 남습니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🔨 명인대장장이 제작 '
+    + '<span class="tag">'+(G.MASTER_SMITH_CRAFTS.length+G.MASTER_SMITH_NECKLACE.length)+'종</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>아이템</th><th style="text-align:left">재료</th>'
+    + '<th>성공률</th><th>회당 비용</th><th>성공 1개 기대비용</th></tr></thead><tbody>'
+    + ((smithRows+neckRows)||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">보검 복원 재료는 회당 '+N(G.MASTER_SMITH_COST)+'전, '
+    + '<b>조각 3개</b> 항목은 회당 '+N(1000000)+'전입니다. '
+    + '기대비용 = 회당 비용 ÷ 성공률 (실패 시 재료도 함께 소모된다고 가정). '
+    + '이 NPC에서 <b>목걸이 강화</b>도 할 수 있습니다(강화 수치·비용은 아직 미확인). '
+    + '조각 항목은 목표 목록에 "(조각3)"이 붙은 이름으로 들어 있습니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🛠️ 대장장이 조수 '
+    + '<span class="tag">강화 · 능력이전</span></h2>'
+    + '<div class="m">장비강화: '+asstPills+'</div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>서비스</th><th>비용</th>'
+    + '<th style="text-align:left">비고</th></tr></thead><tbody>'
+    + (asstRows||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>제작</th>'
+    + '<th style="text-align:left">재료</th><th>비용</th><th>성공률</th></tr></thead><tbody>'
+    + (asstCraftRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">금화는 유료 재화입니다. 좌표는 아직 미확인.</div></div>'
+
+    /* --- 그 밖의 제작 NPC --- */
+    + '<div class="sechead">🧾 그 밖의 제작 NPC</div>'
+
+    + '<div class="card" style="margin-top:8px"><h2>⛵ 조선장 — 배장비 '
+    + '<span class="tag">동력·대포·갑판·그물</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>1성 (상점)</th><th>부위</th><th>구매가</th></tr></thead><tbody>'
+    + (shipShopRows||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>제작</th><th>부위</th>'
+    + '<th style="text-align:left">재료</th><th>성공률</th><th>회당 비용</th>'
+    + '<th>성공 1개 기대비용</th></tr></thead><tbody>'
+    + (shipRows||'<tr><td colspan="6" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">1성은 상점에서 각 '+N(G.SHIP_SHOP_COST)+'전에 사고, 2성부터 승급 제작입니다. '
+    + '단계마다 무공정수(10/20/30/40)와 명인대장장이 재료가 하나씩 들어갑니다. '
+    + '실패 시 하위 장비까지 소모된다고 보고 계산합니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>📚 서고관리인 — 비급 '
+    + '<span class="tag">'+G.LIBRARIAN_CRAFTS.length+'종 · 전부 100%</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>상점 비급</th><th>구매가</th></tr></thead><tbody>'
+    + (libShopRows||'<tr><td colspan="2" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>제작</th>'
+    + '<th style="text-align:left">재료</th><th>비용</th><th>성공률</th></tr></thead><tbody>'
+    + (libRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">⚠️ <b>목록에 안 보이면 조건이 충족되지 않은 것입니다</b> — '
+    + '레벨·선행 퀘스트·승급 등 조건을 채우면 열람됩니다(예: 사혼검결은 화경 승급 후). '
+    + '전부 성공률 100%라 조건만 맞으면 재료만 모으면 됩니다. '
+    + '상점에서 산 단섬검법(5,000전)도 총 비용에 합산됩니다. '
+    + '빙천검법·혈사검법·파력검법은 필드보스 드랍이라 "직접 구해야 하는 재료"로 잡힙니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🏯 무림맹주 제작 '
+    + '<span class="tag">전부 100%</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>아이템</th><th style="text-align:left">재료</th>'
+    + '<th>비용</th><th>성공률</th></tr></thead><tbody>'
+    + (leaderRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">시공단·무림맹비급은 제작비 없이 흉폭한영기만 소모합니다.</div></div>'
+
+    /* --- 도감 --- */
+    + '<div class="sechead">📖 도감</div>'
+
+    + '<div class="card" style="margin-top:8px"><h2>📜 비급 <span class="tag">'
+    + G.SKILLS.length+'종</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>비급</th>'
+    + '<th style="text-align:left">획득처 · 제작 재료</th></tr></thead><tbody>'
+    + (skillRows||'<tr><td colspan="2" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">원본 웹맵 문구 그대로입니다. 재료·확률 상세는 확인되는 대로 채웁니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>💊 영단 획득처 '
+    + '<span class="tag">'+G.DAN.length+'종</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>영단</th><th style="text-align:left">효과</th>'
+    + '<th style="text-align:left">획득처</th></tr></thead><tbody>'
+    + (danRows||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div></div>';
+}
+
+/* ---------------- 장비 제작 ---------------- */
+function paneGear(){
+  var el = $('#p-gear');
+  if(!G){ el.innerHTML = '<div class="card empty">game-data.js를 불러오지 못했습니다.</div>'; return; }
+
+  var tierRows = G.GEAR_TIER_PROB.map(function(t){
+    return '<tr><td>'+esc(t.tier)+'</td><td class="mono">'+t.p+'%</td></tr>';
+  }).join('');
+
+  var gearCards = G.SMITH_GEAR.map(function(g, i){
+    var mats = Object.keys(g.mats).map(function(m){ return esc(m)+' ×'+g.mats[m]; }).join(' · ');
+    var items = g.items.map(function(nm, k){
+      return '<span class="pill">'+(5-k)+'T '+esc(nm)+'</span>';
+    }).join('');
+    var parts = g.kind === '방어구'
+      ? '<div class="m dim">부위: '+G.ARMOR_PARTS.join(' / ')+' (부위마다 1세트씩 필요)</div>' : '';
+    return '<div class="rec"><h3>'+esc(g.tier)+' '+esc(g.kind)
+      + '<span class="badge '+(g.kind==='무기'?'s':'f')+'">제작서 '+g.scroll+'장</span></h3>'
+      + '<div class="m">'+mats+'</div>'
+      + parts
+      + '<div class="m">'+items+'</div>'
+      + '<div class="m"><button class="mini" data-gear="'+i+'" data-mul="1">목표에 재료 1세트 추가</button>'
+      + (g.kind==='방어구'
+          ? ' <button class="mini" data-gear="'+i+'" data-mul="4">4부위(×4) 추가</button>' : '')
+      + '</div></div>';
+  }).join('');
+
+  var accRows = G.SMITH_ACCESSORY.map(function(a){
+    return a.items.map(function(it, k){
+      return '<tr>'+(k===0?'<td rowspan="'+a.items.length+'">'+esc(a.kind)+' '+esc(a.tier)+'</td>':'')
+        + '<td>'+esc(it.name)+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(it.stat)+'</td></tr>';
+    }).join('');
+  }).join('');
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>⚔️ 대장장이 장비 제작</h2>'
+    + '<div class="hint">'+esc(G.GEAR_TIER_NOTE)+'</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🎲 제작대 티어 확률</h2>'
+    + '<div class="tw"><table><thead><tr><th>티어</th><th>확률</th></tr></thead><tbody>'
+    + tierRows+'</tbody></table></div>'
+    + '<div class="hint">아래 장비 목록의 <b>5T ~ 1T</b> 표기는 제작창 배치 순서에 대응합니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>🛡️ 레벨대별 재료</h2><div class="grid2">'+gearCards+'</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>💍 장신구</h2>'
+    + '<div class="tw"><table><thead><tr><th>분류</th><th>이름</th><th style="text-align:left">옵션</th>'
+    + '</tr></thead><tbody>'+accRows+'</tbody></table></div></div>';
+}
+
+/* ---------------- 확률 · 부적 ---------------- */
+function probTable(title, rows, unit){
+  var body = rows.map(function(r){
+    return '<tr><td>'+esc(r.n||r.k||r.name)+'</td><td class="mono">'+r.p+(unit||'%')+'</td></tr>';
+  }).join('');
+  var sum = rows.reduce(function(a,r){ return a + r.p; }, 0);
+  return '<div class="card" style="margin-top:12px"><h2>'+esc(title)+'</h2>'
+    + '<div class="tw"><table><thead><tr><th style="text-align:left">항목</th><th>확률</th></tr></thead>'
+    + '<tbody>'+body+'</tbody></table></div>'
+    + '<div class="hint">합계 '+(Math.round(sum*10000)/10000)+'%</div></div>';
+}
+
+function paneProb(){
+  var el = $('#p-prob');
+  if(!G){ el.innerHTML = '<div class="card empty">game-data.js를 불러오지 못했습니다.</div>'; return; }
+  var q = el._q || '';
+
+  function abilityCard(a){
+    var rows = a.stats.map(function(s){
+      return '<tr><td>'+esc(s.name)+'</td><td class="mono">'+s.appear+'%</td>'
+        + '<td class="mono">'+esc(s.range)+'</td><td class="mono dim">'+esc(s.step)+'</td>'
+        + '<td class="mono dim">각 '+s.each+'%</td></tr>';
+    }).join('');
+    return '<div class="card" style="margin-top:12px"><h2>'+esc(a.title)+' 확률</h2>'
+      + '<div class="tw"><table><thead><tr><th style="text-align:left">스탯</th><th>등장</th>'
+      + '<th>수치 범위</th><th>단위</th><th>수치별</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  }
+
+  var lc = '<div class="card" style="margin-top:12px"><h2>📏 확인 줄 수 확률 <span class="tag">잠재·추가 공통</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>줄 수</th><th>최초 확인</th><th>재확인</th></tr></thead><tbody>'
+    + G.LINE_COUNT_PROB.first.map(function(f, i){
+        return '<tr><td>'+esc(f.k)+'</td><td class="mono">'+f.p+'%</td>'
+          + '<td class="mono">'+G.LINE_COUNT_PROB.reroll[i].p+'%</td></tr>';
+      }).join('')
+    + '</tbody></table></div></div>';
+
+  var drops = G.DROP_TABLES.map(function(t){ return probTable(t.title, t.rows); }).join('');
+
+  var well = '<div class="card" style="margin-top:12px"><h2>'+esc(G.WELL_STONE.title)+'</h2>'
+    + '<div class="tw"><table><thead><tr><th>단계</th><th>확률</th></tr></thead><tbody>'
+    + G.WELL_STONE.rows.map(function(r){
+        return '<tr><td>'+esc(r.n)+'</td><td class="mono">'+r.p+'%</td></tr>'; }).join('')
+    + '</tbody></table></div><div class="hint">'+esc(G.WELL_STONE.note)+'</div></div>';
+
+  var talis = G.TALISMAN.map(function(t){
+    var list = t.list.filter(function(nm){ return !q || nm.indexOf(q)>=0; });
+    if(q && !list.length) return '';
+    var mark = t.calculated
+      ? '<span class="warn" style="font-size:11px">계산값 100÷'+t.list.length+'</span>'
+      : (t.matchesOfficial
+          ? '<span class="ok" style="font-size:11px">고지값 일치</span>'
+          : '<span class="bad" style="font-size:11px">고지 '+t.official+'% 와 불일치</span>');
+    return '<div class="rec"><h3>'+esc(t.grade)
+      + '<span class="badge '+(t.calculated?'s':'b')+'">'+t.list.length+'종</span>'
+      + '<span class="dim" style="font-size:12px">종류별 '+t.p.toFixed(4)+'%</span>'
+      + mark+'</h3>'
+      + '<div class="m">'+list.map(function(nm){
+          return '<span class="pill'+(q&&nm.indexOf(q)>=0?' hit':'')+'">'+esc(nm)+'</span>'; }).join('')+'</div></div>';
+  }).join('');
+
+  // 부적표 ↔ 확률 고지 시트 불일치
+  var diffRows = G.TALISMAN_DIFF.map(function(d){
+    return '<tr><td>'+esc(d.grade)+'</td><td>'+esc(d.kind)+'</td>'
+      + '<td style="text-align:left;white-space:normal" class="dim">'+esc(d.detail)+'</td></tr>';
+  }).join('');
+  var diffCard = '<div class="card" style="margin-top:12px"><h2>⚠️ 부적표 ↔ 확률 시트 불일치</h2>'
+    + '<div class="tw"><table><thead><tr><th>등급</th><th>종류</th>'
+    + '<th style="text-align:left">내용</th></tr></thead><tbody>'+diffRows+'</tbody></table></div>'
+    + '<div class="hint">목록은 <b>부적표</b>(신화 포함, 최신) 기준으로 넣었습니다. '
+    + '확률 시트가 구버전으로 보입니다.</div></div>';
+
+  // 신화 옵션 표
+  var mythRows = G.TALISMAN_MYTHIC_OPTIONS
+    .filter(function(m){ return !q || m.name.indexOf(q)>=0 || m.stat.indexOf(q)>=0; })
+    .map(function(m){
+      return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.stat)+'</td>'
+        + '<td class="mono">'+m.min+' ~ '+m.max+'</td></tr>';
+    }).join('');
+  var myth = G.TALISMAN.filter(function(t){ return t.grade==='신화'; })[0];
+  var mythCard = '<div class="card" style="margin-top:12px"><h2>🌟 신화 부적 '
+    + '<span class="tag">'+myth.list.length+'종 · 종류당 '+myth.p.toFixed(4)+'%</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>부적</th><th>옵션</th>'
+    + '<th>수치 범위 ('+G.TALISMAN_MYTHIC_STEPS+'단계)</th></tr></thead><tbody>'
+    + (mythRows||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">확률 고지 시트에 신화 등급이 없어, 다른 5등급과 동일한 규칙'
+    + '(<b>종류당 100 ÷ 종류 수</b>)으로 <b>100 ÷ '+myth.list.length+' = '+myth.p.toFixed(4)+'%</b>로 산출했습니다.</div></div>';
+
+  // 부적 리롤 계산기 (등급 내 균등 분포)
+  var known = G.TALISMAN.map(function(t){ return t.grade; });
+  var gsel = S.talGrade || '전설';
+  var kinds = (function(){
+    var f = G.TALISMAN.filter(function(t){ return t.grade === gsel; })[0];
+    return f ? f.list.length : Math.max(1, Math.floor(S.talKinds||18));
+  })();
+  var odds = G.talismanOdds(kinds, S.talWant, S.talRolls);
+  var gopts = known.concat(['직접입력']).map(function(g){
+    var f = G.TALISMAN.filter(function(t){ return t.grade === g; })[0];
+    return '<button class="mtab'+(g===gsel?' on':'')+'" data-tg2="'+esc(g)+'">'+esc(g)
+      + (f ? ' <span class="dim">'+f.list.length+'종</span>' : ' <span class="dim">종수 입력</span>')+'</button>';
+  }).join('');
+
+  var calc = '<div class="card" style="margin-top:12px"><h2>🧮 부적 리롤 계산기 '
+    + '<span class="tag">등급 내 균등 분포</span></h2>'
+    + '<div class="mtabs">'+gopts+'</div>'
+    + '<div class="row" style="margin-top:8px"><span style="flex:none;width:96px">등급 종류 수</span>'
+    + '<input type="number" id="talKinds" min="1" max="999" value="'+kinds+'"'
+    + (known.indexOf(gsel)>=0 ? ' disabled' : '')+' style="width:80px">'
+    + '<span class="dim" style="flex:none;font-size:12px">'
+    + (known.indexOf(gsel)>=0 ? '등급 선택 시 자동' : '종류 수를 직접 입력')+'</span></div>'
+    + '<div class="row"><span style="flex:none;width:96px">원하는 종류</span>'
+    + '<input type="number" id="talWant" min="1" max="999" value="'+(S.talWant||1)+'" style="width:80px">'
+    + '<span class="dim" style="flex:none;font-size:12px">여러 개 중 아무거나 나오면 성공일 때</span></div>'
+    + '<div class="row"><span style="flex:none;width:96px">리롤 횟수</span>'
+    + '<input type="number" id="talRolls" min="1" max="100000" value="'+(S.talRolls||10)+'" style="width:80px">'
+    + '</div>';
+
+  if(odds){
+    calc += '<div class="kpis" style="margin-top:10px">'
+      + kcard('1회 성공률', odds.each.toFixed(4)+'%', odds.want+'/'+odds.kinds+' 종', 'acc')
+      + kcard(N(odds.rolls)+'회 안에 1번 이상', odds.atLeast.toFixed(2)+'%', '', odds.atLeast>=90?'ok':(odds.atLeast>=50?'warn':'bad'))
+      + kcard('평균 소요 리롤', N(Math.round(odds.expected*10)/10)+'회', '기하분포 기대값', '')
+      + kcard('90% 도달', N(odds.need90)+'회', '99% 도달 '+N(odds.need99)+'회', '')
+      + '</div>';
+  } else {
+    calc += '<div class="hint bad" style="margin-top:8px">종류 수·원하는 종류·리롤 횟수를 1 이상으로, '
+      + '원하는 종류는 전체 종류 수 이하로 입력하세요.</div>';
+  }
+  calc += '<div class="hint">리롤은 같은 등급 안에서만 다시 뽑히므로, 등급 내 확률은 '
+    + '<b>1 ÷ 종류 수</b>로 균등합니다 (고지된 등급 전부 이 값과 일치). '
+    + '신화는 고지 자료에 없어 같은 규칙으로 산출한 값입니다.</div></div>';
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>🎯 확률 공개 '+srcTag(G.PROB_SOURCE)+'</h2>'
+    + '<input type="text" id="probQ" placeholder="부적 이름 검색…" value="'+esc(q)+'">'
+    + '<div class="hint">게임 내 공식 확률 고지 자료를 그대로 옮긴 값입니다.</div></div>'
+    + calc
+    + lc
+    + abilityCard(G.POTENTIAL)
+    + abilityCard(G.EXTRA_ABILITY)
+    + probTable('대장간 제작대 장비제작 티어 확률', G.GEAR_TIER_PROB.map(function(t){
+        return { n: t.tier, p: t.p }; }))
+    + drops
+    + well
+    + '<div class="card" style="margin-top:12px"><h2>🧧 부적 등급별 확률</h2>'
+    + '<div class="hint" style="margin-bottom:8px">'+esc(G.TALISMAN_NOTE)+'</div>'
+    + '<div class="hint warn" style="margin-bottom:8px">여기 확률은 <b>등급 안에서 어떤 부적이 나오는지</b>입니다. '
+    + '각 등급 표가 따로따로 100%라서, <b>등급 자체가 뜰 확률은 어느 등급도 고지되어 있지 않습니다</b>.</div>'
+    + '<div class="grid2">'+(talis||'<div class="dim">검색 결과 없음</div>')+'</div>'
+    + '<div class="hint">부적패키지는 '+esc(G.TALISMAN_PACKAGE.grade)+' 등급 부적을 종류별 '
+    + G.TALISMAN_PACKAGE.p+'%로 균등 지급합니다. 목록 '+srcTag(G.TALISMAN_LIST_SOURCE)+'</div></div>'
+    + mythCard
+    + diffCard;
+}
+
+/* ---------------- 지도 (iframe) ---------------- */
+/* 지도는 타일이 많아서 한 번 띄우면 다시 만들지 않는다.
+ * render()가 매번 불려도 iframe을 새로 그리지 않도록 _built 플래그로 막는다. */
+/* ---------------- 위치 · 웨이포인트 ---------------- */
+var LOC_KINDS = ['전체','사냥터','약초','적환단','해태단','기린단','항아리','의문의상자','동상','비석'];
+
+/** 웨이포인트 식별 키 (수정/숨김을 붙여두는 기준) */
+function wpKey(w){
+  return (w.origin||'mine')+'|'+(w.set||'')+'|'+w.name+'|'+w.x+','+w.z;
+}
+/** 저장된 수정 내용을 얹은 사본 */
+function applyEdit(w){
+  var e = S.wpEdit[wpKey(w)];
+  var c = {}; for(var k in w) c[k] = w[k];
+  c.key = wpKey(w);
+  if(!e) return c;
+  if(e.name) c.name = e.name;
+  if(typeof e.x === 'number') c.x = e.x;
+  if(typeof e.y === 'number') c.y = e.y;
+  if(typeof e.z === 'number') c.z = e.z;
+  c.hidden = !!e.hidden;
+  c.edited = true;
+  return c;
+}
+/** 내가 앱에서 추가한 웨이포인트 */
+function myWaypoints(){
+  return (S.myWps||[]).map(function(w){
+    return { id:w.id, name:w.name, x:w.x, y:w.y||0, z:w.z,
+             set:w.set||'내 웨이포인트', hex:w.hex||'#22d3ee', kind:'내 웨이포인트',
+             origin:'mine', originLabel:'내가 추가', note:w.note||'' };
+  });
+}
+/** 내가 추가한 것 + 가져온 것 + 지도 (수정 반영). 내 것이 항상 위로 */
+function allWaypoints(){
+  return myWaypoints().concat(G ? G.waypoints() : []).map(applyEdit);
+}
+function wpOriginLabel(w){
+  return w.origin === 'mine' ? '내가 추가' : (w.originLabel || w.origin || '-');
+}
+
+function guideBtn(kind, name){
+  if(!G || !G.guideOf(kind, name)) return '<span class="dim">-</span>';
+  return '<button class="mini" data-guide="'+esc(kind)+'|'+esc(name)+'">공략 📋</button>';
+}
+
+/* 위치 탭은 두 덩어리로 나눠 그린다 — 검색할 때 필요한 쪽만 다시 그리려고.
+ *   #loc-data : 사냥터·약초·단서·항아리·상자 + 약초 조합 계산기
+ *   #loc-wp   : 웨이포인트 관리 (목록이 커서 따로 뗐다) */
+function paneLoc(){
+  var el = $('#p-loc');
+  if(!G){ el.innerHTML = '<div class="card empty">game-data.js를 불러오지 못했습니다.</div>'; return; }
+  if(!el.querySelector('#loc-data')){
+    el.innerHTML = '<div id="loc-data"></div><div id="loc-wp"></div>';
+  }
+  paneLocData();
+  paneLocWp();
+}
+
+function paneLocWp(){
+  var box = $('#loc-wp');
+  if(box && G) box.innerHTML = wpManagerHtml();
+}
+
+function paneLocData(){
+  var el = $('#loc-data');
+  if(!el || !G) return;
+  var q = (S.locQ||'').trim();
+  var kind = S.locKind || '전체';
+  function hit(){
+    if(!q) return true;
+    for(var i=0;i<arguments.length;i++){
+      if(String(arguments[i]==null?'':arguments[i]).indexOf(q) >= 0) return true;
+    }
+    return false;
+  }
+  function show(k){ return kind === '전체' || kind === k; }
+  var cnt = G.extraCounts();
+
+  var kindTabs = LOC_KINDS.map(function(k){
+    var n = k === '전체'
+      ? G.extraWaypoints().length
+      : (cnt[k] || 0);
+    return '<button class="mtab'+(k===kind?' on':'')+'" data-lk="'+esc(k)+'">'
+      + esc(k)+' <span class="dim">'+n+'</span></button>';
+  }).join('');
+
+  /* 사냥터 */
+  var huntRows = G.HUNTING_GROUNDS.filter(function(h){
+    return hit(h.name, h.lv, h.monsters, h.memo);
+  }).map(function(h){
+    return '<tr><td>'+esc(h.name)+'</td><td class="mono">'+esc(h.lv)+'</td>'
+      + '<td style="text-align:left;white-space:normal">'+esc(h.monsters)
+      + (h.memo ? '<div class="dim">'+esc(h.memo)+'</div>' : '')+'</td>'
+      + '<td class="mono">'+h.x+' / '+h.y+' / '+h.z+'</td>'
+      + '<td>'+mapCell(G.mapUrl(h.x,h.z), h.x, h.z)+'</td></tr>';
+  }).join('');
+
+  /* 약초 자생지 — 약초별 색으로 표시 */
+  var herbCards = G.HERBS.filter(function(h){ return hit(h.name); }).map(function(h){
+    var spots = h.spots.map(function(s, i){
+      return '<div class="m mono" style="display:flex;gap:6px;align-items:center">'
+        + '<span class="dot" style="background:'+esc(h.color)+'"></span>'
+        + '자생지'+(i+1)+' · '+s.x+' / '+s.y+' / '+s.z+' '
+        + mapCell(G.mapUrl(s.x,s.z), s.x, s.z)+'</div>';
+    }).join('');
+    return '<div class="rec"><h3><span class="dot" style="background:'+esc(h.color)+'"></span>'
+      + esc(h.name)+'<span class="badge s">자생지 '+h.spots.length+'곳</span></h3>'+spots+'</div>';
+  }).join('');
+
+  /* 단서(적환단 · 해태단 · 기린단) */
+  function questRows(kindName, list){
+    return list.filter(function(x){
+      return hit(x.name, kindName, x.n) ||
+        (x.records||[]).some(function(r){ return hit(r.n); });
+    }).map(function(x){
+      var recs = (x.records||[]).map(function(r){
+        return '<div class="m mono">· '+esc(r.n)+' — '+r.x+' / '+r.y+' / '+r.z+' '
+          + mapCell(G.mapUrl(r.x,r.z), r.x, r.z)+'</div>';
+      }).join('');
+      return '<tr><td>'+x.n+'</td><td style="text-align:left">'+esc(x.name)
+        + (recs ? '<div style="margin-top:4px">'+recs+'</div>' : '')+'</td>'
+        + '<td class="mono">'+x.x+' / '+x.y+' / '+x.z+'</td>'
+        + '<td>'+mapCell(G.mapUrl(x.x,x.z), x.x, x.z)+'</td>'
+        + '<td>'+guideBtn(kindName, x.name)+'</td></tr>';
+    }).join('');
+  }
+  function questCard(kindName, list, emoji){
+    if(!show(kindName)) return '';
+    var rows = questRows(kindName, list);
+    return '<div class="card" style="margin-top:12px"><h2>'+emoji+' '+kindName
+      + ' <span class="tag">'+list.length+'개</span></h2>'
+      + '<div class="tw"><table><thead><tr><th>번호</th><th style="text-align:left">이름 · 세부 위치</th>'
+      + '<th>좌표 (x/y/z)</th><th>열기</th><th>공략</th></tr></thead><tbody>'
+      + (rows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')
+      + '</tbody></table></div></div>';
+  }
+
+  /* 항아리 */
+  var potRows = G.POT_ITEMS.filter(function(p){ return hit(p.item, p.tool, '항아리'); })
+    .map(function(p){
+      return '<tr><td>'+esc(p.item)+'</td><td>'+esc(p.tool)+'</td>'
+        + '<td class="mono">'+p.x+' / '+p.y+' / '+p.z+'</td>'
+        + '<td>'+mapCell(G.mapUrl(p.x,p.z), p.x, p.z)+'</td></tr>';
+    }).join('');
+
+  /* 의문의 상자 */
+  var boxRows = G.MYSTERY_BOXES.filter(function(b){ return hit(b.name, b.item, b.entrance); })
+    .map(function(b, i){
+      return '<tr><td>'+(i+1)+'</td><td>'+esc(b.item||'미확인')+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(b.entrance||'-')+'</td>'
+        + '<td class="mono">'+b.x+' / '+b.y+' / '+b.z+'</td>'
+        + '<td>'+mapCell(G.mapUrl(b.x,b.z), b.x, b.z)+'</td></tr>';
+    }).join('');
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>📍 지도 위치 '+srcTag(G.SOURCE)+'</h2>'
+    + '<input type="text" id="locQ" placeholder="사냥터·약초·단서·아이템·입구 검색…" value="'+esc(q)+'">'
+    + '<div class="mtabs" style="margin-top:8px">'+kindTabs+'</div>'
+    + '<div class="hint">여기 있는 위치는 전부 지도에 <b>[웹맵]</b> 세트로 주입됩니다 '
+    + '(<code>node inject-map-waypoints.js</code>). 약초는 자생지별 색으로 구분됩니다.</div></div>'
+
+    + (show('사냥터')
+      ? '<div class="card" style="margin-top:12px"><h2>⚔️ 사냥터 <span class="tag">'
+        + G.HUNTING_GROUNDS.length+'곳</span></h2>'
+        + '<div class="tw"><table><thead><tr><th>이름</th><th>레벨</th>'
+        + '<th style="text-align:left">몬스터</th><th>좌표 (x/y/z)</th><th>열기</th></tr></thead><tbody>'
+        + (huntRows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')
+        + '</tbody></table></div></div>' : '')
+
+    + (show('약초')
+      ? '<div class="card" style="margin-top:12px"><h2>🌿 약초 자생지 <span class="tag">'
+        + G.HERBS.length+'종 · '+(cnt['약초']||0)+'곳</span></h2>'
+        + '<div class="grid2">'+(herbCards||'<div class="dim">검색 결과 없음</div>')+'</div></div>' : '')
+
+    + (show('약초') ? herbCalcHtml() : '')
+
+    + questCard('적환단', G.RED_ITEMS, '🔴')
+    + questCard('해태단', G.HAE_ITEMS, '🟡')
+    + questCard('기린단', G.QILIN_ITEMS, '🟢')
+
+    + (show('항아리')
+      ? '<div class="card" style="margin-top:12px"><h2>🏺 탐색 항아리 <span class="tag">'
+        + G.POT_ITEMS.length+'곳</span></h2>'
+        + '<div class="tw"><table><thead><tr><th>획득 아이템</th><th>필요 도구</th>'
+        + '<th>좌표 (x/y/z)</th><th>열기</th></tr></thead><tbody>'
+        + (potRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')
+        + '</tbody></table></div></div>' : '')
+
+    + (show('동상')
+      ? '<div class="card" style="margin-top:12px"><h2>🗿 동상 <span class="tag">'
+        + G.STATUES.length+'곳</span></h2>'
+        + '<div class="tw"><table><thead><tr><th>이름</th><th>좌표 (x/y/z)</th><th>열기</th>'
+        + '</tr></thead><tbody>'
+        + (G.STATUES.filter(function(t){ return hit(t.name, '동상'); }).map(function(t){
+            return '<tr><td>'+esc(t.name)+'</td><td class="mono">'+t.x+' / '+t.y+' / '+t.z+'</td>'
+              + '<td>'+mapCell(G.mapUrl(t.x,t.z), t.x, t.z)+'</td></tr>';
+          }).join('')||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')
+        + '</tbody></table></div></div>' : '')
+
+    + (show('비석')
+      ? '<div class="card" style="margin-top:12px"><h2>🪨 비석 <span class="tag">'
+        + G.MOUNTAINS.length+'곳</span></h2>'
+        + '<div class="tw"><table><thead><tr><th>이름</th><th>좌표 (x/y/z)</th><th>열기</th>'
+        + '</tr></thead><tbody>'
+        + (G.MOUNTAINS.filter(function(t){ return hit(t.name, '비석'); }).map(function(t){
+            return '<tr><td>'+esc(t.name)+'</td><td class="mono">'+t.x+' / '+t.y+' / '+t.z+'</td>'
+              + '<td>'+mapCell(G.mapUrl(t.x,t.z), t.x, t.z)+'</td></tr>';
+          }).join('')||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')
+        + '</tbody></table></div></div>' : '')
+
+    + (show('의문의상자')
+      ? '<div class="card" style="margin-top:12px"><h2>🎁 의문의 상자 <span class="tag">'
+        + G.MYSTERY_BOXES.length+'곳</span></h2>'
+        + '<div class="tw"><table><thead><tr><th>#</th><th>내용물</th>'
+        + '<th style="text-align:left">입구·메모</th><th>좌표 (x/y/z)</th><th>열기</th></tr></thead><tbody>'
+        + (boxRows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')
+        + '</tbody></table></div></div>' : '');
+}
+
+/* 약초 조합 계산기 — 약초 3~5개 → 점수 합계 → 결과 환 */
+function herbCalcHtml(){
+  var picks = S.herbPick || [];
+  var r = G.herbCombo(picks);
+  var groups = ['A','B','C','S'].map(function(g){
+    var btns = G.HERB_GROUPS[g].map(function(n){
+      var on = picks.indexOf(n) >= 0;
+      var herb = G.HERBS.filter(function(h){ return h.name === n; })[0];
+      var dot = herb ? '<span class="dot" style="background:'+esc(herb.color)+'"></span>' : '';
+      return '<button class="mini'+(on?' on':'')+'" data-herb="'+esc(n)+'"'
+        + (on?' style="outline:2px solid var(--ac)"':'')+'>'+dot+esc(n)+'</button>';
+    }).join(' ');
+    return '<div class="m"><b>'+g+'그룹</b> <span class="dim">+'+G.HERB_SCORE[g]+'점</span><br>'+btns+'</div>';
+  }).join('');
+
+  var resHtml;
+  if(r.result){
+    resHtml = '<div style="font-size:18px;font-weight:700;color:'+esc(r.result.color)+'">'
+      + esc(r.result.name)+'</div>'
+      + '<div class="m">'+esc(r.result.effect)+'</div>'
+      + '<div class="m dim">이 환이 나오는 점수: '+r.need.join(' · ')+'</div>';
+  } else {
+    resHtml = '<div class="m dim">'+esc(r.error || '해당 점수의 결과가 없습니다')+'</div>';
+  }
+
+  var table = G.HERB_RESULTS.map(function(x){
+    return '<tr'+(r.total===x.score?' style="outline:1px solid var(--ac)"':'')+'>'
+      + '<td class="mono">'+x.score+'</td>'
+      + '<td style="color:'+esc(x.color)+'">'+esc(x.name)+'</td>'
+      + '<td style="text-align:left">'+esc(x.effect)+'</td></tr>';
+  }).join('');
+
+  return '<div class="card" style="margin-top:12px"><h2>🧪 약초 조합 계산기 '
+    + '<span class="tag">'+picks.length+'/5 선택 · 합계 '+r.total+'점</span></h2>'
+    + '<div class="grid2"><div>'+groups
+    + '<div class="m"><button class="btn sm" id="btnHerbReset">초기화</button></div></div>'
+    + '<div class="rec"><h3>결과</h3>'+resHtml
+    + '<div class="m dim">약초 3~5개 · A+1 B+2 C+3 S+4점</div></div></div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>합계</th><th>결과</th>'
+    + '<th style="text-align:left">효과</th></tr></thead><tbody>'+table+'</tbody></table></div>'
+    + '<div class="hint">출처: <a href="'+esc(G.HERB_CALC_SOURCE.url)+'" target="_blank" rel="noopener">'
+    + esc(G.HERB_CALC_SOURCE.name)+'</a></div></div>';
+}
+
+/* 웨이포인트 관리 (추가 · 수정 · 삭제 · 내보내기) */
+function wpManagerHtml(){
+  var q = (S.wpQ||'').trim();
+  var origin = S.wpOrigin || '전체';
+  var list = allWaypoints();
+  var counts = { 전체: list.length, webmap: 0, map: 0, mine: 0 };
+  list.forEach(function(w){ counts[w.origin] = (counts[w.origin]||0) + 1; });
+
+  var shown = list.filter(function(w){
+    if(origin !== '전체' && w.origin !== origin) return false;
+    if(!q) return true;
+    return [w.name, w.set, w.note, w.kind, w.x+' '+w.z]
+      .some(function(s){ return String(s||'').indexOf(q) >= 0; });
+  });
+
+  var tabs = [['전체','전체'],['webmap','가져온 데이터'],['map','인게임 지도'],['mine','내가 추가']]
+    .map(function(p){
+      return '<button class="mtab'+(p[0]===origin?' on':'')+'" data-wo="'+p[0]+'">'
+        + esc(p[1])+' <span class="dim">'+(counts[p[0]]||0)+'</span></button>';
+    }).join('');
+
+  var rows = shown.slice(0, 300).map(function(w){
+    if(S.wpEditing === w.key){
+      return '<tr><td colspan="6">'
+        + '<div class="row" style="flex-wrap:wrap">'
+        + '<input type="text" id="wpeName" value="'+esc(w.name)+'" style="flex:1;min-width:160px">'
+        + '<input type="number" id="wpeX" value="'+w.x+'" style="width:90px" title="x">'
+        + '<input type="number" id="wpeY" value="'+(w.y||0)+'" style="width:80px" title="y">'
+        + '<input type="number" id="wpeZ" value="'+w.z+'" style="width:90px" title="z">'
+        + '<button class="mini" id="btnWpSave">저장</button>'
+        + '<button class="mini" id="btnWpCancel">취소</button>'
+        + (w.origin === 'mine'
+            ? '<button class="mini" data-wpdel="'+esc(w.id)+'">삭제</button>'
+            : '<button class="mini" data-wphide="'+esc(w.key)+'">'+(w.hidden?'숨김 해제':'숨기기')+'</button>')
+        + (w.edited ? '<button class="mini" data-wpreset="'+esc(w.key)+'">원래대로</button>' : '')
+        + '</div></td></tr>';
+    }
+    var dot = w.hex ? '<span class="dot" style="background:'+esc(w.hex)+'"></span>' : '';
+    return '<tr'+(w.hidden?' class="dim"':'')+'>'
+      + '<td style="text-align:left">'+dot+esc(w.name)
+      + (w.edited?' <span class="badge s">수정됨</span>':'')
+      + (w.hidden?' <span class="badge f">숨김</span>':'')+'</td>'
+      + '<td class="dim">'+esc(wpOriginLabel(w))+'</td>'
+      + '<td class="dim">'+esc(w.set||'-')+'</td>'
+      + '<td class="mono">'+w.x+' / '+(w.y||0)+' / '+w.z+'</td>'
+      + '<td>'+mapCell(G.mapUrl(w.x, w.z), w.x, w.z)+'</td>'
+      + '<td><button class="mini" data-wpedit="'+esc(w.key)+'">수정</button></td></tr>';
+  }).join('');
+
+  var edits = Object.keys(S.wpEdit||{}).length;
+  return '<div class="card" style="margin-top:12px"><h2>🧭 웨이포인트 관리 '
+    + '<span class="tag">'+(S.myWps||[]).length+'개 추가 · '+edits+'건 수정</span></h2>'
+    + '<div class="row" style="flex-wrap:wrap">'
+    + '<input type="text" id="wpNewName" placeholder="이름" style="flex:1;min-width:140px">'
+    + '<input type="number" id="wpNewX" placeholder="x" style="width:90px">'
+    + '<input type="number" id="wpNewY" placeholder="y" style="width:80px">'
+    + '<input type="number" id="wpNewZ" placeholder="z" style="width:90px">'
+    + '<input type="text" id="wpNewSet" placeholder="세트(선택)" style="width:130px">'
+    + '<button class="btn sm primary" id="btnWpAdd">추가</button>'
+    + '</div>'
+    + '<div class="row" style="margin-top:6px;flex-wrap:wrap">'
+    + '<input type="text" id="wpQ" placeholder="웨이포인트 검색 (이름·세트·좌표·메모)…" value="'+esc(q)+'" style="flex:1;min-width:180px">'
+    + '<button class="mini" id="btnWpExport">JSON 내보내기</button>'
+    + '<button class="mini" id="btnWpImport">JSON 불러오기</button>'
+    + '<button class="mini" id="btnWpClear">수정 전부 되돌리기</button>'
+    + '</div>'
+    + '<div class="mtabs" style="margin-top:8px">'+tabs+'</div>'
+    + '<div class="tw" style="margin-top:8px"><table><thead><tr><th style="text-align:left">이름</th>'
+    + '<th>출처</th><th>세트</th><th>좌표 (x/y/z)</th><th>열기</th><th>수정</th></tr></thead><tbody>'
+    + (rows||'<tr><td colspan="6" class="dim">검색 결과 없음</td></tr>')
+    + '</tbody></table></div>'
+    + '<div class="hint">'+N(shown.length)+'개 표시'+(shown.length>300?' (300개까지만 그림)':'')
+    + ' · 내가 추가/수정한 내용은 브라우저에 저장되며 원본 데이터는 그대로입니다.'
+    + ' 지도에 넣으려면 <b>JSON 내보내기</b> → 파일을 <code>my-waypoints.json</code>으로 저장 →'
+    + ' <code>node inject-my-waypoints.js</code>를 실행하세요.</div></div>';
+}
+
+/* ---------------- 한월RPG 업데이트 내역 (디스코드 공지) ---------------- */
+function paneNews(){
+  var el = $('#p-news');
+  var U = window.GameUpdates;
+  if(!U || !U.count()){
+    el.innerHTML = '<div class="card empty">게임 업데이트 내역이 없습니다.<br>'
+      + '<span class="dim" style="font-size:12px">디스코드 공지 글을 '
+      + '<code>discord-updates.txt</code>에 붙여넣고 '
+      + '<code>node import-discord-updates.js</code>를 실행하세요.</span></div>';
+    return;
+  }
+  var q = (S.newsQ||'').trim();
+  var tag = S.newsTag || '전체';
+  var list = U.search(q).filter(function(u){
+    return tag === '전체' || (u.tags||[]).indexOf(tag) >= 0;
+  });
+
+  var tagBtns = [{tag:'전체', count:U.count()}].concat(U.tagCounts())
+    .map(function(t){
+      return '<button class="mtab'+(t.tag===tag?' on':'')+'" data-nt="'+esc(t.tag)+'">'
+        + esc(t.tag)+' <span class="dim">'+t.count+'</span></button>';
+    }).join('');
+
+  // 월별로 묶어서 표시
+  var html = '', lastMonth = '';
+  list.slice(0, 200).forEach(function(u){
+    var month = (u.date||'').slice(0,7) || '날짜 미상';
+    if(month !== lastMonth){
+      html += '<div class="hint" style="margin:12px 0 4px;font-weight:700">'+esc(month)+'</div>';
+      lastMonth = month;
+    }
+    var badge = u.kind === '예정' ? '<span class="badge f">예정</span>'
+              : u.kind === '추가' ? '<span class="badge s">추가</span>'
+              : u.kind === '안내' ? '<span class="badge">안내</span>' : '';
+    html += '<div class="rec"><h3>'+esc(u.date || '날짜 미상')+' '+badge
+      + (u.tags||[]).map(function(t){ return '<span class="pill">'+esc(t)+'</span>'; }).join('')
+      + '</h3>'
+      + '<ul style="margin:4px 0 0;padding-left:18px">'
+      + u.body.map(function(b){ return '<li>'+esc(b)+'</li>'; }).join('')
+      + '</ul></div>';
+  });
+
+  var latest = U.UPDATES.filter(function(u){ return u.date; })[0];
+  el.innerHTML = ''
+    + '<div class="card"><h2>📢 한월RPG 업데이트 내역 '
+    + '<span class="tag">'+U.count()+'건 · 최신 '+esc(latest ? latest.date : '-')+'</span></h2>'
+    + '<input type="text" id="newsQ" placeholder="업데이트 검색 (예: 완갑, 개마무사, 약초)…" value="'+esc(q)+'">'
+    + '<div class="mtabs" style="margin-top:8px">'+tagBtns+'</div>'
+    + '<div class="hint">출처: '
+    + (U.SOURCE.url
+        ? '<a href="'+esc(U.SOURCE.url)+'" target="_blank" rel="noopener">'+esc(U.SOURCE.name)+' ↗</a>'
+        : esc(U.SOURCE.name))
+    + (U.SOURCE.fetched ? ' · '+esc(U.SOURCE.fetched)+' 기준' : '')
+    + ' · 갱신: 공지 글을 <code>discord-updates.txt</code>에 붙여넣고 '
+    + '<code>node import-discord-updates.js</code></div></div>'
+    + '<div class="card" style="margin-top:12px">'
+    + (html || '<div class="dim">검색 결과 없음</div>')
+    + (list.length > 200 ? '<div class="hint">200건까지만 표시</div>' : '')
+    + '</div>';
+}
+
+/* 공략 이미지 보기 — guides/ 폴더가 있으면 그걸, 없으면 웹맵 원본을 띄운다 */
+function openGuide(kind, name){
+  var g = G && G.guideOf(kind, name);
+  if(!g){ toast('공략 이미지가 없습니다'); return; }
+  $('#guideTitle').textContent = kind + ' · ' + name + ' 공략';
+  $('#guideBox').innerHTML = g.imgs.map(function(im){
+    return '<img src="'+esc(im.local)+'" data-remote="'+esc(im.remote)+'" alt="'+esc(im.file)+'" loading="lazy" decoding="async">';
+  }).join('')
+    + '<div class="hint">출처: <a href="'+esc(G.SOURCE.url)+'" target="_blank" rel="noopener">'
+    + esc(G.SOURCE.name)+'</a> · 이미지가 안 보이면 <code>node download-guides.js</code>를 실행하세요.</div>';
+  // 로컬 파일이 없으면 원본 주소로 한 번만 대체
+  $$('#guideBox img').forEach(function(img){
+    img.onerror = function(){
+      if(this._fell) return;
+      this._fell = true; this.src = this.dataset.remote;
+    };
+  });
+  $('#guideModal').classList.add('on');
+}
+
+/* ---------------- 통합검색 ---------------- */
+var _gIdx = null;
+function searchIndex(){
+  if(_gIdx) return _gIdx;
+  var idx = [];
+  function add(kind, name, desc, tab, x, z, q){
+    idx.push({ kind:kind, name:String(name), desc:String(desc||''), tab:tab,
+               x:(typeof x==='number'?x:null), z:(typeof z==='number'?z:null), q:q||null });
+  }
+  // 제작 아이템 (레시피)
+  ALL_ITEMS.forEach(function(n){
+    var r = C.FURNACE[n];
+    add(itemKind(n), n, r ? Object.keys(r.mats).map(function(m){ return m+'×'+r.mats[m]; }).join(' + ') : '',
+        'rec', null, null, n);
+  });
+  C.BASE.forEach(function(n){
+    var w = G && G.whereToMine(n);
+    add('광산 재료', n, w ? w.colors.join('·')+'색 광산' : '', 'mine', null, null, n);
+  });
+  if(!G) return (_gIdx = idx);
+
+  G.MINES.forEach(function(m){
+    add('광산', m.n+'번 광산', (G.MINE_COLORS[m.c]||{}).label||m.c, 'mine', m.x, m.z);
+  });
+  G.CRAFT_NPCS.forEach(function(n){
+    add('NPC', n.name, n.role+(n.note?' · '+n.note:''), 'npc', n.x, n.z, n.name);
+  });
+  // NPC 제작 전부 (명인대장장이 · 대장장이 조수 · 조선장 · 무림맹주)
+  G.npcCraftNames().forEach(function(nm){
+    var r = G.NPC_RECIPES[nm];
+    var kind = r.npc === '대장장이 조수' ? '조수 제작' : r.npc;
+    var desc = r.matsText + ' · 성공 ' + pct(r.p)
+      + (r.cost ? ' · ' + N(r.cost) + '전' : '')
+      + (r.fail ? ' · 실패 시 ' + r.fail : '');
+    add(kind, nm, desc, 'npc', null, null, nm);
+  });
+  Object.keys(G.SHOP_ITEMS).forEach(function(nm){
+    var s = G.SHOP_ITEMS[nm];
+    add('상점', nm, s.npc + ' 상점 ' + N(s.cost) + '전' + (s.slot ? ' · ' + s.slot : ''),
+        'npc', null, null, nm);
+  });
+  G.ASSISTANT_SERVICES.forEach(function(s){
+    add('조수 서비스', s.name, N(s.cost)+s.unit, 'npc', null, null, s.name);
+  });
+  G.DAN.forEach(function(d){ add('영단', d.name, d.effect+' · '+d.source, 'npc', null, null, d.name); });
+  G.SMITH_GEAR.forEach(function(g){
+    g.items.forEach(function(it){ add('장비', it, g.tier+' '+g.kind, 'gear'); });
+  });
+  G.SMITH_ACCESSORY.forEach(function(a){
+    a.items.forEach(function(it){ add('장신구', it.name, a.kind+' '+a.tier+' · '+it.stat, 'gear'); });
+  });
+  G.TALISMAN.forEach(function(t){
+    t.list.forEach(function(nm){ add('부적', nm, t.grade+' 등급', 'prob', null, null, nm); });
+  });
+  G.GUIDE_VIDEOS.forEach(function(v){
+    add('가이드 영상', v.title, v.tip, 'sum', null, null, null);
+  });
+  G.SKILLS.forEach(function(k){
+    add('비급', k.name, k.info, 'npc', null, null, k.name);
+  });
+  G.STATUES.forEach(function(t){ add('동상', t.name, '동상', 'loc', t.x, t.z, t.name); });
+  G.MOUNTAINS.forEach(function(t){ add('비석', t.name, '비석', 'loc', t.x, t.z, t.name); });
+  G.HUNTING_GROUNDS.forEach(function(h){
+    add('사냥터', h.name, 'Lv.'+h.lv+' · '+h.monsters, 'loc', h.x, h.z, h.name);
+  });
+  G.HERBS.forEach(function(h){
+    h.spots.forEach(function(s, i){
+      add('약초', h.name+' 자생지'+(i+1), '자생지 '+h.spots.length+'곳', 'loc', s.x, s.z, h.name);
+    });
+  });
+  [['적환단', G.RED_ITEMS], ['해태단', G.HAE_ITEMS], ['기린단', G.QILIN_ITEMS]].forEach(function(p){
+    p[1].forEach(function(x){
+      add(p[0], x.name, p[0]+' '+x.n+'번 단서', 'loc', x.x, x.z, x.name);
+      (x.records||[]).forEach(function(r){
+        add(p[0], x.name+' · '+r.n, p[0]+' 세부 위치', 'loc', r.x, r.z, x.name);
+      });
+    });
+  });
+  G.POT_ITEMS.forEach(function(p){
+    add('항아리', '항아리('+p.item+')', p.tool+' 필요', 'loc', p.x, p.z, p.item);
+  });
+  G.MYSTERY_BOXES.forEach(function(b, i){
+    add('의문의상자', b.name+' '+(i+1), (b.item||'미확인')+(b.entrance?' · '+b.entrance:''),
+        'loc', b.x, b.z, b.item||'');
+  });
+  G.waypoints(G.ORIGIN.MAP).forEach(function(w){
+    add('지도 웨이포인트', w.name, w.set||'', 'loc', w.x, w.z, w.name);
+  });
+  // 한월RPG 업데이트 — 본문 한 줄씩 검색되게
+  if(window.GameUpdates){
+    window.GameUpdates.UPDATES.forEach(function(u){
+      u.body.forEach(function(b){
+        add('게임 업데이트', b, (u.date||'날짜 미상')+(u.tags.length?' · '+u.tags.join('/'):''),
+            'news', null, null, b.slice(0, 12));
+      });
+    });
+  }
+  return (_gIdx = idx);
+}
+
+function globalSearch(q){
+  q = String(q||'').trim();
+  if(!q) return [];
+  var out = [];
+  var idx = searchIndex().concat(myWaypoints().map(function(w){
+    return { kind:'내 웨이포인트', name:w.name, desc:w.set, tab:'loc', x:w.x, z:w.z, q:w.name };
+  }));
+  for(var i=0;i<idx.length && out.length<200;i++){
+    var it = idx[i];
+    var p = it.name.indexOf(q);
+    var hit = p >= 0 ? (p === 0 ? 0 : 1) : (it.desc.indexOf(q) >= 0 ? 2 : (it.kind.indexOf(q) >= 0 ? 3 : -1));
+    if(hit >= 0) out.push({ it: it, rank: hit });
+  }
+  out.sort(function(a,b){ return a.rank - b.rank || a.it.name.localeCompare(b.it.name); });
+  return out.map(function(o){ return o.it; }).slice(0, 60);
+}
+
+function renderGlobalSearch(q){
+  var box = $('#gRes');
+  var list = globalSearch(q);
+  if(!q || !q.trim()){ box.classList.remove('on'); box.innerHTML=''; return; }
+  if(!list.length){
+    box.innerHTML = '<div class="ghead">결과 없음</div>';
+    box.classList.add('on'); return;
+  }
+  box.innerHTML = '<div class="ghead">'+list.length+'건 · ↑↓ 로 고르고 Enter</div>'
+    + list.map(function(it, i){
+      return '<div class="gi'+(i===0?' sel':'')+'" data-gi="'+i+'">'
+        + '<span class="gk">'+esc(it.kind)+'</span>'
+        + '<span class="gn">'+esc(it.name)+'</span>'
+        + '<span class="gd">'+esc(it.desc)+'</span>'
+        + (it.x!==null ? '<button class="mini" data-gmap="'+it.x+','+it.z+'">지도</button>' : '')
+        + '</div>';
+    }).join('')
+    + '<div class="gprev" id="gPrev"></div>';
+  box._list = list;
+  box.classList.add('on');
+  updateSearchPreview();
+}
+
+/* ---------------- 검색 미리보기 ----------------
+ * 결과를 눌러 탭을 옮기기 전에, 고른 항목이 무엇인지 여기서 먼저 보여 준다.
+ * ↑↓ 로 옮기거나 마우스를 올리면 같이 바뀐다. */
+var TAB_LABEL = {
+  sum:'요약', mat:'재료', ord:'제작 순서', tree:'전개도', sim:'확률 시뮬', rec:'레시피',
+  mine:'광산', npc:'NPC·영단', gear:'장비 제작', prob:'확률·부적',
+  loc:'위치·웨이포인트', news:'한월RPG 업데이트', map:'지도'
+};
+
+function searchPreviewHtml(it){
+  if(!it) return '<span class="dim">고른 항목이 없습니다</span>';
+  return '<div class="pt"><span class="gk">'+esc(it.kind)+'</span>'
+    + '<span class="pn">'+esc(it.name)+'</span></div>'
+    + (it.desc ? '<div class="pd">'+esc(it.desc)+'</div>' : '')
+    + (it.x !== null
+        ? '<div class="pxy">좌표 x '+it.x+' / z '+it.z+'</div>' : '')
+    + '<div class="pb">'
+    + '<button class="mini" data-pgo="1">'+esc(TAB_LABEL[it.tab]||it.tab)+' 탭에서 보기 ↵</button>'
+    + (it.x !== null ? '<button class="mini" data-gmap="'+it.x+','+it.z+'">지도에서 보기</button>' : '')
+    + '</div>';
+}
+
+function selectedResult(){
+  var box = $('#gRes');
+  var list = box._list || [];
+  var items = $$('#gRes .gi');
+  var i = items.findIndex(function(el){ return el.classList.contains('sel'); });
+  return list[i > 0 ? i : 0] || null;
+}
+
+function updateSearchPreview(){
+  var p = $('#gPrev');
+  if(!p) return;
+  p.innerHTML = searchPreviewHtml(selectedResult());
+}
+
+/** 검색어가 없을 때 — 무엇을 찾을 수 있는지 분류별로 훑어보기 */
+function renderBrowseList(){
+  var idx = searchIndex();
+  var byKind = {};
+  idx.forEach(function(it){
+    if(!byKind[it.kind]) byKind[it.kind] = [];
+    byKind[it.kind].push(it.name);
+  });
+  var kinds = Object.keys(byKind).sort(function(a,b){ return byKind[b].length - byKind[a].length; });
+  return '<div class="ghead">무엇을 찾을 수 있나 — 눌러서 훑어보기</div>'
+    + '<div class="gcats">' + kinds.map(function(k){
+      var ex = byKind[k].slice(0, 3).join(', ');
+      return '<div class="gct" data-gcat="'+esc(byKind[k][0])+'">'
+        + '<span class="gcn">'+esc(k)+' '+byKind[k].length+'</span>'
+        + '<span class="gce">'+esc(ex)+(byKind[k].length>3?' …':'')+'</span></div>';
+    }).join('') + '</div>';
+}
+
+/** 검색 결과 클릭 → 해당 탭으로 이동 + 그 탭 검색어 채우기 */
+function gotoResult(it){
+  if(!it) return;
+  S.tab = it.tab;
+  if(it.q){
+    if(it.tab === 'rec')  $('#p-rec')._q  = it.q;
+    if(it.tab === 'npc')  $('#p-npc')._q  = it.q;
+    if(it.tab === 'prob') $('#p-prob')._q = it.q;
+    if(it.tab === 'loc')  S.locQ = it.q;
+    if(it.tab === 'mine') S.mapQ = it.q;
+    if(it.tab === 'news'){ S.newsQ = it.q; S.newsTag = '전체'; }
+  }
+  $('#gRes').classList.remove('on');
+  render();
+}
+
+function paneMapView(){
+  var el = $('#p-map');
+  if(!G || !MW || !G.MAP_LINK.href){
+    el._built = false;
+    el.innerHTML = '<div class="card empty">지도가 연결되지 않았습니다.<br>'
+      + '<span class="dim" style="font-size:12px">지도 결과물을 <code>map/</code> 폴더에 넣고 '
+      + '<code>node import-map-waypoints.js</code>를 실행하세요.</span></div>';
+    return;
+  }
+  if(el._built){ syncMapBar(); return; }
+
+  el.innerHTML = ''
+    + '<div class="card"><h2>🗺️ 지도 <span class="tag">'+esc(MW.worldLabel||'')+'</span></h2>'
+    + '<div class="row">'
+    + '<span style="flex:none;width:20px">x</span><input type="number" id="mapX" value="'+(S.mapX|0)+'" style="width:90px">'
+    + '<span style="flex:none;width:20px">z</span><input type="number" id="mapZ" value="'+(S.mapZ|0)+'" style="width:90px">'
+    + '<button class="mini" id="btnMapGo">이동</button>'
+    + '<button class="mini" id="btnMapSpawn">스폰</button>'
+    + '<button class="mini" id="btnMapSize">높이 전환</button>'
+    + '<a class="mini" id="btnMapNew" href="'+esc(G.MAP_LINK.href)+'" target="_blank" rel="noopener">새 탭에서 열기</a>'
+    + '<button class="mini" id="btnMapPopup" title="큰 창으로 따로 띄우기">큰 창으로 열기 ⛶</button>'
+    + '<button class="mini" id="btnMapFull" title="지금 화면을 전체화면으로">전체화면</button>'
+    + '</div>'
+    + '<div class="row" style="margin-top:6px;flex-wrap:wrap" id="mapRecent"></div>'
+    + '<div class="row" style="margin-top:6px"><span style="flex:none;width:44px">관련</span>'
+    + ['mine|🗺️ 광산','npc|🧙 NPC·영단','mat|⛏️ 재료','ord|📋 제작 순서']
+        .map(function(s){ var p=s.split('|');
+          return '<button class="mini" data-gotab="'+p[0]+'">'+p[1]+'</button>'; }).join(' ')
+    + '</div>'
+    + '<div class="hint">광산·웨이포인트 표의 <b>지도</b> 버튼을 누르면 여기로 이동합니다. '
+    + '지도 조작(확대·동굴 모드)은 지도 자체 기능입니다.</div>'
+    + '<div class="hint"><b>웨이포인트 켜고 끄기</b>: 지도 안에서 <b>W</b>키 → 세트 선택, '
+    + '전체는 <b>O</b>키(설정) → "지도 위 웨이포인트". '
+    + '웹맵에서 가져온 광산·NPC는 <b>[웹맵]</b>으로 시작하는 세트로 들어가 있습니다 '
+    + '(<code>node inject-map-waypoints.js</code>로 주입 / <code>--remove</code>로 해제).</div></div>'
+    + '<div class="card" style="margin-top:12px;padding:0;overflow:hidden">'
+    + '<iframe id="mapFrame" title="인게임 지도" style="width:100%;border:0;display:block;'
+    + 'height:'+(S.mapH||620)+'px"></iframe></div>';
+  el._built = true;
+  syncMapBar();
+}
+
+function syncMapBar(){
+  var f = $('#mapFrame');
+  if(f) f.style.height = (S.mapH||620)+'px';
+  var xi = $('#mapX'), zi = $('#mapZ');
+  if(xi && document.activeElement !== xi) xi.value = S.mapX|0;
+  if(zi && document.activeElement !== zi) zi.value = S.mapZ|0;
+  renderMapRecent();
+}
+
+/* 지도가 실제로 보일 때만 로드 (탭을 안 열면 타일을 안 받음) */
+function ensureMapLoaded(){
+  var f = $('#mapFrame');
+  if(!f || !G || !G.MAP_LINK.href) return;
+  var url = G.mapUrl(S.mapX|0, S.mapZ|0, S.mapScale||1);
+  if(!url) return;
+  if(f.getAttribute('src') !== url) f.setAttribute('src', url);
+}
+
+/* 좌표로 이동 — 지도 탭으로 전환하고 그 자리를 띄운다 */
+function mapJump(x, z, scale){
+  S.mapX = Math.round(x); S.mapZ = Math.round(z);
+  if(scale) S.mapScale = scale;
+  S.tab = 'map';
+  pushMapRecent(S.mapX, S.mapZ);
+  render();
+  ensureMapLoaded();
+  renderMapRecent();
+  toast('지도 이동: ' + S.mapX + ' / ' + S.mapZ);
+}
+
+/* 최근에 본 좌표 — 눌러서 그 자리로 다시 */
+function renderMapRecent(){
+  var box = $('#mapRecent'); if(!box) return;
+  var list = S.mapRecent || [];
+  box.innerHTML = list.length
+    ? '<span style="flex:none;width:44px">최근</span>' + list.map(function(k){
+        return '<button class="mini" data-mapgo="'+esc(k)+'">'+esc(k.replace(',',' / '))+'</button>';
+      }).join(' ')
+    : '';
+}
+
+/* ---------------- 렌더 ---------------- */
+/* 탭 → 그리기 함수.
+ * 보이는 탭만 그린다 — 전부 그리면 위치·광산 탭 HTML만 400KB라 입력할 때마다 버벅인다. */
+var PANES = {
+  home: paneHome, sum: paneSum, mat: paneMat, ord: paneOrd, tree: paneTree, sim: paneSim,
+  rec: paneRec, mine: paneMine, npc: paneNpc, gear: paneGear,
+  prob: paneProb, loc: paneLoc, news: paneNews, map: paneMapView
+};
+
+function render(){
+  calc();
+  var draw = PANES[S.tab] || paneSum;
+  draw();
+  $$('.tab').forEach(function(t){ t.classList.toggle('on', t.dataset.p===S.tab); });
+  $$('.pane').forEach(function(p){ p.classList.toggle('on', p.id==='p-'+S.tab); });
+  // 홈은 첫 화면답게 — 목표·옵션 사이드는 접어 둔다
+  document.body.classList.toggle('onhome', S.tab === 'home');
+  if(S.tab === 'map') ensureMapLoaded();
+  enhanceTables();
+  save();
+}
+
+/* ---------------- 요약 텍스트 ---------------- */
+function summaryText(){
+  var L = [];
+  L.push('[한월 공략소] 목표: ' + Object.keys(S.targets).map(function(k){return k+'×'+S.targets[k];}).join(', '));
+  L.push('옵션: 화력 '+S.fire+(S.successUp?' / 성공률증가':'')+(S.costDown?' / 비용-10%':'')
+    +(S.furnaceTimeDown?' / 화로시간-10%':'')+(S.vip?' / VIP-10%':'')
+    +' / 슬롯 '+S.slots+(S.ignoreFail?' / 실패없음가정':''));
+  L.push('총 비용: '+N(Math.round(R.grandCost))+'전'
+    + (NP && NP.cost ? ' (화로/대장장이 '+N(Math.round(R.totalCost))+' + NPC '+N(Math.round(NP.cost))
+        + (R.shopCost ? ' + 상점 '+N(Math.round(R.shopCost)) : '') + ')' : ''));
+  L.push('화로 시간: '+T(R.parallelSec)+' (직렬 '+T(R.totalSec)+', 최단 '+T(R.criticalSec)+')');
+  L.push('');
+  L.push('■ 대장장이 도구 단계');
+  R.steps.forEach(function(s){
+    L.push('  '+s.name+' ×'+N(s.made)+' | 성공 '+(s.rate*100).toFixed(1)+'% | 시도 '+N(s.attempts)+' | '+N(Math.round(s.cost))+'전');
+  });
+  L.push('');
+  L.push('■ 광산 재료' + (S.useStack ? ' (한 셋 = '+S.stack+'개)' : ''));
+  Object.keys(R.base).sort(function(a,b){return R.base[b].total-R.base[a].total;}).forEach(function(k){
+    var b=R.base[k];
+    L.push('  '+k+': '+Q(b.total)+(S.useStack?' ('+N(b.total)+'개)':''));
+  });
+  if(Object.keys(EXTRA).length){
+    L.push('');
+    L.push('■ 직접 구할 재료');
+    Object.keys(EXTRA).sort(function(a,b){return EXTRA[b]-EXTRA[a];}).forEach(function(k){
+      L.push('  '+k+': '+N(Math.round(EXTRA[k]))+'개');
+    });
+  }
+  if(NP && NP.steps.length){
+    L.push('');
+    L.push('■ NPC 제작');
+    NP.steps.slice().reverse().forEach(function(st){
+      L.push('  '+st.name+' ×'+N(Math.round(st.made))+' ('+st.npc+') | 성공 '+pct(st.p)+' | 시도 '
+        + N(Math.round(st.attempts))+' | '+N(Math.round(st.cost))+'전'
+        + (st.fail ? ' | 실패 시 '+st.fail : ''));
+    });
+  }
+  L.push('');
+  L.push('■ 화로 제작');
+  R.furnace.slice().sort(function(a,b){return a.depth-b.depth;}).forEach(function(f){
+    L.push('  '+f.name+' '+Q(f.count)+' ('+T(f.sec)+')');
+  });
+  return L.join('\n');
+}
+function copyText(txt){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('복사 완료');},function(){fallback(txt);});
+  } else fallback(txt);
+  function fallback(t){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('복사 완료'); }catch(e){ toast('복사 실패'); }
+    document.body.removeChild(ta);
+  }
+}
+
+/* ---------------- 편의 기능 ---------------- */
+
+/** 단축키 목록 — 실제로 붙여 놓은 것과 한 곳에서 관리 */
+var KEYMAP = [
+  ['1~9','탭 이동 (홈 … NPC·영단)'],
+  ['0','장비 제작 탭'],
+  ['-','확률·부적 탭'],
+  ['[',  '위치·웨이포인트 탭'],
+  [']','한월RPG 업데이트 탭'],
+  ['\\','지도 탭'],
+  ['Ctrl+K','전체 검색'],
+  ['Enter','검색 결과 중 첫 번째로 이동'],
+  ['Esc','검색·창 닫기'],
+  ['?','이 단축키 목록'],
+  ['t','밝은/어두운 화면 바꾸기'],
+  ['+ / Shift+-','글자 크게 / 작게'],
+  ['Home','맨 위로'],
+  ['Ctrl+P','지금 탭 인쇄']
+];
+
+function renderKeys(){
+  $('#keyList').innerHTML = KEYMAP.map(function(k){
+    return '<div class="keyrow"><kbd>'+esc(k[0])+'</kbd><span>'+esc(k[1])+'</span></div>';
+  }).join('');
+}
+
+/** 글자 크기 한 단계 (보기 편하게) */
+function bumpFont(dir){
+  var i = FS_STEPS.indexOf(S.fontScale || 'm');
+  if(i < 0) i = 1;
+  var n = Math.max(0, Math.min(FS_STEPS.length-1, i + dir));
+  if(n === i){ toast(dir>0 ? '가장 큰 글자입니다' : '가장 작은 글자입니다'); return; }
+  S.fontScale = FS_STEPS[n];
+  syncControls(); save();
+  toast('글자 크기: ' + ({s:'작게',m:'보통',l:'크게',xl:'아주 크게'})[S.fontScale]);
+}
+
+/** 되돌릴 수 있는 알림 — 초기화처럼 되돌리기 힘든 일에 쓴다 */
+var _undoTimer = null;
+function undoBar(msg, onUndo, ms){
+  $('#undoMsg').textContent = msg;
+  var bar = $('#undoBar');
+  bar.classList.add('on');
+  $('#btnUndo').onclick = function(){ bar.classList.remove('on'); clearTimeout(_undoTimer); onUndo(); };
+  clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(function(){ bar.classList.remove('on'); }, ms || 8000);
+}
+
+/** 최근 검색어 기록 (같은 말은 맨 앞으로) */
+function pushRecentQ(q){
+  q = String(q||'').trim();
+  if(q.length < 2) return;
+  S.recentQ = [q].concat((S.recentQ||[]).filter(function(x){ return x !== q; })).slice(0, 8);
+  save();
+}
+
+/** 검색창을 비운 채 눌렀을 때 — 최근 검색어 + 분류별 미리보기 목록 */
+function renderRecentQ(){
+  var box = $('#gRes');
+  var recent = (S.recentQ && S.recentQ.length)
+    ? '<div class="recentq"><b>최근</b>'
+      + S.recentQ.map(function(q){ return '<span class="rq" data-rq="'+esc(q)+'">'+esc(q)+'</span>'; }).join('')
+      + '</div>'
+    : '';
+  box.innerHTML = recent + renderBrowseList();
+  box._list = [];
+  box.classList.add('on');
+  return true;
+}
+
+/** "-969, -965" · "x -969 z -965" · "-969 / -965" 를 좌표로 읽는다 */
+function parseCoords(text){
+  var m = String(text).match(/(-?\d{1,6})\D+(-?\d{1,6})/);
+  if(!m) return null;
+  return { x: parseInt(m[1],10), z: parseInt(m[2],10) };
+}
+
+/** 최근에 본 지도 좌표 (지도 탭에서 다시 누르면 그 자리로) */
+function pushMapRecent(x, z){
+  var key = x + ',' + z;
+  S.mapRecent = [key].concat((S.mapRecent||[]).filter(function(k){ return k !== key; })).slice(0, 8);
+}
+
+/* 목표 조합 저장 — "5성곡괭이 1개 + 화로" 같은 조합을 이름 붙여 보관 */
+function savePreset(){
+  if(!Object.keys(S.targets).length){ toast('저장할 목표가 없습니다'); return; }
+  var def = Object.keys(S.targets)[0] + (Object.keys(S.targets).length>1 ? ' 외 '+(Object.keys(S.targets).length-1) : '');
+  var name = prompt('이 목표 조합을 무슨 이름으로 저장할까요?', def);
+  if(!name) return;
+  S.presets[name] = JSON.parse(JSON.stringify(S.targets));
+  renderPresets(); save(); toast('저장: ' + name);
+}
+
+function loadPreset(name){
+  if(!S.presets[name]) return;
+  var before = JSON.parse(JSON.stringify(S.targets));
+  S.targets = JSON.parse(JSON.stringify(S.presets[name]));
+  renderTargets(); render();
+  undoBar('목표를 "'+name+'" 으로 바꿨습니다', function(){
+    S.targets = before; renderTargets(); render(); toast('되돌렸습니다');
+  });
+}
+
+function renderPresets(){
+  var box = $('#presets'); if(!box) return;
+  var names = Object.keys(S.presets || {});
+  box.innerHTML = names.length
+    ? names.map(function(n){
+        return '<span class="chip"><b data-pload="'+esc(n)+'" style="cursor:pointer" title="불러오기">'
+          + esc(n)+'</b><button class="x" data-pdel="'+esc(n)+'" title="지우기">×</button></span>';
+      }).join('')
+    : '<span class="dim" style="font-size:12px">저장한 조합이 없습니다.</span>';
+}
+
+/* 사이드 카드 접기 — 접은 상태는 저장된다 */
+function applyFolds(){
+  $$('[data-foldbox]').forEach(function(box){
+    var off = !!(S.fold && S.fold[box.dataset.foldbox]);
+    box.classList.toggle('off', off);
+  });
+  $$('[data-fold]').forEach(function(h){
+    h.classList.toggle('off', !!(S.fold && S.fold[h.dataset.fold]));
+  });
+}
+
+function bindFolds(){
+  document.addEventListener('click', function(e){
+    var h = e.target.closest('[data-fold]');
+    if(!h) return;
+    S.fold = S.fold || {};
+    S.fold[h.dataset.fold] = !S.fold[h.dataset.fold];
+    applyFolds(); save();
+  });
+  applyFolds();
+}
+
+/* ---------------- 이벤트 ---------------- */
+function bind(){
+  $('#btnAdd').onclick = function(){
+    var n = $('#selItem').value, q = Math.max(1, Math.floor(Number($('#qty').value)||1));
+    S.targets[n] = (S.targets[n]||0) + q;
+    renderTargets(); render();
+  };
+  $('#quick').onclick = function(e){
+    var b = e.target.closest('[data-q]'); if(!b) return;
+    if(b.dataset.q==='__clear'){ S.targets={}; }
+    else S.targets[b.dataset.q] = (S.targets[b.dataset.q]||0)+1;
+    renderTargets(); render();
+  };
+  $('#targets').addEventListener('click', function(e){
+    var x = e.target.closest('[data-tx]'); if(!x) return;
+    delete S.targets[x.dataset.tx]; renderTargets(); render();
+  });
+  $('#targets').addEventListener('input', function(e){
+    var i = e.target.closest('[data-tq]'); if(!i) return;
+    var v = Math.max(1, Math.floor(Number(i.value)||1));
+    S.targets[i.dataset.tq] = v; render();
+  });
+
+  $('#fire').oninput = function(){ S.fire = +this.value; syncControls(); render(); };
+  $('#fireN').oninput = function(){ S.fire = Math.min(50, Math.max(0, Math.floor(+this.value||0))); syncControls(); render(); };
+  $('#slots').oninput = function(){ S.slots = Math.max(1, Math.floor(+this.value||1)); render(); };
+  $('#stack').oninput = function(){
+    S.stack = Math.max(1, Math.floor(+this.value||64)); render();
+  };
+  $('#useStack').onchange = function(){ S.useStack = this.checked; render(); };
+  ['successUp','costDown','furnaceTimeDown','vip','ignoreFail','integer','failConsumesMats','failConsumesBase']
+    .forEach(function(k){ $('#'+k).onchange = function(){ S[k]=this.checked; SIM=null; syncControls(); render(); }; });
+
+
+  $$('.tab').forEach(function(t){ t.onclick = function(){ S.tab = t.dataset.p; render(); }; });
+
+  document.addEventListener('click', function(e){
+    var t;
+    if((t=e.target.closest('[data-done]'))){
+      var k=t.dataset.done;
+      if(t.checked) S.done[k]=1;
+      else delete S.done[k];
+      paneOrd(); save(); return;
+    }
+    if((t=e.target.closest('#btnDoneClear'))){ S.done={}; render(); return; }
+    if((t=e.target.closest('#btnCopyMat'))){
+      copyText(Object.keys(R.base).sort(function(a,b){return R.base[b].short-R.base[a].short;})
+        .filter(function(k){return R.base[k].short>0;})
+        .map(function(k){return k+' '+Q(R.base[k].short)+(S.useStack?' ('+N(R.base[k].short)+'개)':'');})
+        .join('\n') || '부족한 재료 없음');
+      return;
+    }
+    if((t=e.target.closest('#btnSim'))){
+      var runs = Math.min(50000, Math.max(100, Math.floor(+$('#simRuns').value||3000)));
+      t.disabled = true; t.textContent = '계산 중…';
+      setTimeout(function(){
+        try{
+          SIM = C.simulate({
+            targets:S.targets, inventory:{}, fire:S.fire, slots:S.slots,
+            successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
+            ignoreFail:S.ignoreFail, failConsumesMats:S.failConsumesMats, failConsumesBase:S.failConsumesBase
+          }, runs);
+          paneSim(); toast(runs.toLocaleString()+'회 시뮬 완료');
+        }catch(err){ toast('시뮬 오류: '+err.message); }
+      }, 20);
+      return;
+    }
+    if((t=e.target.closest('[data-tg]'))){
+      var p=t.dataset.tg, cur = S.treeOpen[p];
+      var depth = p.split('/').length-1;
+      var defOpen = depth<3;
+      S.treeOpen[p] = (cur===undefined? !defOpen : !cur);
+      paneTree(); save(); return;
+    }
+    if((t=e.target.closest('#btnTreeAll'))){ S.treeOpen={}; setAllTree(true); paneTree(); return; }
+    if((t=e.target.closest('#btnTreeNone'))){ S.treeOpen={}; setAllTree(false); paneTree(); return; }
+  });
+
+  document.addEventListener('change', function(e){
+    if(e.target.id==='treeSel'){ S.treeRoot = e.target.value; paneTree(); save(); }
+  });
+  function liveSearch(id, paneId, fn){
+    $('#'+paneId)._q = $('#'+id).value.trim();
+    fn();
+    var i = $('#'+id);
+    if(i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+  }
+  document.addEventListener('input', function(e){
+    if(e.target.id==='recQ')  liveSearch('recQ',  'p-rec',  paneRec);
+    if(e.target.id==='npcQ')  liveSearch('npcQ',  'p-npc',  paneNpc);
+    if(e.target.id==='probQ') liveSearch('probQ', 'p-prob', paneProb);
+    if(e.target.id==='mapQ'){
+      S.mapQ = e.target.value;
+      paneMine(); save();
+      var mi = $('#mapQ');
+      if(mi){ mi.focus(); mi.setSelectionRange(mi.value.length, mi.value.length); }
+    }
+    if(e.target.id==='locQ' || e.target.id==='wpQ'){
+      var id3 = e.target.id;
+      S[id3 === 'locQ' ? 'locQ' : 'wpQ'] = e.target.value;
+      if(id3 === 'locQ') paneLocData(); else paneLocWp();
+      save();
+      var i3 = $('#'+id3);
+      if(i3){ i3.focus(); i3.setSelectionRange(i3.value.length, i3.value.length); }
+    }
+    if(e.target.id==='newsQ'){
+      S.newsQ = e.target.value;
+      paneNews(); save();
+      var i4 = $('#newsQ');
+      if(i4){ i4.focus(); i4.setSelectionRange(i4.value.length, i4.value.length); }
+    }
+    if(e.target.id==='globalQ'){
+      // 비우면 닫지 말고 "무엇을 찾을 수 있나" 목록으로 되돌아간다
+      if(!e.target.value.trim()) renderRecentQ(); else renderGlobalSearch(e.target.value);
+    }
+
+    // 부적 리롤 계산기
+    var TAL = { talKinds:'talKinds', talWant:'talWant', talRolls:'talRolls' };
+    if(TAL[e.target.id]){
+      var v = Math.max(1, Math.floor(Number(e.target.value)||1));
+      S[e.target.id] = v;
+      paneProb(); save();
+      // number 입력은 setSelectionRange를 지원하지 않으므로 포커스만 되돌린다
+      var i2 = $('#'+e.target.id);
+      if(i2) i2.focus();
+    }
+  });
+
+  // 광산 동선 색깔 탭 / 장비 재료 목표 추가
+  document.addEventListener('click', function(e){
+    var t;
+    /* --- 위치 탭 --- */
+    if((t=e.target.closest('[data-lk]'))){ S.locKind = t.dataset.lk; paneLocData(); save(); return; }
+    if((t=e.target.closest('[data-nt]'))){ S.newsTag = t.dataset.nt; paneNews(); save(); return; }
+    if((t=e.target.closest('[data-guide]'))){
+      var gp = t.dataset.guide.split('|');
+      openGuide(gp[0], gp[1]); return;
+    }
+    if(e.target.id === 'btnGuideClose'){ $('#guideModal').classList.remove('on'); return; }
+
+    /* --- 약초 조합 계산기 --- */
+    if((t=e.target.closest('[data-herb]'))){
+      var hn = t.dataset.herb;
+      S.herbPick = S.herbPick || [];
+      var pi = S.herbPick.indexOf(hn);
+      if(pi >= 0) S.herbPick.splice(pi, 1);
+      else if(S.herbPick.length >= 5) toast('약초는 최대 5개까지');
+      else S.herbPick.push(hn);
+      paneLocData(); save(); return;
+    }
+    if(e.target.id === 'btnHerbReset'){ S.herbPick = []; paneLocData(); save(); return; }
+
+    /* --- 웨이포인트 관리 --- */
+    if((t=e.target.closest('[data-wo]'))){ S.wpOrigin = t.dataset.wo; paneLocWp(); save(); return; }
+    if((t=e.target.closest('[data-wpedit]'))){ S.wpEditing = t.dataset.wpedit; paneLocWp(); return; }
+    if(e.target.id === 'btnWpCancel'){ S.wpEditing = null; paneLocWp(); return; }
+    if(e.target.id === 'btnWpSave'){
+      var key = S.wpEditing;
+      if(key){
+        var prev = S.wpEdit[key] || {};
+        S.wpEdit[key] = {
+          name: ($('#wpeName').value||'').trim() || undefined,
+          x: Math.round(Number($('#wpeX').value)||0),
+          y: Math.round(Number($('#wpeY').value)||0),
+          z: Math.round(Number($('#wpeZ').value)||0),
+          hidden: !!prev.hidden
+        };
+        // 내가 추가한 웨이포인트는 원본을 직접 고친다 (수정 목록에 남기지 않음)
+        var mine = (S.myWps||[]).filter(function(w){
+          return ('mine|'+(w.set||'내 웨이포인트')+'|'+w.name+'|'+w.x+','+w.z) === key;
+        })[0];
+        if(mine){
+          var ed = S.wpEdit[key];
+          mine.name = ed.name || mine.name;
+          mine.x = ed.x; mine.y = ed.y; mine.z = ed.z;
+          delete S.wpEdit[key];
+        }
+        S.wpEditing = null; paneLocWp(); save(); toast('웨이포인트 수정 저장');
+      }
+      return;
+    }
+    if((t=e.target.closest('[data-wphide]'))){
+      var hk = t.dataset.wphide;
+      var cur = S.wpEdit[hk] || {};
+      cur.hidden = !cur.hidden;
+      S.wpEdit[hk] = cur;
+      S.wpEditing = null; paneLocWp(); save();
+      toast(cur.hidden ? '숨김' : '숨김 해제'); return;
+    }
+    if((t=e.target.closest('[data-wpreset]'))){
+      delete S.wpEdit[t.dataset.wpreset];
+      S.wpEditing = null; paneLocWp(); save(); toast('원래대로 되돌림'); return;
+    }
+    if((t=e.target.closest('[data-wpdel]'))){
+      var id = t.dataset.wpdel;
+      S.myWps = (S.myWps||[]).filter(function(w){ return String(w.id) !== id; });
+      S.wpEditing = null; paneLocWp(); save(); toast('웨이포인트 삭제'); return;
+    }
+    if(e.target.id === 'btnWpAdd'){
+      var nm = ($('#wpNewName').value||'').trim();
+      var nx = $('#wpNewX').value, nz = $('#wpNewZ').value;
+      if(!nm || nx === '' || nz === ''){ toast('이름과 x·z는 필수입니다'); return; }
+      S.myWps = S.myWps || [];
+      S.myWps.push({
+        id: 'w' + Date.now(), name: nm,
+        x: Math.round(Number(nx)||0), y: Math.round(Number($('#wpNewY').value)||0),
+        z: Math.round(Number(nz)||0),
+        set: ($('#wpNewSet').value||'').trim() || '내 웨이포인트'
+      });
+      S.wpOrigin = 'mine';        // 방금 추가한 게 바로 보이게
+      paneLocWp(); save(); toast(nm+' 추가'); return;
+    }
+    if(e.target.id === 'btnWpExport'){
+      var payload = { version: 1, exportedAt: new Date().toISOString(),
+                      myWps: S.myWps||[], wpEdit: S.wpEdit||{} };
+      var b = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      var a2 = document.createElement('a');
+      a2.href = URL.createObjectURL(b); a2.download = 'my-waypoints.json';
+      a2.click(); setTimeout(function(){URL.revokeObjectURL(a2.href);},1000);
+      toast('my-waypoints.json 내보냄'); return;
+    }
+    if(e.target.id === 'btnWpImport'){ $('#wpFileIn').click(); return; }
+    if(e.target.id === 'btnWpClear'){
+      if(!confirm('웨이포인트 수정·숨김을 전부 되돌릴까요? (내가 추가한 웨이포인트는 그대로)')) return;
+      S.wpEdit = {}; S.wpEditing = null; paneLocWp(); save(); toast('수정 되돌림'); return;
+    }
+
+    if((t=e.target.closest('[data-mc]'))){ S.mineColor = t.dataset.mc; paneMine(); save(); return; }
+    if((t=e.target.closest('[data-ms]'))){ S.mapSet = t.dataset.ms; paneMine(); save(); return; }
+    if((t=e.target.closest('[data-mapjump]'))){
+      var xz = t.dataset.mapjump.split(',');
+      mapJump(+xz[0], +xz[1]);
+      return;
+    }
+    if(e.target.id==='btnMapGo'){
+      mapJump(+($('#mapX').value||0), +($('#mapZ').value||0));
+      return;
+    }
+    if(e.target.id==='btnMapSpawn'){ mapJump(G.SPAWN.x, G.SPAWN.z); return; }
+    if((t=e.target.closest('[data-mapgo]'))){
+      var mxz = t.dataset.mapgo.split(',');
+      mapJump(+mxz[0], +mxz[1]);
+      return;
+    }
+    if((t=e.target.closest('[data-gmap]'))){
+      var gxz = t.dataset.gmap.split(',');
+      $('#gRes').classList.remove('on');
+      mapJump(+gxz[0], +gxz[1]);
+      return;
+    }
+    if((t=e.target.closest('[data-gi]'))){
+      var gl = $('#gRes')._list || [];
+      gotoResult(gl[+t.dataset.gi]);
+      return;
+    }
+    if((t=e.target.closest('[data-gotab]'))){ S.tab = t.dataset.gotab; render(); return; }
+    if(e.target.id==='hSearch'){ $('#globalQ').focus(); $('#globalQ').select(); return; }
+    if(e.target.id==='btnMapSize'){
+      var steps = [420, 620, 820, 1100];
+      S.mapH = steps[(steps.indexOf(S.mapH||620) + 1) % steps.length];
+      syncMapBar(); save(); return;
+    }
+    // 지도만 큰 창으로 따로 띄우기 (현재 보고 있는 좌표 그대로)
+    if(e.target.id==='btnMapPopup'){
+      if(!G || !G.MAP_LINK.href){ toast('지도가 연결되지 않았습니다'); return; }
+      var url = G.mapUrl(S.mapX|0, S.mapZ|0) || G.MAP_LINK.href;
+      var w = Math.max(900, Math.round(screen.availWidth * 0.9));
+      var h = Math.max(600, Math.round(screen.availHeight * 0.9));
+      var left = Math.round((screen.availWidth - w) / 2);
+      var top = Math.round((screen.availHeight - h) / 2);
+      var win = window.open(url, 'hanwolMap',
+        'width='+w+',height='+h+',left='+left+',top='+top+',menubar=no,toolbar=no');
+      if(win) win.focus(); else toast('팝업이 차단됐습니다 — 새 탭에서 열기를 쓰세요');
+      return;
+    }
+    // 지도 프레임만 전체화면
+    if(e.target.id==='btnMapFull'){
+      var fr = $('#mapFrame');
+      if(!fr){ toast('지도가 아직 안 열렸습니다'); return; }
+      if(document.fullscreenElement) document.exitFullscreen();
+      else if(fr.requestFullscreen) fr.requestFullscreen();
+      else toast('이 브라우저는 전체화면을 지원하지 않습니다');
+      return;
+    }
+    if((t=e.target.closest('[data-tg2]'))){
+      S.talGrade = t.dataset.tg2;
+      var f = G && G.TALISMAN.filter(function(x){ return x.grade === S.talGrade; })[0];
+      if(f) S.talKinds = f.list.length;
+      if(S.talWant > S.talKinds) S.talWant = 1;
+      paneProb(); save(); return;
+    }
+    if((t=e.target.closest('[data-gear]'))){
+      var g = G && G.SMITH_GEAR[+t.dataset.gear];
+      if(!g) return;
+      var mul = Math.max(1, +t.dataset.mul || 1);
+      Object.keys(g.mats).forEach(function(m){
+        S.targets[m] = (S.targets[m]||0) + g.mats[m]*mul;
+      });
+      renderTargets(); render();
+      toast(g.tier+' '+g.kind+' 재료'+(mul>1?' ×'+mul:'')+'를 목표에 추가');
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    if(e.target.id==='showMapWps'){ S.showMapWps = e.target.checked; paneMine(); save(); }
+  });
+
+  /* 지도 좌표칸에 "-969, -965" 처럼 통째로 붙여넣어도 알아듣게 */
+  document.addEventListener('paste', function(e){
+    var el = e.target;
+    if(!el || (el.id !== 'mapX' && el.id !== 'mapZ')) return;
+    var txt = (e.clipboardData || window.clipboardData);
+    txt = txt ? txt.getData('text') : '';
+    var c = parseCoords(txt);
+    if(!c) return;
+    e.preventDefault();
+    $('#mapX').value = c.x; $('#mapZ').value = c.z;
+    mapJump(c.x, c.z);
+  });
+  /* 좌표칸에서 Enter 로 바로 이동 */
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target.id !== 'mapX' && e.target.id !== 'mapZ') return;
+    mapJump(+($('#mapX').value||0), +($('#mapZ').value||0));
+  });
+
+  $('#btnVer').onclick = function(){ renderChangelog(); $('#modal').classList.add('on'); markVersionSeen(); };
+  $('#btnModalClose').onclick = function(){ $('#modal').classList.remove('on'); };
+  $('#modal').onclick = function(e){ if(e.target===this) this.classList.remove('on'); };
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') $('#modal').classList.remove('on'); });
+
+  $('#btnTheme').onclick = function(){ S.theme = S.theme==='dark'?'light':'dark'; syncControls(); save(); };
+  $('#btnCopy').onclick = function(){ copyText(summaryText()); };
+  $('#btnReset').onclick = function(){
+    if(!confirm('모든 설정·목표·진행 상황을 초기화할까요?')) return;
+    // 곧바로 지우지 않고 되돌릴 틈을 준다 (실수로 눌렀을 때)
+    var backup = localStorage.getItem(KEY);
+    localStorage.removeItem(KEY);
+    Object.keys(S).forEach(function(k){ delete S[k]; });
+    Object.keys(DEFAULTS).forEach(function(k){ S[k] = JSON.parse(JSON.stringify(DEFAULTS[k])); });
+    SIM = null;
+    buildSelect(); renderTargets(); renderPresets(); syncControls(); refreshVerBtn(); applyFolds(); render();
+    undoBar('초기화했습니다', function(){
+      if(backup){ localStorage.setItem(KEY, backup); }
+      location.reload();
+    }, 10000);
+  };
+
+  /* 글자 크기 · 단축키 · 인쇄 · 맨 위로 */
+  $('#btnFontUp').onclick = function(){ bumpFont(1); };
+  $('#btnFontDown').onclick = function(){ bumpFont(-1); };
+  $('#btnKeys').onclick = function(){ renderKeys(); $('#keyModal').classList.add('on'); };
+  $('#btnKeyClose').onclick = function(){ $('#keyModal').classList.remove('on'); };
+  $('#keyModal').onclick = function(e){ if(e.target===this) this.classList.remove('on'); };
+  $('#btnPrint').onclick = function(){ window.print(); };
+  $('#btnTop').onclick = function(){ window.scrollTo({ top:0, behavior:'smooth' }); };
+  window.addEventListener('scroll', function(){
+    $('#btnTop').classList.toggle('on', window.scrollY > 320);
+  });
+
+  /* 목표 조합 저장·불러오기 */
+  $('#btnPresetSave').onclick = savePreset;
+  $('#presets').addEventListener('click', function(e){
+    var t = e.target.closest('[data-pload]');
+    if(t){ loadPreset(t.dataset.pload); return; }
+    t = e.target.closest('[data-pdel]');
+    if(t){
+      var name = t.dataset.pdel, kept = S.presets[name];
+      delete S.presets[name]; renderPresets(); save();
+      undoBar('"'+name+'" 조합을 지웠습니다', function(){
+        S.presets[name] = kept; renderPresets(); save(); toast('되돌렸습니다');
+      });
+    }
+  });
+  $('#btnExport').onclick = function(){
+    var blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hanwol-craft-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+    toast('내보내기 완료');
+  };
+  $('#btnImport').onclick = function(){ $('#fileIn').click(); };
+  $('#fileIn').onchange = function(){
+    var f = this.files[0]; if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var o = JSON.parse(fr.result);
+        Object.keys(S).forEach(function(k){ if(o[k]!==undefined) S[k]=o[k]; });
+        // 손상된 파일 방어
+        if(!S.targets || typeof S.targets !== 'object') S.targets = {};
+        if(!S.done || typeof S.done !== 'object') S.done = {};
+        if(!S.presets || typeof S.presets !== 'object') S.presets = {};
+        if(!Array.isArray(S.recentQ)) S.recentQ = [];
+        if(!Array.isArray(S.mapRecent)) S.mapRecent = [];
+        SIM=null; buildSelect(); renderTargets(); renderPresets(); syncControls(); refreshVerBtn(); render();
+        toast('불러오기 완료');
+      }catch(e){ toast('파일 형식 오류'); }
+    };
+    fr.readAsText(f); this.value='';
+  };
+
+  // 통합검색 — Ctrl+K로 포커스, Enter로 첫 결과 이동, Esc로 닫기
+  $('#globalQ').addEventListener('keydown', function(e){
+    var box = $('#gRes');
+    var items = $$('#gRes .gi');
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      if(!items.length) return;
+      e.preventDefault();
+      var cur = items.findIndex(function(el){ return el.classList.contains('sel'); });
+      var next = (cur < 0 ? 0 : cur + (e.key === 'ArrowDown' ? 1 : -1));
+      if(next < 0) next = items.length - 1;
+      if(next >= items.length) next = 0;
+      items.forEach(function(el){ el.classList.remove('sel'); });
+      items[next].classList.add('sel');
+      if(items[next].scrollIntoView) items[next].scrollIntoView({ block:'nearest' });
+      updateSearchPreview();
+      return;
+    }
+    if(e.key === 'Enter'){
+      var l = box._list || [];
+      pushRecentQ(this.value);
+      var sel = items.findIndex(function(el){ return el.classList.contains('sel'); });
+      if(l.length) gotoResult(l[sel > 0 ? sel : 0]);
+    } else if(e.key === 'Escape'){
+      this.value = ''; box.classList.remove('on'); this.blur();
+    }
+  });
+  // 검색창을 비운 채 누르면 최근 검색어를 보여 준다
+  // 눌렀을 때·포커스 받을 때 둘 다 (이미 포커스가 있으면 focus 가 안 온다)
+  ['focus','click'].forEach(function(ev){
+    $('#globalQ').addEventListener(ev, function(){
+      if(!this.value.trim()) renderRecentQ();
+    });
+  });
+  $('#gRes').addEventListener('click', function(e){
+    // 최근 검색어 · 분류 미리보기 — 눌러서 그 말로 검색
+    var t = e.target.closest('[data-rq]') || e.target.closest('[data-gcat]');
+    if(t){
+      var q = t.dataset.rq || t.dataset.gcat;
+      $('#globalQ').value = q;
+      $('#globalQ').dispatchEvent(new Event('input', { bubbles:true }));
+      $('#globalQ').focus();
+      return;
+    }
+    // 미리보기의 "탭에서 보기"
+    if(e.target.closest('[data-pgo]')){ gotoResult(selectedResult()); return; }
+  });
+  // 마우스를 올린 항목으로 미리보기를 바꾼다
+  $('#gRes').addEventListener('mouseover', function(e){
+    var gi = e.target.closest('.gi');
+    if(!gi) return;
+    $$('#gRes .gi').forEach(function(el){ el.classList.remove('sel'); });
+    gi.classList.add('sel');
+    updateSearchPreview();
+  });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')){
+      e.preventDefault(); $('#globalQ').focus(); $('#globalQ').select();
+    }
+  });
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.gwrap')) $('#gRes').classList.remove('on');
+  });
+
+  // 웨이포인트 JSON 불러오기
+  $('#wpFileIn').onchange = function(){
+    var f = this.files[0]; if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var o = JSON.parse(fr.result);
+        if(Array.isArray(o.myWps)) S.myWps = o.myWps.filter(function(w){
+          return w && w.name && typeof w.x === 'number' && typeof w.z === 'number';
+        });
+        if(o.wpEdit && typeof o.wpEdit === 'object') S.wpEdit = o.wpEdit;
+        paneLocWp(); save(); toast('웨이포인트 '+(S.myWps.length)+'개 불러옴');
+      }catch(err){ toast('파일 형식 오류'); }
+    };
+    fr.readAsText(f); this.value = '';
+  };
+
+  // 단축키
+  document.addEventListener('keydown', function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    var TABS = ['home','sum','mat','ord','tree','sim','rec','mine','npc','gear','prob','loc','news','map'];
+    if(e.key>='1'&&e.key<='9'){ S.tab=TABS[+e.key-1]; render(); }   // 1~9 = 홈~NPC
+    if(e.key==='0'){ S.tab='gear'; render(); }      // 10번째 탭 (장비 제작)
+    if(e.key==='-'){ S.tab='prob'; render(); }      // 11번째 탭 (확률·부적)
+    if(e.key==='['){ S.tab='loc';  render(); }      // 12번째 탭 (위치)
+    if(e.key===']'){ S.tab='news'; render(); }      // 13번째 탭 (게임 업데이트)
+    if(e.key==='\\'){ S.tab='map'; render(); }      // 14번째 탭 (지도)
+    if(e.key==='t'){ $('#btnTheme').click(); }
+    if(e.key==='?'){ $('#btnKeys').click(); }
+    if(e.key==='+'||e.key==='='){ bumpFont(1); }
+    if(e.key==='_'){ bumpFont(-1); }                // - 는 위치 탭이라 Shift+- 로
+    if(e.key==='Home'){ window.scrollTo({top:0,behavior:'smooth'}); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape') $('#keyModal').classList.remove('on');
+  });
+}
+function setAllTree(open){
+  // 전개도 전체 펼침/접힘: 경로 기반이라 재귀로 채움
+  var root = S.treeRoot; if(!root) return;
+  (function walk(name, path, d){
+    if(d>12) return;
+    S.treeOpen[path] = open;
+    var mats = C.isFurnace(name)?C.FURNACE[name].mats:(C.isTool(name)?(C.toolItem(name).mats||null):null);
+    if(!mats) return;
+    Object.keys(mats).forEach(function(m){ walk(m, path+'/'+m, d+1); });
+  })(root, root, 0);
+}
+
+/* ---------------- 시작 ---------------- */
+load();
+buildSelect();
+renderTargets();
+renderPresets();
+
+syncControls();
+bind();
+bindFolds();
+refreshVerBtn();
+render();
+})();
+</script>
+</body>
+</html>
