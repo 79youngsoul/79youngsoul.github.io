@@ -1,29 +1,32 @@
 # 깃허브에는 "웹사이트 폴더(docs/)"와 소스만 올린다.
 # 아래는 명령 한 줄로 다시 만들 수 있는 것들이라 올리지 않는다.
+#
+# ⚠️ 규칙 앞에는 반드시 "/" 를 붙인다.
+#    "/" 없이 쓰면 git 이 모든 하위 폴더에서 같은 이름을 찾아서
+#    docs/guides, docs/map/tiles 처럼 사이트에 꼭 필요한 것까지 빠진다.
 
-node_modules/
+/node_modules/
 
-# 단일 파일 배포본 (487MB짜리 전체판 포함 — 깃허브 파일 100MB 제한에 걸린다)
-dist/
+# 단일 파일 배포본 (487MB짜리 전체판 포함 — 깃허브 파일 1개 100MB 제한 초과)
+/dist/
 
 # 버전 스냅샷 보관함
-versions/
+/versions/
 
-# 지도 원본 타일·높이·색칠 (321MB, docs/ 안에 필요한 만큼 복사되어 들어간다)
-# 실제 폴더 구조: map/tiles/<서버이름>/{map,depth,slope}/<배율>/...
-map/tiles/
-map/overlays/
-map/overlays.js
-map/heights.js
-map/heights.bin
-map/heights-data.js
+# 지도 원본 (359MB) — 필요한 만큼 docs/map/ 에 복사되어 올라간다
+/map/tiles/
+/map/overlays/
+/map/overlays.js
+/map/heights.js
+/map/heights.bin
+/map/heights-data.js
 
-# 내려받은 공략 이미지 (docs/guides/ 로 복사되어 들어감)
-guides/
+# 내려받은 공략 이미지 원본 — docs/guides/ 로 복사되어 올라간다
+/guides/
 
 # 검사할 때 찍히는 화면 사진
-shot-*.png
+/shot-*.png
 
 # 로컬 설정
-cloud-config.js
-my-waypoints.json
+/cloud-config.js
+/my-waypoints.json
