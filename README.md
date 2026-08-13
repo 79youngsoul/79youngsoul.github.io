@@ -26,7 +26,8 @@
 | `guides/` | **자동 생성**. 내려받은 공략 이미지 (없으면 앱이 원본 사이트에서 불러옴) |
 | `map-waypoints.js` | **자동 생성**. 지도 웨이포인트 (없어도 앱은 정상 동작) |
 | `map/` | **인게임 지도 뷰어** — `map/index.html` + 타일 (321MB, 17,299개) |
-| `verify-source.js` | **원문 메모 ↔ 데이터 자동 대조 94항목** — `node verify-source.js` |
+| `verify-source.js` | **원문 메모(추가.txt) ↔ 데이터 대조 336항목** — `node verify-source.js` |
+| `test-consistency.js` | **데이터 정합성 23항목** — 이름 중복·순환 참조·문서 숫자·docs/dist 최신 여부 |
 | `test-core.js` | 계산·데이터 테스트 449개 — `node test-core.js` |
 | `test-ui.js` | UI 동작 테스트 343개 — `npm i jsdom` 후 `node test-ui.js` |
 | `test-browser.js` | **진짜 크롬 검사** 36항목 (홈·검색 미리보기·지도 픽셀까지) — `npm i playwright` |

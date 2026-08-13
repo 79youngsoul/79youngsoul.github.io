@@ -1,12 +1,22 @@
-/* 원본 메모(대장장이&화로.txt)를 직접 파싱해서 craft-core.js 데이터와 1:1 대조
+/* 원본 메모(추가.txt)를 직접 파싱해서 craft-core.js · game-data.js 데이터와 1:1 대조
  * 사용: node verify-source.js
- * 메모를 수정한 뒤 이걸 먼저 돌리면, 반영이 빠진 항목이 바로 잡힌다. */
+ * 메모를 수정한 뒤 이걸 먼저 돌리면, 반영이 빠진 항목이 바로 잡힌다.
+ *
+ * 예전 메모 이름은 "대장장이&화로.txt" 였다. 지금은 조선장·서고관리인 등
+ * NPC 제작까지 한 파일(추가.txt)에 모여 있어서 그쪽을 본다. */
 'use strict';
 var fs = require('fs');
 var path = require('path');
 var C = require('./craft-core.js');
+var G = require('./game-data.js');
 
-var SRC = path.join(__dirname, '대장장이&화로.txt');
+var SRC = ['추가.txt', '대장장이&화로.txt']
+  .map(function (n) { return path.join(__dirname, n); })
+  .filter(function (f) { return fs.existsSync(f); })[0];
+if (!SRC) {
+  console.log('원문 메모(추가.txt)를 찾지 못해 대조를 건너뜁니다.');
+  process.exit(0);
+}
 var text = fs.readFileSync(SRC, 'utf8').replace(/\r/g, '');
 var lines = text.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
 
@@ -115,6 +125,102 @@ chk('광산 재료 목록이 실제 미제작 재료와 일치',
     shouldBeBase.slice().sort().join(',') === C.BASE.slice().sort().join(','),
     '차이: ' + shouldBeBase.filter(function (x) { return C.BASE.indexOf(x) < 0; }).join(',') + ' / ' +
     C.BASE.filter(function (x) { return shouldBeBase.indexOf(x) < 0; }).join(','));
+
+/* ---------- 6. 원문 오타 대응표 ----------
+ * 메모에 남아 있는 오타는 데이터 쪽 이름으로 바꿔서 비교한다.
+ * (CHANGELOG 에 적어 둔 것과 같은 목록) */
+var TYPO = {
+  '무링맹비급': '무림맹비급', '무랭맹비급': '무림맹비급',
+  '설멸검법': '섬멸검법', '도끼내단': '토끼내단',
+  '동덩어리': '돌덩어리', '1성그룸': '1성그물', '청수적': '녹수정',
+  '강화주머니_소': '강화주머니(소)'
+};
+function fix(n) { return TYPO[n] || n; }
+
+/* 원문 재료 토큰: "1성낫1, 돌덩어리20" / "정련실2. 옥문장식판2"(마침표 오타 포함) */
+function parseLoose(str) {
+  var out = {};
+  // 원문이 "토벌석1 무공정수20 정철광3" 처럼 띄어쓰기로만 나눈 줄도 있다
+  str.replace(/실패시.*$/, '').split(/[,.\s]+/).forEach(function (tok) {
+    tok = tok.trim().replace(/\s+/g, '');
+    if (!tok) return;
+    var m = tok.match(/^(.+?)(\d+)$/);
+    if (m) out[fix(m[1])] = (out[fix(m[1])] || 0) + Number(m[2]);
+    else out[fix(tok)] = (out[fix(tok)] || 0) + 1;
+  });
+  return out;
+}
+
+/* ---------- 7. 낫 (원문 "N성낫 = 재료… 확률% 비용전") ---------- */
+var sickleLines = lines.filter(function (l) { return /^\d성낫\s*=/.test(l); });
+chk('낫 줄 개수 = 5', sickleLines.length === 5, String(sickleLines.length));
+sickleLines.forEach(function (l) {
+  var m = l.match(/^([가-힣0-9]+)\s*=\s*(.+?),?\s*(\d+)%\s*([\d,]+)전\s*$/);
+  if (!m) { problems.push('낫 줄 해석 실패: ' + l); return; }
+  var name = m[1], mats = parseLoose(m[2]), p = Number(m[3]) / 100;
+  var cost = Number(m[4].replace(/,/g, ''));
+  var d = C.toolItem(name);
+  chk('낫 ' + name + ' 존재', !!d, 'CHAINS에 없음');
+  if (!d) return;
+  chk('낫 ' + name + ' 확률 ' + m[3] + '%', Math.abs(d.p - p) < 1e-9, String(d.p * 100) + '%');
+  chk('낫 ' + name + ' 제작비 ' + m[4] + '전', d.cost === cost, String(d.cost));
+  chk('낫 ' + name + ' 재료 [' + show(mats) + ']', sameMats(mats, d.mats), '데이터: ' + show(d.mats));
+});
+
+/* ---------- 8. NPC 제작 (조선장·서고관리인·무림맹주·대장장이·명인대장장이) ----------
+ * 원문 줄 모양: "아이템 = 재료1, 재료2 … [성공확률] N% 비용전 [실패시 …]" */
+var npcLines = lines.filter(function (l) {
+  return /=/.test(l) && /\d+%/.test(l) && !/^\d성낫\s*=/.test(l);
+});
+var seenNpcLine = {};   // 같은 줄이 두 번 붙어 있는 메모라 중복은 한 번만 본다
+chk('NPC 제작 줄이 25개 이상 잡힘', npcLines.length >= 25, String(npcLines.length));
+
+var matchedNpc = 0;
+npcLines.forEach(function (l) {
+  if (seenNpcLine[l]) return;
+  seenNpcLine[l] = 1;
+  // 비용이 없는 줄(주작단)도 있어서 "N전" 은 선택으로 둔다
+  var m = l.match(/^(.+?)\s*=\s*(.+?)\s*(?:성공\s*확률\s*)?(\d+)%\s*(?:([\d,]+)전)?(.*)$/);
+  if (!m) { problems.push('NPC 제작 줄 해석 실패: ' + l); return; }
+  var name = fix(m[1].trim());
+  var p = Number(m[3]) / 100;
+  var cost = m[4] ? Number(m[4].replace(/,/g, '')) : null;
+  var rest = m[2] + ' ' + (m[5] || '');
+
+  // 이름이 겹쳐 "(조각3)" 으로 넣은 것도 찾는다 (명인대장장이 조각 합성)
+  var r = G.NPC_RECIPES[name];
+  var isShard = /조각3/.test(rest) || /조각\d/.test(m[2]);
+  if (isShard || (r && Math.abs(r.p - p) > 1e-9)) {
+    Object.keys(G.NPC_RECIPES).forEach(function (k) {
+      var c = G.NPC_RECIPES[k];
+      if (c.makes === name && /\(조각3\)$/.test(k) && Math.abs(c.p - p) < 1e-9) r = c;
+    });
+  }
+  chk('NPC 제작 ' + name + ' 존재', !!r, 'NPC_RECIPES에 없음');
+  if (!r) return;
+  matchedNpc++;
+  chk('NPC 제작 ' + name + ' 확률 ' + m[3] + '%', Math.abs(r.p - p) < 1e-9, String(r.p * 100) + '%');
+  if (cost !== null) {
+    chk('NPC 제작 ' + name + ' 비용 ' + m[4] + '전', r.cost === cost, String(r.cost));
+  }
+  var mats = parseLoose(m[2]);
+  chk('NPC 제작 ' + name + ' 재료 [' + show(mats) + ']', sameMats(mats, r.mats),
+      '데이터: ' + show(r.mats));
+  var fm = rest.match(/실패시\s*([가-힣]+?)\d*\s*$/);
+  if (fm) chk('NPC 제작 ' + name + ' 실패 시 ' + fm[1], r.fail === fm[1], String(r.fail));
+});
+chk('원문 NPC 제작 줄이 전부 데이터와 이어짐',
+    matchedNpc === Object.keys(seenNpcLine).length,
+    matchedNpc + '/' + Object.keys(seenNpcLine).length);
+
+/* ---------- 9. 상점 (원문 "이름 5,000전") ---------- */
+Object.keys(G.SHOP_ITEMS).forEach(function (n) {
+  var m = text.match(new RegExp(n + '\\s*([\\d,]+)전'));
+  chk('상점 ' + n + ' 이 원문에 있음', !!m, '원문에 없음');
+  if (m) chk('상점 ' + n + ' 가격 ' + m[1] + '전',
+             G.SHOP_ITEMS[n].cost === Number(m[1].replace(/,/g, '')),
+             String(G.SHOP_ITEMS[n].cost));
+});
 
 /* ---------- 결과 ---------- */
 console.log('=== 원문 대조 검증 ===');

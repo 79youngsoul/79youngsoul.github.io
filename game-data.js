@@ -485,7 +485,9 @@
    */
   var LIBRARIAN_CRAFTS = [
     { name: '빙설검법', mats: '강철1 + 무공정수10', cost: 0, p: 1.00 },
-    { name: '압축무공정수', mats: '무공정수100 + 토끼내단5 + 대장장이의불5', cost: 0, p: 1.00 },
+    // 비급이 아니라 상위 비급에 쓰는 재료
+    { name: '압축무공정수', mats: '무공정수100 + 토끼내단5 + 대장장이의불5', cost: 0, p: 1.00,
+      kind: '재료' },
     { name: '벽력공', mats: '토끼내단10', cost: 10000, p: 1.00 },
     { name: '파천검법', mats: '토끼내단20', cost: 10000, p: 1.00 },
     { name: '섬멸검법', mats: '단섬검법1 + 강철1 + 자금1 + 무공정수20', cost: 30000, p: 1.00 },
@@ -664,7 +666,7 @@
       name: c.name, npc: npc, mats: parseMats(c.mats),
       matsText: c.mats, p: c.p, cost: c.cost || 0,
       slot: c.slot || null, fail: c.fail || null, note: c.note || null,
-      makes: c.makes || c.name
+      kind: c.kind || null, makes: c.makes || c.name
     };
   }
   MASTER_SMITH_CRAFTS.forEach(function (c) { addRecipe('명인대장장이', c); });
