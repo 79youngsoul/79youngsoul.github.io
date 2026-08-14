@@ -150,6 +150,7 @@ tbody tr:last-child td{border-bottom:none}
 .badge.f{border-color:var(--info);color:var(--info)}
 .badge.s{border-color:var(--acc);color:var(--acc)}
 .badge.b{border-color:var(--tx3);color:var(--tx3)}
+.badge.n{border-color:var(--ok);color:var(--ok)}   /* NPC 제작 */
 
 /* ---------- 트리/레시피 ---------- */
 .tree{font-size:13px}
@@ -561,8 +562,15 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.1';
+var APP_VERSION = '2.14.2';
 var CHANGELOG = [
+  { v:'2.14.2', d:'2026-08-14', items:[
+    '🌳 <b>전개도가 대부분 안 펼쳐지던 문제 수정</b> — 전개도가 <b>화로·곡괭이 계열 레시피만</b> 알고 있어서, '
+      + '목표로 고를 수 있는 <b>NPC 제작 69개 중 68개</b>(외륜·갑판·대포·그물, 진연옥, 검법·비급, '
+      + '접합제·정련실 같은 중간재)가 재료 없이 한 줄로만 나왔음. 이제 '
+      + '<b>명인대장장이·대장장이·조수·조선장·무림맹주·서고관리인</b> 레시피까지 광산 재료까지 쭉 펼쳐진다',
+    '🏷️ 전개도 딱지에 <b>어느 NPC가 만드는지</b>와 <b>성공 확률</b>을 함께 표시 (예: <code>조선장 5성외륜 ×1 (성공 40%)</code>)',
+  ] },
   { v:'2.14.1', d:'2026-08-14', items:[
     '🔍 <b>지도를 확대해도 뭉개져 보이던 문제 수정</b> — 뷰어가 배율을 고를 때 항상 '
       + '<b>한 단계 성긴 타일</b>을 집어서, 원본이 있는데도 최대 2배 흐리게 그리고 있었음 '
@@ -968,7 +976,13 @@ function toast(msg){ var t=$('#toast'); t.textContent=msg; t.classList.add('on')
 var ALL_ITEMS = C.TOOL_NAMES.filter(function(n){ return !!C.toolItem(n).mats; })
   .concat(Object.keys(C.FURNACE));
 // 도구는 계열 이름('곡괭이'·'낫')을 종류로 쓴다
-function itemKind(n){ return C.isTool(n) ? C.toolChain(n) : C.isFurnace(n) ? '화로' : '광산'; }
+function npcRecipe(n){ return (G && G.NPC_RECIPES[n]) || null; }
+function itemKind(n){
+  if(C.isTool(n)) return C.toolChain(n);
+  if(C.isFurnace(n)) return '화로';
+  var r = npcRecipe(n);
+  return r ? r.npc : '광산';
+}
 
 function buildSelect(){
   var sel = $('#selItem');
@@ -1561,24 +1575,29 @@ function paneTree(){
     + roots.map(function(r){return '<option'+(r===root?' selected':'')+'>'+esc(r)+'</option>';}).join('')
     + '</select><button class="btn sm" id="btnTreeAll">전부 펼치기</button><button class="btn sm" id="btnTreeNone">접기</button></div>';
 
-  function node(name, qty, path, depth){
+  function node(name, qty, path, depth, seen){
+    var npc = npcRecipe(name);
     var mats = C.isFurnace(name) ? C.FURNACE[name].mats
-             : (C.isTool(name) ? (C.toolItem(name).mats||null) : null);
+             : (C.isTool(name) ? (C.toolItem(name).mats||null)
+             : (npc && Object.keys(npc.mats).length ? npc.mats : null));
+    if(mats && seen[name]) mats = null;          // 재료가 자기 자신으로 돌아오면 멈춘다
     var kind = itemKind(name);
-    var badge = '<span class="badge '+(kind==='화로'?'f':C.isTool(name)?'s':'b')+'">'+kind+'</span>';
-    var time = C.isFurnace(name) ? ' <span class="dim">('+T(C.FURNACE[name].sec*R.timeMult)+')</span>' : '';
+    var badge = '<span class="badge '+(kind==='화로'?'f':C.isTool(name)?'s':npc?'n':'b')+'">'+esc(kind)+'</span>';
+    var time = C.isFurnace(name) ? ' <span class="dim">('+T(C.FURNACE[name].sec*R.timeMult)+')</span>'
+             : (npc && npc.p < 1 ? ' <span class="dim">(성공 '+pct(npc.p)+')</span>' : '');
     var open = S.treeOpen[path] !== false && depth < 3 || S.treeOpen[path] === true;
     var head = '<span class="n" data-tg="'+esc(path)+'">'
       + (mats? (open?'▾ ':'▸ ') : '· ') + badge + esc(name) + ' <b class="acc mono">×'+N(qty)+'</b>' + time + '</span>';
     if(!mats || !open) return '<li>'+head+'</li>';
+    var next = Object.create(seen); next[name] = true;
     var kids = Object.keys(mats).map(function(m){
-      return node(m, qty*mats[m], path+'/'+m, depth+1);
+      return node(m, qty*mats[m], path+'/'+m, depth+1, next);
     }).join('');
     return '<li>'+head+'<ul>'+kids+'</ul></li>';
   }
   el.innerHTML = '<div class="card">'+sel
     + '<div class="tree"><ul style="border:none;padding-left:0">'
-    + node(root, S.targets[root], root, 0) + '</ul></div>'
+    + node(root, S.targets[root], root, 0, {}) + '</ul></div>'
     + '<div class="hint">실패 확률·보유 재고를 제외한 <b>순수 레시피 전개</b>입니다. 실제 필요량은 요약/재료 탭 참고.</div></div>';
 }
 
@@ -3791,7 +3810,10 @@ function setAllTree(open){
   (function walk(name, path, d){
     if(d>12) return;
     S.treeOpen[path] = open;
-    var mats = C.isFurnace(name)?C.FURNACE[name].mats:(C.isTool(name)?(C.toolItem(name).mats||null):null);
+    var npc = npcRecipe(name);
+    var mats = C.isFurnace(name)?C.FURNACE[name].mats
+             :(C.isTool(name)?(C.toolItem(name).mats||null)
+             :(npc && Object.keys(npc.mats).length ? npc.mats : null));
     if(!mats) return;
     Object.keys(mats).forEach(function(m){ walk(m, path+'/'+m, d+1); });
   })(root, root, 0);
