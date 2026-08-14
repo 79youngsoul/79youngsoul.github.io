@@ -927,6 +927,16 @@
     ]
   };
 
+  // 보스 레이드 보상. 확률은 고지된 적이 없어 목록만 있다 (표에 % 를 넣지 않는 이유).
+  // 원문 메모의 "이루주문서상자"는 게임 내 표기 "이류주문서상자"와 같은 물건이라 통일했다.
+  var BOSS_RAIDS = [
+    {
+      boss: '검성',
+      note: '아래 7종 중 1개 랜덤 · 개별 확률 미고지',
+      rewards: ['태극단', '백호반지', '은괴', '일반부적뽑기', '이류주문서상자', '반지주문서상자', '금전']
+    }
+  ];
+
   /* ------------------------------------------------------------------
    * 6. 부적
    * ------------------------------------------------------------------ */
@@ -1488,7 +1498,7 @@
     SMITH_GEAR: SMITH_GEAR, ARMOR_PARTS: ARMOR_PARTS, SMITH_ACCESSORY: SMITH_ACCESSORY,
     LINE_COUNT_PROB: LINE_COUNT_PROB, POTENTIAL: POTENTIAL, EXTRA_ABILITY: EXTRA_ABILITY,
     GEAR_TIER_PROB: GEAR_TIER_PROB, GEAR_TIER_NOTE: GEAR_TIER_NOTE,
-    DROP_TABLES: DROP_TABLES, WELL_STONE: WELL_STONE,
+    DROP_TABLES: DROP_TABLES, WELL_STONE: WELL_STONE, BOSS_RAIDS: BOSS_RAIDS,
     HUNTING_GROUNDS: HUNTING_GROUNDS, HERBS: HERBS,
     RED_ITEMS: RED_ITEMS, HAE_ITEMS: HAE_ITEMS, QILIN_ITEMS: QILIN_ITEMS,
     POT_ITEMS: POT_ITEMS, MYSTERY_BOXES: MYSTERY_BOXES,

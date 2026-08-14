@@ -562,8 +562,14 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.3';
+var APP_VERSION = '2.14.4';
 var CHANGELOG = [
+  { v:'2.14.4', d:'2026-08-14', items:[
+    '🗡️ <b>보스 레이드 보상 추가</b> — <b>확률</b> 탭 맨 아래에 <b>검성</b> 보상 7종 '
+      + '(태극단 · 백호반지 · 은괴 · 일반부적뽑기 · 이류주문서상자 · 반지주문서상자 · 금전). '
+      + '한 번에 <b>1개만 랜덤</b>으로 나오고, <b>종류별 확률은 고지된 적이 없어</b> 표가 아닌 목록으로 넣었다',
+    '원문 메모의 "이루주문서상자"는 게임 표기 <b>이류주문서상자</b>와 같은 물건이라 이름을 통일',
+  ] },
   { v:'2.14.3', d:'2026-08-14', items:[
     '⌨️ <b>검색창에 한글이 <code>ㅎㅏㄴㄱㅡㄹ</code> 처럼 자모로 박히던 문제 수정</b> — 검색칸이 '
       + '<b>결과 화면과 한 덩어리로 다시 그려지는</b> 구조라, 한 글자 칠 때마다 입력칸이 새로 만들어지면서 '
@@ -2271,6 +2277,21 @@ function paneProb(){
         return '<tr><td>'+esc(r.n)+'</td><td class="mono">'+r.p+'%</td></tr>'; }).join('')
     + '</tbody></table></div><div class="hint">'+esc(G.WELL_STONE.note)+'</div></div>';
 
+  // 보스 레이드 보상 — 확률 고지가 없어 % 열 없이 목록만 보여준다.
+  // (부적 카드와 같은 .rec/.pill 을 쓰면 이 화면의 부적 개수 세는 검사가 헷갈리므로 표로 둔다)
+  var raid = '<div class="card" style="margin-top:12px"><h2>🗡️ 보스 레이드 보상 '
+    + '<span class="tag">확률 미고지</span></h2>'
+    + '<div class="tw"><table><thead><tr><th style="text-align:left">보스</th>'
+    + '<th style="text-align:left">보상 (1개 랜덤)</th><th>종류</th></tr></thead><tbody>'
+    + G.BOSS_RAIDS.map(function(b){
+        return '<tr><td>'+esc(b.boss)+'</td>'
+          + '<td style="text-align:left;white-space:normal">'+esc(b.rewards.join(' · '))+'</td>'
+          + '<td class="mono">'+b.rewards.length+'종</td></tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div class="hint">보상 <b>종류</b>만 확인된 값입니다. 한 번에 1개만 나오고, '
+    + '<b>종류별 확률은 게임에서 고지된 적이 없습니다</b>.</div></div>';
+
   var talis = G.TALISMAN.map(function(t){
     var list = t.list.filter(function(nm){ return !q || nm.indexOf(q)>=0; });
     if(q && !list.length) return '';
@@ -2370,6 +2391,7 @@ function paneProb(){
         return { n: t.tier, p: t.p }; }))
     + drops
     + well
+    + raid
     + '<div class="card" style="margin-top:12px"><h2>🧧 부적 등급별 확률</h2>'
     + '<div class="hint" style="margin-bottom:8px">'+esc(G.TALISMAN_NOTE)+'</div>'
     + '<div class="hint warn" style="margin-bottom:8px">여기 확률은 <b>등급 안에서 어떤 부적이 나오는지</b>입니다. '

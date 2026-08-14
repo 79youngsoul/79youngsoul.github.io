@@ -541,6 +541,8 @@ Promise.resolve(new JSDOM(html, {
   ok('추가능력 확률 렌더', /추가능력 확률/.test(txt('#p-prob')));
   ok('토벌의뢰 표 렌더', /무림맹비급/.test(txt('#p-prob')));
   ok('우물혈석 표 렌더', /6단계/.test(txt('#p-prob')));
+  ok('보스 레이드 보상 렌더',
+    /보스 레이드 보상/.test(txt('#p-prob')) && /백호반지/.test(txt('#p-prob')));
   ok('부적 6등급 카드(신화 포함)', $$('#p-prob .rec').length === 6, $$('#p-prob .rec').length);
   ok('신화 카드에 계산값 표시', /계산값 100÷13/.test(txt('#p-prob')));
   ok('등급 확률 미고지 안내 표시', /등급 자체가 뜰 확률은/.test(txt('#p-prob')));
