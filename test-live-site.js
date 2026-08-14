@@ -27,7 +27,7 @@ function ok(n, c, x) { if (c) pass++; else { fail++; console.log('  ✗ ' + n + 
 
   ok('제목', (await page.title()).includes('한월'), await page.title());
   ok('탭 14개', (await page.$$('.tab')).length === 14);
-  ok('버전 최신', (await page.content()).includes('2.14.0'));
+  ok('버전 최신', (await page.content()).includes('2.14.1'));
 
   for (const t of ['sum', 'mat', 'rec', 'npc', 'gear', 'prob', 'loc', 'news', 'map']) {
     await page.$eval('.tab[data-p="' + t + '"]', el => {

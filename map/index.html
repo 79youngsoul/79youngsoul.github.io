@@ -580,7 +580,9 @@ function bestLevel() {
   const pyramid = state.layer && state.layer.kinds.map;
   if (!pyramid || !pyramid.levels.length) return 0;
   const available = pyramid.levels.map((l) => l.level);
-  return clamp(Math.ceil(Math.log2(1 / state.scale)),
+  // 올림(ceil)이면 화면보다 늘 한 단계 성긴 타일을 골라서 최대 2배까지 뭉개져 보인다.
+  // 반올림하면 가장 가까운 배율을 골라 늘어나는 폭이 √2 밑으로 줄어든다.
+  return clamp(Math.round(Math.log2(1 / state.scale)),
                Math.min(...available), Math.max(...available));
 }
 
@@ -655,17 +657,19 @@ function drawKind(kind, level, w, h) {
   const tz0 = Math.floor(toWorldZ(0) / span);
   const tz1 = Math.floor(toWorldZ(h) / span);
 
-  ctx.imageSmoothingEnabled = state.settings.smooth || state.scale < 1;
+  // 원본 1픽셀이 화면에서 몇 px 인지 — 줄여 그릴 때만 부드럽게, 키울 때는 또렷하게
+  ctx.imageSmoothingEnabled = state.settings.smooth || size / TILE < 1;
   const rects = [];
   for (let tz = tz0; tz <= tz1; tz++) {
     for (let tx = tx0; tx <= tx1; tx++) {
       if (!info.set.has(`${tx}_${tz}`)) continue;
       const sx = toScreenX(tx * span);
       const sy = toScreenZ(tz * span);
-      // round outward so neighbouring tiles never leave a hairline gap
-      const x = Math.floor(sx);
-      const y = Math.floor(sy);
-      const rect = [x, y, Math.ceil(sx + size) - x, Math.ceil(sy + size) - y];
+      // 시작·끝을 똑같이 반올림한다 — 옆 타일의 시작점과 정확히 맞물려서
+      // 틈도 안 생기고 겹치지도 않는다 (겹치면 음영·깊이를 두 번 곱해 이음새가 어두워짐)
+      const x = Math.round(sx);
+      const y = Math.round(sy);
+      const rect = [x, y, Math.round(sx + size) - x, Math.round(sy + size) - y];
       const entry = getTile(tileUrl(kind, level, tx, tz));
       if (!entry.ok) continue;
       ctx.drawImage(entry.img, rect[0], rect[1], rect[2], rect[3]);
@@ -1056,10 +1060,13 @@ function updateStatus() {
     nether.textContent = state.dim.typeId === 'minecraft:the_nether'
       ? `오버월드 ${x * 8}, ${z * 8}` : `네더 ${Math.floor(x / 8)}, ${Math.floor(z / 8)}`;
   }
+  // 원본 타일은 1블록 = 1픽셀이라 그보다 더 키우면 네모만 커진다 — 그 사실을 알려준다.
   $('stat-zoom').textContent = !s.zoomLevel ? ''
-    : state.scale >= 1
-      ? `1블록 = ${+state.scale.toFixed(2)}px`
-      : `1px = ${Math.round(1 / state.scale)}블록`;
+    : state.scale > 1
+      ? `1블록 = ${+state.scale.toFixed(2)}px · 원본 한계`
+      : state.scale === 1
+        ? '1블록 = 1px'
+        : `1px = ${Math.round(1 / state.scale)}블록`;
 }
 
 // ------------------------------------------------------------ navigation --
