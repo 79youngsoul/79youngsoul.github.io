@@ -4,6 +4,45 @@
 
 ---
 
+## v2.14.3 — 2026-08-14
+
+**⌨️ 검색창에 한글이 `ㅎㅏㄴㄱㅡㄹ` 처럼 자모로 박히던 문제 수정**
+
+검색칸은 결과 화면과 한 덩어리로 그려진다. 그래서 한 글자 칠 때마다
+
+```js
+document.addEventListener('input', function(e){
+  if(e.target.id==='recQ') liveSearch('recQ', 'p-rec', paneRec); // 패널 innerHTML 통째로 교체
+});
+```
+
+패널을 다시 그리면서 **입력칸 자체가 새 요소로 바뀌었다.** 한글은 `ㅎ`→`하`→`한` 처럼
+조합 중인 글자를 입력칸이 들고 있는데, 그 입력칸이 사라지면 조합이 강제로 끊기고
+자모가 하나씩 확정돼 박힌다. 영어·숫자는 조합이 없어서 멀쩡했다.
+
+이제 조합 중에는 다시 그리지 않고, 조합이 끝난 뒤 한 번만 처리한다.
+
+```js
+document.addEventListener('compositionstart', function(){ imeComposing = true; });
+document.addEventListener('compositionend', function(e){ imeComposing = false; applySearchInput(e.target); });
+document.addEventListener('input', function(e){
+  if(imeComposing || e.isComposing) return;
+  applySearchInput(e.target);
+});
+```
+
+고친 검색칸: **레시피 · NPC · 확률 · 위치 · 업데이트 · 광산**.
+
+**🔎 전체 검색 — 한글 확정 Enter로 엉뚱한 탭으로 튀던 것 수정**
+
+한글을 확정하는 Enter도 결과 이동으로 받아서, 글자를 확정하자마자 다른 탭으로 넘어갔다.
+`e.isComposing`(구형 브라우저는 `keyCode 229`)일 때는 넘긴다.
+
+검증: Chrome DevTools Protocol의 `Input.imeSetComposition` 으로 실제 한글 조합을 흉내내
+7개 검색칸 전부 `한글` 이 온전히 들어가는지 확인 (고치기 전에는 5개가 `ㅎ하한한ㄱ한그한글` 로 깨짐).
+
+---
+
 ## v2.14.2 — 2026-08-14
 
 **🌳 전개도가 대부분 안 펼쳐지던 문제 수정**

@@ -562,8 +562,16 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.2';
+var APP_VERSION = '2.14.3';
 var CHANGELOG = [
+  { v:'2.14.3', d:'2026-08-14', items:[
+    '⌨️ <b>검색창에 한글이 <code>ㅎㅏㄴㄱㅡㄹ</code> 처럼 자모로 박히던 문제 수정</b> — 검색칸이 '
+      + '<b>결과 화면과 한 덩어리로 다시 그려지는</b> 구조라, 한 글자 칠 때마다 입력칸이 새로 만들어지면서 '
+      + '한글 조합(ㅎ+ㅏ+ㄴ→한)이 끊겼음. 이제 <b>조합이 끝난 뒤 한 번만</b> 다시 그린다 '
+      + '(레시피·NPC·확률·위치·업데이트·광산 검색 전부)',
+    '🔎 <b>전체 검색에서 한글 확정 Enter로 엉뚱한 탭으로 튀던 것 수정</b> — 조합을 끝내는 Enter는 '
+      + '결과 이동으로 쓰지 않는다',
+  ] },
   { v:'2.14.2', d:'2026-08-14', items:[
     '🌳 <b>전개도가 대부분 안 펼쳐지던 문제 수정</b> — 전개도가 <b>화로·곡괭이 계열 레시피만</b> 알고 있어서, '
       + '목표로 고를 수 있는 <b>NPC 제작 69개 중 68개</b>(외륜·갑판·대포·그물, 진연옥, 검법·비급, '
@@ -3388,7 +3396,30 @@ function bind(){
     var i = $('#'+id);
     if(i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
   }
+  /* 한글 입력(IME) — 조합 중에는 화면을 다시 그리지 않는다.
+   * 검색칸은 패널 HTML을 통째로 새로 그리는 안에 들어 있어서,
+   * 한 글자 칠 때마다 다시 그리면 입력칸 자체가 새로 만들어지고
+   * 조합이 끊겨 "ㅎㅏㄴㄱㅡㄹ" 처럼 자모가 하나씩 박힌다.
+   * 그래서 조합이 끝난 뒤(compositionend) 한 번만 처리한다. */
+  var imeComposing = false;
+  var justComposed = null;
+  document.addEventListener('compositionstart', function(){ imeComposing = true; });
+  document.addEventListener('compositionend', function(e){
+    imeComposing = false;
+    justComposed = e.target;
+    applySearchInput(e.target);
+    setTimeout(function(){ justComposed = null; }, 0);
+  });
   document.addEventListener('input', function(e){
+    // 조합 중이면 넘긴다. 조합이 방금 끝나 이미 처리한 칸도 두 번 그리지 않는다.
+    if(imeComposing || e.isComposing) return;
+    if(justComposed === e.target) return;
+    applySearchInput(e.target);
+  });
+  // el = 값이 바뀐 입력칸. 아래 처리는 예전 이벤트 코드 그대로 쓰려고 e.target 모양을 유지한다.
+  function applySearchInput(el){
+    if(!el || !el.id) return;
+    var e = { target: el };
     if(e.target.id==='recQ')  liveSearch('recQ',  'p-rec',  paneRec);
     if(e.target.id==='npcQ')  liveSearch('npcQ',  'p-npc',  paneNpc);
     if(e.target.id==='probQ') liveSearch('probQ', 'p-prob', paneProb);
@@ -3427,7 +3458,7 @@ function bind(){
       var i2 = $('#'+e.target.id);
       if(i2) i2.focus();
     }
-  });
+  }
 
   // 광산 동선 색깔 탭 / 장비 재료 목표 추가
   document.addEventListener('click', function(e){
@@ -3706,6 +3737,8 @@ function bind(){
 
   // 통합검색 — Ctrl+K로 포커스, Enter로 첫 결과 이동, Esc로 닫기
   $('#globalQ').addEventListener('keydown', function(e){
+    // 한글 조합을 끝내는 Enter(IME 확정)는 검색 이동으로 쓰지 않는다. 229는 옛 브라우저용.
+    if(e.isComposing || e.keyCode === 229) return;
     var box = $('#gRes');
     var items = $$('#gRes .gi');
     if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
