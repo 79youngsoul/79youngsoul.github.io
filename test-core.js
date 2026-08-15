@@ -812,8 +812,8 @@ function readMapData(file) {
   ok('없는 공략은 null', G.guideOf('기린단', '없는퀘스트') === null);
 
   /* NPC 제작 목표 역산 */
-  ok('NPC 제작 69종(명인 15+목걸이 3 · 조수 4 · 조선장 17 · 무림맹주 3 · 대장장이 9 · 서고관리인 18)',
-     G.npcCraftNames().length === 69, G.npcCraftNames().length);
+  ok('NPC 제작 70종(명인 15+목걸이 3 · 조수 5 · 조선장 17 · 무림맹주 3 · 대장장이 9 · 서고관리인 18)',
+     G.npcCraftNames().length === 70, G.npcCraftNames().length);
   ok('주문서상자 연쇄 (일류 ← 이류 ← 삼류)', (function () {
     var pl = G.npcPlan({ '일류주문서상자': 1 });
     return pl.steps.map(function (x) { return x.name; }).join('>') === '일류주문서상자>이류주문서상자'

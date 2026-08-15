@@ -562,8 +562,15 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.4';
+var APP_VERSION = '2.14.5';
 var CHANGELOG = [
+  { v:'2.14.5', d:'2026-08-15', items:[
+    '🛡️ <b>천옥완갑 추가</b> — 대장장이 조수 제작에 <b>천옥완갑</b>(취금완갑1 · 금강석3 · '
+      + '흉폭한영기8 · 설화오금2 · 500,000전 · 100%). 완갑 계열이 '
+      + '<b>정포완갑 → 황동완갑 → 취금완갑 → 천옥완갑</b> 4단계로 이어진다',
+    '🔓 <b>조수 제작 표에 "조건" 칸 추가</b> — 천옥완갑은 <b>탑오르기-5 퀘스트</b>를 끝내야 '
+      + '제작 목록에 뜬다. 조건은 검색에도 걸린다',
+  ] },
   { v:'2.14.4', d:'2026-08-14', items:[
     '🗡️ <b>보스 레이드 보상 추가</b> — <b>확률</b> 탭 맨 아래에 <b>검성</b> 보상 7종 '
       + '(태극단 · 백호반지 · 은괴 · 일반부적뽑기 · 이류주문서상자 · 반지주문서상자 · 금전). '
@@ -2006,12 +2013,13 @@ function paneNpc(){
         + '<td style="text-align:left;white-space:normal" class="dim">'+esc(s.note||'')+'</td></tr>';
     }).join('');
 
-  var asstCraftRows = G.ASSISTANT_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats); })
+  var asstCraftRows = G.ASSISTANT_CRAFTS.filter(function(c){ return hit(c.name) || hit(c.mats) || hit(c.note||''); })
     .map(function(c){
       return '<tr><td>'+esc(c.name)+'</td>'
         + '<td style="text-align:left;white-space:normal">'+esc(c.mats)+'</td>'
         + '<td class="mono">'+(c.cost ? N(c.cost)+'전' : '0전')+'</td>'
-        + '<td class="ok">'+(c.p*100)+'%</td></tr>';
+        + '<td class="ok">'+(c.p*100)+'%</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+(c.note?esc(c.note):'-')+'</td></tr>';
     }).join('');
 
   // 대장장이 — 도구 승급 외 일반 제작 (목걸이 계열은 실패 시 조각)
@@ -2126,8 +2134,9 @@ function paneNpc(){
     + '<th style="text-align:left">비고</th></tr></thead><tbody>'
     + (asstRows||'<tr><td colspan="3" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
     + '<div class="tw" style="margin-top:8px"><table><thead><tr><th>제작</th>'
-    + '<th style="text-align:left">재료</th><th>비용</th><th>성공률</th></tr></thead><tbody>'
-    + (asstCraftRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<th style="text-align:left">재료</th><th>비용</th><th>성공률</th>'
+    + '<th style="text-align:left">조건</th></tr></thead><tbody>'
+    + (asstCraftRows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
     + '<div class="hint">금화는 유료 재화입니다. 좌표는 아직 미확인.</div></div>'
 
     /* --- 그 밖의 제작 NPC --- */
@@ -2857,7 +2866,8 @@ function searchIndex(){
     var kind = r.npc === '대장장이 조수' ? '조수 제작' : r.npc;
     var desc = r.matsText + ' · 성공 ' + pct(r.p)
       + (r.cost ? ' · ' + N(r.cost) + '전' : '')
-      + (r.fail ? ' · 실패 시 ' + r.fail : '');
+      + (r.fail ? ' · 실패 시 ' + r.fail : '')
+      + (r.note ? ' · ' + r.note : '');
     add(kind, nm, desc, 'npc', null, null, nm);
   });
   Object.keys(G.SHOP_ITEMS).forEach(function(nm){
