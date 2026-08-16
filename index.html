@@ -562,8 +562,18 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.6';
+var APP_VERSION = '2.14.7';
 var CHANGELOG = [
+  { v:'2.14.7', d:'2026-08-16', items:[
+    '🔍 <b>확률 탭 내용이 전체 검색에 안 걸리던 문제 수정</b> — <b>드랍 확률표 아이템</b>'
+      + '(은룡도 · 자룡도 · 파리채 · 어깨위참새 · 강화주머니 …), <b>보스 레이드 보상</b>, '
+      + '<b>잠재/추가능력 옵션</b>, <b>제작대 티어</b>, <b>우물혈석</b>, '
+      + '<b>약초 조합 결과(환 13종)</b> 전부 검색됨',
+    '🎯 <b>확률 탭 검색칸이 부적 말고 다른 표도 거른다</b> — 전에는 부적 목록만 걸러져서 '
+      + '"은룡도"를 넣으면 아무 표도 안 줄었다. 이제 확률표·레이드·잠재/추가능력 표의 '
+      + '줄까지 걸러지고, 거른 표에는 <b>검색 중 n/m줄 표시</b>가 붙는다 '
+      + '(합계는 항상 표 전체 기준)',
+  ] },
   { v:'2.14.6', d:'2026-08-16', items:[
     '🐒 <b>오공 레이드 보상 추가</b> — <b>확률</b> 탭 보스 레이드 표에 <b>오공</b> 보상 8종 '
       + '(명월단 · 화심반지 · 황금반지 · 은괴 · 일반부적뽑기 · 이류주문서상자 · 반지주문서상자 · 금전). '
@@ -2248,15 +2258,24 @@ function paneGear(){
 }
 
 /* ---------------- 확률 · 부적 ---------------- */
-function probTable(title, rows, unit){
-  var body = rows.map(function(r){
+/* q 가 있으면 항목 이름으로 줄을 거른다. 표 제목이 걸리면 표 전체를 남긴다.
+ * 합계는 언제나 표 전체 기준(거른 줄만 더하면 "합계 5%" 같은 이상한 값이 된다). */
+function probTable(title, rows, unit, q){
+  var titleHit = q && title.indexOf(q) >= 0;
+  var show = (!q || titleHit) ? rows : rows.filter(function(r){
+    return String(r.n||r.k||r.name).indexOf(q) >= 0;
+  });
+  if(!show.length) return '';
+  var body = show.map(function(r){
     return '<tr><td>'+esc(r.n||r.k||r.name)+'</td><td class="mono">'+r.p+(unit||'%')+'</td></tr>';
   }).join('');
   var sum = rows.reduce(function(a,r){ return a + r.p; }, 0);
   return '<div class="card" style="margin-top:12px"><h2>'+esc(title)+'</h2>'
     + '<div class="tw"><table><thead><tr><th style="text-align:left">항목</th><th>확률</th></tr></thead>'
     + '<tbody>'+body+'</tbody></table></div>'
-    + '<div class="hint">합계 '+(Math.round(sum*10000)/10000)+'%</div></div>';
+    + '<div class="hint">합계 '+(Math.round(sum*10000)/10000)+'%'
+    + (show.length < rows.length ? ' <span class="dim">· 검색 중 '+show.length+'/'+rows.length+'줄 표시</span>' : '')
+    + '</div></div>';
 }
 
 function paneProb(){
@@ -2265,7 +2284,10 @@ function paneProb(){
   var q = el._q || '';
 
   function abilityCard(a){
-    var rows = a.stats.map(function(s){
+    var stats = (!q || a.title.indexOf(q) >= 0) ? a.stats
+      : a.stats.filter(function(s){ return s.name.indexOf(q) >= 0; });
+    if(!stats.length) return '';
+    var rows = stats.map(function(s){
       return '<tr><td>'+esc(s.name)+'</td><td class="mono">'+s.appear+'%</td>'
         + '<td class="mono">'+esc(s.range)+'</td><td class="mono dim">'+esc(s.step)+'</td>'
         + '<td class="mono dim">각 '+s.each+'%</td></tr>';
@@ -2275,7 +2297,10 @@ function paneProb(){
       + '<th>수치 범위</th><th>단위</th><th>수치별</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   }
 
-  var lc = '<div class="card" style="margin-top:12px"><h2>📏 확인 줄 수 확률 <span class="tag">잠재·추가 공통</span></h2>'
+  var lcHit = !q || '확인 줄 수 확률'.indexOf(q) >= 0
+    || G.LINE_COUNT_PROB.first.some(function(f){ return f.k.indexOf(q) >= 0; });
+  var lc = !lcHit ? ''
+    : '<div class="card" style="margin-top:12px"><h2>📏 확인 줄 수 확률 <span class="tag">잠재·추가 공통</span></h2>'
     + '<div class="tw"><table><thead><tr><th>줄 수</th><th>최초 확인</th><th>재확인</th></tr></thead><tbody>'
     + G.LINE_COUNT_PROB.first.map(function(f, i){
         return '<tr><td>'+esc(f.k)+'</td><td class="mono">'+f.p+'%</td>'
@@ -2283,9 +2308,11 @@ function paneProb(){
       }).join('')
     + '</tbody></table></div></div>';
 
-  var drops = G.DROP_TABLES.map(function(t){ return probTable(t.title, t.rows); }).join('');
+  var drops = G.DROP_TABLES.map(function(t){ return probTable(t.title, t.rows, '%', q); }).join('');
 
-  var well = '<div class="card" style="margin-top:12px"><h2>'+esc(G.WELL_STONE.title)+'</h2>'
+  var wellHit = !q || G.WELL_STONE.title.indexOf(q) >= 0 || '우물혈석'.indexOf(q) >= 0;
+  var well = !wellHit ? ''
+    : '<div class="card" style="margin-top:12px"><h2>'+esc(G.WELL_STONE.title)+'</h2>'
     + '<div class="tw"><table><thead><tr><th>단계</th><th>확률</th></tr></thead><tbody>'
     + G.WELL_STONE.rows.map(function(r){
         return '<tr><td>'+esc(r.n)+'</td><td class="mono">'+r.p+'%</td></tr>'; }).join('')
@@ -2293,11 +2320,17 @@ function paneProb(){
 
   // 보스 레이드 보상 — 확률 고지가 없어 % 열 없이 목록만 보여준다.
   // (부적 카드와 같은 .rec/.pill 을 쓰면 이 화면의 부적 개수 세는 검사가 헷갈리므로 표로 둔다)
-  var raid = '<div class="card" style="margin-top:12px"><h2>🗡️ 보스 레이드 보상 '
+  var raidRows = (!q || '보스 레이드 보상'.indexOf(q) >= 0) ? G.BOSS_RAIDS
+    : G.BOSS_RAIDS.filter(function(b){
+        return b.boss.indexOf(q) >= 0
+          || b.rewards.some(function(r){ return r.indexOf(q) >= 0; });
+      });
+  var raid = !raidRows.length ? ''
+    : '<div class="card" style="margin-top:12px"><h2>🗡️ 보스 레이드 보상 '
     + '<span class="tag">확률 미고지</span></h2>'
     + '<div class="tw"><table><thead><tr><th style="text-align:left">보스</th>'
     + '<th style="text-align:left">보상 (1개 랜덤)</th><th>종류</th></tr></thead><tbody>'
-    + G.BOSS_RAIDS.map(function(b){
+    + raidRows.map(function(b){
         return '<tr><td>'+esc(b.boss)+'</td>'
           + '<td style="text-align:left;white-space:normal">'+esc(b.rewards.join(' · '))+'</td>'
           + '<td class="mono">'+b.rewards.length+'종</td></tr>';
@@ -2395,14 +2428,14 @@ function paneProb(){
 
   el.innerHTML = ''
     + '<div class="card"><h2>🎯 확률 공개 '+srcTag(G.PROB_SOURCE)+'</h2>'
-    + '<input type="text" id="probQ" placeholder="부적 이름 검색…" value="'+esc(q)+'">'
+    + '<input type="text" id="probQ" placeholder="부적·드랍 아이템·잠재/추가 옵션 검색…" value="'+esc(q)+'">'
     + '<div class="hint">게임 내 공식 확률 고지 자료를 그대로 옮긴 값입니다.</div></div>'
     + calc
     + lc
     + abilityCard(G.POTENTIAL)
     + abilityCard(G.EXTRA_ABILITY)
     + probTable('대장간 제작대 장비제작 티어 확률', G.GEAR_TIER_PROB.map(function(t){
-        return { n: t.tier, p: t.p }; }))
+        return { n: t.tier, p: t.p }; }), '%', q)
     + drops
     + well
     + raid
@@ -2892,6 +2925,41 @@ function searchIndex(){
   });
   G.TALISMAN.forEach(function(t){
     t.list.forEach(function(nm){ add('부적', nm, t.grade+' 등급', 'prob', null, null, nm); });
+  });
+  // 확률 탭 표들 — 같은 이름이 여러 표에 나오므로(예: 은괴) 이름별로 한 줄로 합친다
+  var dropWhere = {};
+  G.DROP_TABLES.forEach(function(t){
+    t.rows.forEach(function(r){
+      (dropWhere[r.n] = dropWhere[r.n] || []).push(t.title.replace(/ ?확률$/, '')+' '+r.p+'%');
+    });
+  });
+  Object.keys(dropWhere).forEach(function(nm){
+    add('드랍 확률', nm, dropWhere[nm].join(' · '), 'prob', null, null, nm);
+  });
+  add('드랍 확률', '우물혈석', G.WELL_STONE.title+' · '+G.WELL_STONE.note,
+      'prob', null, null, '우물혈석');
+  // 보스 레이드 — 보스 이름 + 보상 아이템 (보상 하나가 여러 보스에 걸리면 합쳐서 한 줄)
+  var raidWhere = {};
+  G.BOSS_RAIDS.forEach(function(b){
+    add('보스 레이드', b.boss+' 레이드 보상', b.rewards.join(' · ')+' 중 1개 랜덤 · 확률 미고지',
+        'prob', null, null, b.boss);
+    b.rewards.forEach(function(r){ (raidWhere[r] = raidWhere[r] || []).push(b.boss); });
+  });
+  Object.keys(raidWhere).forEach(function(nm){
+    add('레이드 보상', nm, raidWhere[nm].join('·')+' 레이드 · 1개 랜덤 · 확률 미고지',
+        'prob', null, null, nm);
+  });
+  [G.POTENTIAL, G.EXTRA_ABILITY].forEach(function(a){
+    a.stats.forEach(function(s){
+      add(a.title, s.name, '등장 '+s.appear+'% · '+s.range, 'prob', null, null, s.name);
+    });
+  });
+  G.GEAR_TIER_PROB.forEach(function(t){
+    add('제작 티어', t.tier, '대장간 제작대 티어 확률 '+t.p+'%', 'prob', null, null, t.tier);
+  });
+  // 약초 조합 결과(환) — 계산기가 위치 탭에 있어서 '약초'로 걸러 보낸다
+  G.HERB_RESULTS.forEach(function(r){
+    add('약초 조합', r.name, r.score+'점 · '+r.effect, 'loc', null, null, '약초');
   });
   G.GUIDE_VIDEOS.forEach(function(v){
     add('가이드 영상', v.title, v.tip, 'sum', null, null, null);

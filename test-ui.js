@@ -557,7 +557,19 @@ Promise.resolve(new JSDOM(html, {
   input($('#probQ'), '현무수호진');
   ok('부적 검색 필터링', $$('#p-prob .pill').length === 1, $$('#p-prob .pill').length);
   ok('검색 시 해당 등급만 표시', $$('#p-prob .rec').length === 1, $$('#p-prob .rec').length);
+  ok('부적 검색 시 확률표 숨김', !/토벌의뢰 아이템/.test(txt('#p-prob')));
+  input($('#probQ'), '은룡도');
+  ok('확률표 항목도 검색됨', /은룡도/.test(txt('#p-prob')));
+  ok('확률표 검색 시 줄 수 표기', /검색 중 1\//.test(txt('#p-prob')), txt('#p-prob').slice(0, 80));
+  input($('#probQ'), '오공');
+  ok('보스 이름으로 레이드 표 필터', /보스 레이드 보상/.test(txt('#p-prob'))
+    && /명월단/.test(txt('#p-prob')) && !/태극단/.test(txt('#p-prob')));
+  input($('#probQ'), '스킬속도');
+  ok('잠재능력 옵션도 검색됨', /잠재능력 확률/.test(txt('#p-prob'))
+    && !/추가능력 확률/.test(txt('#p-prob')));
   input($('#probQ'), '');
+  ok('검색 지우면 표 전부 복귀',
+    /토벌의뢰 아이템/.test(txt('#p-prob')) && /태극단/.test(txt('#p-prob')));
 
   // 부적 리롤 계산기
   ok('리롤 계산기 렌더', /부적 리롤 계산기/.test(txt('#p-prob')));
@@ -705,6 +717,21 @@ Promise.resolve(new JSDOM(html, {
   ok('비급도 통합검색됨', /비급/.test(txt('#gRes')) && /빙천검법/.test(txt('#gRes')));
   input($('#globalQ'), '천보산');
   ok('비석도 통합검색됨', /비석/.test(txt('#gRes')));
+  input($('#globalQ'), '은룡도');
+  ok('드랍 확률표 아이템도 검색됨',
+    /드랍 확률/.test(txt('#gRes')) && /은룡도/.test(txt('#gRes')));
+  input($('#globalQ'), '오공');
+  ok('보스 레이드도 검색됨', /보스 레이드/.test(txt('#gRes')) && /오공/.test(txt('#gRes')));
+  input($('#globalQ'), '백호반지');
+  ok('레이드 보상 아이템도 검색됨', /레이드 보상/.test(txt('#gRes')));
+  input($('#globalQ'), '드랍률');
+  ok('추가능력 옵션도 검색됨', /추가능력/.test(txt('#gRes')));
+  input($('#globalQ'), '3티어');
+  ok('제작 티어도 검색됨', /제작 티어/.test(txt('#gRes')));
+  input($('#globalQ'), '황토환');
+  ok('약초 조합 결과도 검색됨', /약초 조합/.test(txt('#gRes')));
+  input($('#globalQ'), '우물혈석');
+  ok('우물혈석도 검색됨', /우물혈석/.test(txt('#gRes')));
   input($('#globalQ'), '적동괴');
   ok('재료도 검색됨', $$('#gRes .gi').length > 0, $$('#gRes .gi').length);
   click($('#gRes .gi'));
