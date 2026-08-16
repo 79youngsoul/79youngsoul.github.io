@@ -732,6 +732,17 @@ Promise.resolve(new JSDOM(html, {
   ok('약초 조합 결과도 검색됨', /약초 조합/.test(txt('#gRes')));
   input($('#globalQ'), '우물혈석');
   ok('우물혈석도 검색됨', /우물혈석/.test(txt('#gRes')));
+  input($('#globalQ'), '흉폭한영기');
+  ok('레시피에만 나오는 재료도 검색됨',
+    /제작 재료/.test(txt('#gRes')) && /흉폭한영기/.test(txt('#gRes')));
+  input($('#globalQ'), '용린사');
+  ok('상자 내용물도 검색됨', /상자 내용물/.test(txt('#gRes')));
+  input($('#globalQ'), '청색광산');
+  ok('광산 색도 검색됨', /광산 색/.test(txt('#gRes')) && /한철/.test(txt('#gRes')));
+  input($('#globalQ'), '주문서강화');
+  ok('조수 강화도 검색됨', /조수 강화/.test(txt('#gRes')));
+  input($('#globalQ'), 'S그룹');
+  ok('약초 그룹도 검색됨', /약초 그룹/.test(txt('#gRes')));
   input($('#globalQ'), '적동괴');
   ok('재료도 검색됨', $$('#gRes .gi').length > 0, $$('#gRes .gi').length);
   click($('#gRes .gi'));

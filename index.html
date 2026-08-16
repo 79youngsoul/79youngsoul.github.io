@@ -562,8 +562,17 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.7';
+var APP_VERSION = '2.14.8';
 var CHANGELOG = [
+  { v:'2.14.8', d:'2026-08-16', items:[
+    '🔎 <b>남은 검색 구멍도 전부 메움</b> — <b>레시피에만 이름이 나오던 재료</b>'
+      + '(흉폭한영기 · 토끼내단 · 우물영기 · 녹수정 · 토벌석 …) 29종이 이제 이름만으로 검색된다. '
+      + '어디에 쓰는 재료인지도 같이 나온다',
+    '🎁 <b>의문의 상자 내용물</b>(용린사 · 보석주머니 · 강화주머니 …), '
+      + '<b>광산 색</b>(녹색/청색/황색/적색광산 — 나오는 재료 표시), '
+      + '<b>조수 강화</b>(재련 · 잠재능력 · 추가능력 · 주문서강화), '
+      + '<b>약초 그룹</b>(A~S) 도 검색 대상에 추가',
+  ] },
   { v:'2.14.7', d:'2026-08-16', items:[
     '🔍 <b>확률 탭 내용이 전체 검색에 안 걸리던 문제 수정</b> — <b>드랍 확률표 아이템</b>'
       + '(은룡도 · 자룡도 · 파리채 · 어깨위참새 · 강화주머니 …), <b>보스 레이드 보상</b>, '
@@ -2961,6 +2970,21 @@ function searchIndex(){
   G.HERB_RESULTS.forEach(function(r){
     add('약초 조합', r.name, r.score+'점 · '+r.effect, 'loc', null, null, '약초');
   });
+  Object.keys(G.HERB_GROUPS).forEach(function(g){
+    add('약초 그룹', g+'그룹', '조합 +'+G.HERB_SCORE[g]+'점 · '+G.HERB_GROUPS[g].join(' · '),
+        'loc', null, null, '약초');
+  });
+  // 광산 색 — "녹색광산"처럼 색 이름으로도 찾게 (광산 탭 검색칸은 웨이포인트용이라 q 없이)
+  Object.keys(G.MINE_COLORS).forEach(function(c){
+    var mats = (G.MINE_RESOURCES && G.MINE_RESOURCES[c]) || [];
+    var cnt = c === '공통' ? G.MINES.length
+      : G.MINES.filter(function(m){ return m.c === c; }).length;
+    add('광산 색', G.MINE_COLORS[c].label, cnt+'개 광산'
+      + (mats.length ? ' · '+mats.join(' · ') : ''), 'mine');
+  });
+  G.ASSISTANT_ENHANCE.forEach(function(e){
+    add('조수 강화', e, '대장장이 조수가 해주는 강화', 'npc', null, null, e);
+  });
   G.GUIDE_VIDEOS.forEach(function(v){
     add('가이드 영상', v.title, v.tip, 'sum', null, null, null);
   });
@@ -2992,9 +3016,43 @@ function searchIndex(){
     add('의문의상자', b.name+' '+(i+1), (b.item||'미확인')+(b.entrance?' · '+b.entrance:''),
         'loc', b.x, b.z, b.item||'');
   });
+  // 상자 내용물 이름으로도 찾게 (같은 물건이 여러 상자에서 나오면 한 줄로)
+  var boxCount = {};
+  G.MYSTERY_BOXES.forEach(function(b){
+    if(b.item) boxCount[b.item] = (boxCount[b.item]||0) + 1;
+  });
+  Object.keys(boxCount).forEach(function(it){
+    add('상자 내용물', it, '의문의 상자 '+boxCount[it]+'곳', 'loc', null, null, it);
+  });
   G.waypoints(G.ORIGIN.MAP).forEach(function(w){
     add('지도 웨이포인트', w.name, w.set||'', 'loc', w.x, w.z, w.name);
   });
+  /* 레시피에만 이름이 나오는 재료(사냥·상자로 얻는 것들 — 흉폭한영기·토끼내단·수정 …).
+   * 지금까지는 레시피 설명에 묻혀 있어서 이름만으로는 못 찾았다.
+   * 어디에 쓰는지 모으고, 화로 재료면 레시피 탭 · NPC 재료면 NPC 탭으로 보낸다. */
+  var known = {};
+  idx.forEach(function(it){ known[it.name] = 1; });
+  var matUse = {};
+  function useMat(nm, user, tab){
+    if(!nm || known[nm]) return;
+    var u = matUse[nm] = matUse[nm] || { users: [], tab: tab };
+    if(u.users.indexOf(user) < 0) u.users.push(user);
+  }
+  Object.keys(C.FURNACE).forEach(function(n){
+    Object.keys(C.FURNACE[n].mats).forEach(function(m){ useMat(m, n, 'rec'); });
+  });
+  G.npcCraftNames().forEach(function(nm){
+    var mats = G.parseMats(G.NPC_RECIPES[nm].matsText || '');
+    Object.keys(mats).forEach(function(m){ useMat(m, nm, 'npc'); });
+  });
+  Object.keys(matUse).forEach(function(nm){
+    var u = matUse[nm];
+    add('제작 재료', nm,
+        u.users.slice(0, 4).join(' · ')
+          + (u.users.length > 4 ? ' 외 '+(u.users.length-4)+'종' : '')+' 재료',
+        u.tab, null, null, nm);
+  });
+
   // 한월RPG 업데이트 — 본문 한 줄씩 검색되게
   if(window.GameUpdates){
     window.GameUpdates.UPDATES.forEach(function(u){
