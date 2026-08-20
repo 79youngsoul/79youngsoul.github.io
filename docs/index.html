@@ -562,8 +562,14 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.8';
+var APP_VERSION = '2.14.9';
 var CHANGELOG = [
+  { v:'2.14.9', d:'2026-08-21', items:[
+    '🎲 <b>확률 시뮬 시행 횟수를 마음대로 못 넣던 문제 수정</b> — 100 단위로만 올라가던 제한을 없앴다. '
+      + '이제 <b>12,345</b> 같은 아무 숫자나 넣을 수 있다 (100 ~ 100,000)',
+    '💾 <b>넣은 시행 횟수를 기억한다</b> — 전에는 시뮬을 돌리거나 탭을 옮기면 3,000 으로 되돌아가서 매번 다시 쳐야 했다',
+    '⚡ <b>1천 · 3천 · 1만 · 5만 · 10만 버튼 추가</b> — 최대도 5만 → <b>10만</b> 회로 올렸다',
+  ] },
   { v:'2.14.8', d:'2026-08-16', items:[
     '🔎 <b>남은 검색 구멍도 전부 메움</b> — <b>레시피에만 이름이 나오던 재료</b>'
       + '(흉폭한영기 · 토끼내단 · 우물영기 · 녹수정 · 토벌석 …) 29종이 이제 이름만으로 검색된다. '
@@ -981,6 +987,7 @@ var S = {
   mapX: 0, mapZ: 0, mapScale: 1, mapH: 620, mapInit: false, showMapWps: true,
   seenVersion: null,
   stack: 64, useStack: true,
+  simRuns: 3000,            // 확률 시뮬 시행 횟수 (기억해 둔다)
   fontScale: 'm',           // 글자 크기 s/m/l/xl
   recentQ: [],              // 최근 검색어 (최대 8개)
   mapRecent: [],            // 최근에 본 지도 좌표 (최대 8개)
@@ -1647,14 +1654,23 @@ function paneTree(){
 }
 
 /* ---------------- 확률 시뮬 ---------------- */
+var SIM_MIN = 100, SIM_MAX = 100000;
+function clampRuns(n){ return Math.min(SIM_MAX, Math.max(SIM_MIN, Math.floor(n)||DEFAULTS.simRuns)); }
+function simRuns(){ return clampRuns(S.simRuns); }
+
 function paneSim(){
   var el = $('#p-sim');
   var hasRandom = R.steps.some(function(s){ return s.rate < 1; });
   var head = '<div class="card"><h2>🎲 확률 시뮬레이션</h2>'
-    + '<div class="row"><span style="flex:none">시행 횟수</span><input type="number" id="simRuns" value="3000" min="100" max="50000" step="100" style="width:100px">'
-    + '<button class="btn primary" id="btnSim">시뮬 실행</button></div>'
+    + '<div class="row"><span style="flex:none">시행 횟수</span>'
+    + '<input type="number" id="simRuns" value="'+simRuns()+'" min="100" max="100000" step="1" style="width:100px">'
+    + '<button class="btn primary" id="btnSim">시뮬 실행</button>'
+    + [1000,3000,10000,50000,100000].map(function(n){
+        return '<button class="btn sm'+(simRuns()===n?' primary':'')+'" data-simn="'+n+'">'+N(n)+'</button>';
+      }).join('') + '</div>'
     + '<div class="hint">' + (hasRandom
         ? '곡괭이 제작 실패를 실제로 굴려서 비용·재료 분포를 냅니다. p90 = "10번 중 9번은 이 이하".'
+          + ' 시행 횟수는 100 ~ 100,000 사이 아무 숫자나 됩니다(많을수록 정확하지만 느립니다 · 10만 회는 몇 초 걸립니다).'
         : '현재 목표에는 확률 요소가 없습니다. (실패 없음 옵션 또는 100% 레시피)') + '</div></div>';
   if(!SIM){ el.innerHTML = head; return; }
 
@@ -1683,7 +1699,7 @@ function paneSim(){
     + kcard('운 좋을 때 (p10)', N(Math.round(SIM.cost.p10))+'전','상위 10%','ok')
     + kcard('중앙값 (p50)', N(Math.round(SIM.cost.p50))+'전','절반은 이 이하','')
     + kcard('안전 예산 (p90)', N(Math.round(SIM.cost.p90))+'전','90% 이 안에서 해결','acc')
-    + kcard('최악 (관측 최대)', N(Math.round(SIM.cost.max))+'전', SIM.runs+'회 시행 중','bad')
+    + kcard('최악 (관측 최대)', N(Math.round(SIM.cost.max))+'전', N(SIM.runs)+'회 시행 중','bad')
     + '</div>'
     + '<div class="card"><h2>💸 비용 분포</h2>'+hist+'</div>'
     + '<div class="card" style="margin-top:12px"><h2>🔨 단계별 시도 횟수</h2><div class="tw"><table><thead><tr>'
@@ -3524,8 +3540,18 @@ function bind(){
         .join('\n') || '부족한 재료 없음');
       return;
     }
+    if((t=e.target.closest('[data-simn]'))){
+      S.simRuns = +t.dataset.simn; save();
+      var si = $('#simRuns'); if(si) si.value = S.simRuns;
+      $$('#p-sim [data-simn]').forEach(function(b){ b.classList.toggle('primary', +b.dataset.simn===S.simRuns); });
+      return;
+    }
     if((t=e.target.closest('#btnSim'))){
-      var runs = Math.min(50000, Math.max(100, Math.floor(+$('#simRuns').value||3000)));
+      var typed = Math.floor(+$('#simRuns').value||0) || DEFAULTS.simRuns;
+      var runs = clampRuns(typed);
+      var clampNote = runs !== typed ? ' (100 ~ 100,000 범위로 맞춤)' : '';
+      S.simRuns = runs; save();
+      $('#simRuns').value = runs;
       t.disabled = true; t.textContent = '계산 중…';
       setTimeout(function(){
         try{
@@ -3534,7 +3560,7 @@ function bind(){
             successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
             ignoreFail:S.ignoreFail, failConsumesMats:S.failConsumesMats, failConsumesBase:S.failConsumesBase
           }, runs);
-          paneSim(); toast(runs.toLocaleString()+'회 시뮬 완료');
+          paneSim(); toast(N(runs)+'회 시뮬 완료'+clampNote);
         }catch(err){ toast('시뮬 오류: '+err.message); }
       }, 20);
       return;
@@ -3583,6 +3609,7 @@ function bind(){
   function applySearchInput(el){
     if(!el || !el.id) return;
     var e = { target: el };
+    if(e.target.id==='simRuns'){ S.simRuns = Math.floor(+e.target.value||0) || DEFAULTS.simRuns; save(); }
     if(e.target.id==='recQ')  liveSearch('recQ',  'p-rec',  paneRec);
     if(e.target.id==='npcQ')  liveSearch('npcQ',  'p-npc',  paneNpc);
     if(e.target.id==='probQ') liveSearch('probQ', 'p-prob', paneProb);
