@@ -18,11 +18,16 @@
   var SOURCE = {
     name: '디스코드 공지',
     url: 'https://discord.gg/yA6MnmqGzy',
-    fetched: '2026-08-26'
+    fetched: '2026-08-27'
   };
 
   /** @type {{date:?string,title:string,body:string[],tags:string[]}[]} 최신순 */
   var UPDATES = [
+    { date: '2026-08-27', kind: '업데이트', title: '2026-08-27 업데이트',
+      tags: ['던전', '사냥터', '모드', '오류수정'],
+      body: ['운해궁 추가(185~195 던전)',
+             '모드 업데이트',
+             '기타 오류 수정'] },
     { date: '2026-08-26', kind: '업데이트', title: '2026-08-26 업데이트',
       tags: ['광산', '오류수정'],
       body: ['용린광, 일옥, 만년한철 광물 드랍 확률 증가',
