@@ -3,7 +3,7 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 const path = require('path');
 const fs = require('fs');
 
-const DIR = 'D:\\백업\\한월\\제작';
+const DIR = __dirname;
 const file = path.join(DIR, 'index.html');
 
 const errors = [];

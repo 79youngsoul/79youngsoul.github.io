@@ -9,7 +9,7 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const FILE = 'file:///' + path
-  .resolve('D:/백업/한월/제작/dist/한월공략소.html')
+  .resolve(__dirname, 'dist/한월공략소.html')
   .replace(/\\/g, '/')
   .split('/').map(function (seg, i) { return i === 0 ? seg : encodeURIComponent(seg); })
   .join('/');
