@@ -666,7 +666,7 @@ function readMapData(file) {
   }
 
   /* 지도 위치 (사냥터 · 약초 · 단서 · 항아리 · 상자) */
-  ok('사냥터 20곳', G.HUNTING_GROUNDS.length === 20, G.HUNTING_GROUNDS.length);
+  ok('사냥터 21곳', G.HUNTING_GROUNDS.length === 21, G.HUNTING_GROUNDS.length);
   ok('사냥터 전부 좌표·레벨·몬스터 있음',
      G.HUNTING_GROUNDS.every(function (h) {
        return G.hasCoords(h) && !!h.lv && !!h.monsters;
@@ -1074,8 +1074,8 @@ function readMapData(file) {
   ok('약초 세트는 약초 이름별로 분리',
      ex.filter(function (w) { return w.kind === '약초'; })
        .every(function (w) { return w.set === '약초 ' + w.ref.name; }));
-  ok('사냥터 웨이포인트 20개',
-     ex.filter(function (w) { return w.kind === '사냥터'; }).length === 20);
+  ok('사냥터 웨이포인트 21개',
+     ex.filter(function (w) { return w.kind === '사냥터'; }).length === 21);
   ok('동상·비석도 웨이포인트로',
      ex.filter(function (w) { return w.kind === '동상'; }).length === G.STATUES.length &&
      ex.filter(function (w) { return w.kind === '비석'; }).length === G.MOUNTAINS.length);

@@ -562,8 +562,15 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.11';
+var APP_VERSION = '2.14.12';
 var CHANGELOG = [
+  { v:'2.14.12', d:'2026-08-29', items:[
+    '📜 <b>2026-08-29 게임 업데이트 반영</b> — <b>업데이트</b> 탭에 운해궁 몬스터 데미지 감소 · 운해궁 <b>토벌의뢰 추가</b> · 겉날개 수정(10·11채 선적용) · <b>광물 상점 판매가격 약 30% 상향</b>(2차 생산아이템 제외) · 기타 오류 수정 공지를 넣었다',
+    '🪨 <b>운해궁 암토령 드랍 추가</b> — <b>암령토</b>(추후 상위 완갑 업그레이드 재료)와 <b>용문귀걸이</b>(170제 · <b>조복귀걸이 상위호환</b>)를 <b>위치</b> 탭 사냥터 표에 넣었다. 사냥터 줄에 <b>드랍</b> 칸이 새로 붙는다',
+    '🔎 <b>사냥터 드랍 아이템도 검색된다</b> — 이제 <b>암령토</b> · <b>용문귀걸이</b>를 이름만 쳐도 전체 검색에서 찾을 수 있다 (어느 사냥터 · 어느 몬스터가 흘리는지 같이 표시)',
+    '🎯 <b>토벌의뢰 확률표에 안내 추가</b> — <b>운해궁 토벌의뢰</b>는 다른 던전보다 <b>추가 경험치가 높다</b>. 아이템 확률은 별도 고지가 없어 기존 표 그대로다',
+    '🐛 <b>업데이트 태그 오탐 수정</b> — 공지에 “업그<b>레이드</b>” 라는 말만 있어도 <b>레이드</b> 태그가 붙던 문제를 고쳤다',
+  ] },
   { v:'2.14.11', d:'2026-08-27', items:[
     '🏯 <b>운해궁 추가</b> — 2026-08-27 게임 업데이트로 들어온 <b>Lv.185~195 던전</b>. '
       + '<b>위치</b> 탭 사냥터 목록과 지도 웨이포인트에 넣었다 (<code>-1450 156 5572</code>). '
@@ -2295,7 +2302,7 @@ function paneGear(){
 /* ---------------- 확률 · 부적 ---------------- */
 /* q 가 있으면 항목 이름으로 줄을 거른다. 표 제목이 걸리면 표 전체를 남긴다.
  * 합계는 언제나 표 전체 기준(거른 줄만 더하면 "합계 5%" 같은 이상한 값이 된다). */
-function probTable(title, rows, unit, q){
+function probTable(title, rows, unit, q, note){
   var titleHit = q && title.indexOf(q) >= 0;
   var show = (!q || titleHit) ? rows : rows.filter(function(r){
     return String(r.n||r.k||r.name).indexOf(q) >= 0;
@@ -2308,6 +2315,7 @@ function probTable(title, rows, unit, q){
   return '<div class="card" style="margin-top:12px"><h2>'+esc(title)+'</h2>'
     + '<div class="tw"><table><thead><tr><th style="text-align:left">항목</th><th>확률</th></tr></thead>'
     + '<tbody>'+body+'</tbody></table></div>'
+    + (note ? '<div class="hint">'+esc(note)+'</div>' : '')
     + '<div class="hint">합계 '+(Math.round(sum*10000)/10000)+'%'
     + (show.length < rows.length ? ' <span class="dim">· 검색 중 '+show.length+'/'+rows.length+'줄 표시</span>' : '')
     + '</div></div>';
@@ -2343,7 +2351,7 @@ function paneProb(){
       }).join('')
     + '</tbody></table></div></div>';
 
-  var drops = G.DROP_TABLES.map(function(t){ return probTable(t.title, t.rows, '%', q); }).join('');
+  var drops = G.DROP_TABLES.map(function(t){ return probTable(t.title, t.rows, '%', q, t.note); }).join('');
 
   var wellHit = !q || G.WELL_STONE.title.indexOf(q) >= 0 || '우물혈석'.indexOf(q) >= 0;
   var well = !wellHit ? ''
@@ -2572,11 +2580,18 @@ function paneLocData(){
   }).join('');
 
   /* 사냥터 */
+  function dropText(h){
+    return (h.drops||[]).map(function(d){
+      return d.n+'('+d.from+' 드랍 · '+d.note+')';
+    }).join(', ');
+  }
   var huntRows = G.HUNTING_GROUNDS.filter(function(h){
-    return hit(h.name, h.lv, h.monsters, h.memo);
+    return hit(h.name, h.lv, h.monsters, h.memo, dropText(h));
   }).map(function(h){
+    var dt = dropText(h);
     return '<tr><td>'+esc(h.name)+'</td><td class="mono">'+esc(h.lv)+'</td>'
       + '<td style="text-align:left;white-space:normal">'+esc(h.monsters)
+      + (dt ? '<div class="m"><span class="badge s">드랍</span> '+esc(dt)+'</div>' : '')
       + (h.memo ? '<div class="dim">'+esc(h.memo)+'</div>' : '')+'</td>'
       + '<td class="mono">'+h.x+' / '+h.y+' / '+h.z+'</td>'
       + '<td>'+mapCell(G.mapUrl(h.x,h.z), h.x, h.z)+'</td></tr>';
@@ -3021,6 +3036,9 @@ function searchIndex(){
   G.MOUNTAINS.forEach(function(t){ add('비석', t.name, '비석', 'loc', t.x, t.z, t.name); });
   G.HUNTING_GROUNDS.forEach(function(h){
     add('사냥터', h.name, 'Lv.'+h.lv+' · '+h.monsters, 'loc', h.x, h.z, h.name);
+    (h.drops||[]).forEach(function(d){
+      add('사냥터 드랍', d.n, h.name+' '+d.from+' 드랍 · '+d.note, 'loc', h.x, h.z, h.name);
+    });
   });
   G.HERBS.forEach(function(h){
     h.spots.forEach(function(s, i){
