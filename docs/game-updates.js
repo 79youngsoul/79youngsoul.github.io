@@ -18,11 +18,17 @@
   var SOURCE = {
     name: '디스코드 공지',
     url: 'https://discord.gg/yA6MnmqGzy',
-    fetched: '2026-08-29'
+    fetched: '2026-09-08'
   };
 
   /** @type {{date:?string,title:string,body:string[],tags:string[]}[]} 최신순 */
   var UPDATES = [
+    { date: '2026-09-05', kind: '업데이트', title: '2026-09-05 업데이트',
+      tags: ['사냥터', '광산'],
+      body: ['광산 광물드랍 대량 증가(돌덩어리, 광산초 제외)'] },
+    { date: '2026-09-01', kind: '업데이트', title: '2026-09-01 업데이트',
+      tags: ['오류수정'],
+      body: ['각종 잔버그 수정'] },
     { date: '2026-08-29', kind: '업데이트', title: '2026-08-29 업데이트',
       tags: ['던전', '사냥터', '광산', '캐시샵', '오류수정'],
       body: ['운해궁 몬스터 데미지 감소',

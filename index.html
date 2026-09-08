@@ -373,6 +373,8 @@ th.sortable.desc::after{content:'▼';opacity:1;color:var(--acc)}
      title="한월 웹 지도 (원본 데이터 출처)">🗺️ 웹 지도</a>
   <a class="btn sm" href="https://jeongsh214.github.io/herb_calculator/index.html" target="_blank" rel="noopener"
      title="약초 조합 계산기 원본">🧪 약초 계산기</a>
+  <a class="btn sm" href="https://hanwol-rank.skhidc.kr/?category=level" target="_blank" rel="noopener"
+     title="한월 RPG 랭킹 — 전투력·레벨·생활·수련의탑·레이드·DPS·문파">🏆 랭킹</a>
   <button class="btn sm" id="btnVer">업데이트 내역</button>
   <button class="btn sm" id="btnCopy">요약 복사</button>
   <button class="btn sm" id="btnExport">내보내기</button>
@@ -506,7 +508,8 @@ th.sortable.desc::after{content:'▼';opacity:1;color:var(--acc)}
       인게임 확인
       <br>관련 링크:
       <a href="https://github.com/Pro-Days/SkillMacro/releases" target="_blank" rel="noopener">[ProDays] 매크로 및 최적화 계산기</a> ·
-      <a href="https://yasu2947.github.io/" target="_blank" rel="noopener">[_Ya_Su] 도깨비 스텟 계산기</a>
+      <a href="https://yasu2947.github.io/" target="_blank" rel="noopener">[_Ya_Su] 도깨비 스텟 계산기</a> ·
+      <a href="https://hanwol-rank.skhidc.kr/?category=level" target="_blank" rel="noopener">한월 RPG 랭킹</a>
       <span class="dim">(별개 도구 — 문의는 만든 분들께)</span>
       <br>지도·공략 이미지·약초 자생지 색칠은 웹맵(FORKY_G) 자료를 가져온 것입니다.
     </p>
@@ -562,8 +565,18 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.12';
+var APP_VERSION = '2.14.13';
 var CHANGELOG = [
+  { v:'2.14.13', d:'2026-09-08', items:[
+    '🏆 <b>한월 RPG 랭킹 사이트 추가</b> — 상단에 <b>🏆 랭킹</b> 버튼이 생겼다. '
+      + '<b>전투력 · 레벨 · 생활 · 수련의탑 · 레이드 · DPS · 레이드 퍼클 · 문파</b> 랭킹을 볼 수 있는 '
+      + '<a href="https://hanwol-rank.skhidc.kr/" target="_blank" rel="noopener">서버 공식 랭킹</a> 사이트다. '
+      + '<b>요약</b> 탭 관련 링크(랭킹 분류)와 푸터에도 넣었다',
+    '📜 <b>2026-09-05 게임 업데이트 반영</b> — <b>광산 광물드랍 대량 증가</b>(<b>돌덩어리 · 광산초 제외</b>). '
+      + '올라간 배율은 고지되지 않아 <b>광산</b> 탭 표는 그대로다',
+    '🐛 <b>2026-09-01 게임 업데이트 반영</b> — 각종 잔버그 수정',
+    '📢 <b>업데이트 탭 73건</b> — 2026-05-01 ~ <b>09-05</b> 공지 전부 수록 (기존 71건)',
+  ] },
   { v:'2.14.12', d:'2026-08-29', items:[
     '📜 <b>2026-08-29 게임 업데이트 반영</b> — <b>업데이트</b> 탭에 운해궁 몬스터 데미지 감소 · 운해궁 <b>토벌의뢰 추가</b> · 겉날개 수정(10·11채 선적용) · <b>광물 상점 판매가격 약 30% 상향</b>(2차 생산아이템 제외) · 기타 오류 수정 공지를 넣었다',
     '🪨 <b>운해궁 암토령 드랍 추가</b> — <b>암령토</b>(추후 상위 완갑 업그레이드 재료)와 <b>용문귀걸이</b>(170제 · <b>조복귀걸이 상위호환</b>)를 <b>위치</b> 탭 사냥터 표에 넣었다. 사냥터 줄에 <b>드랍</b> 칸이 새로 붙는다',

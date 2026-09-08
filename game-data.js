@@ -37,8 +37,8 @@
       url: 'https://jeongsh214.github.io/herb_calculator/index.html', fetched: '2026-08-12',
       items: '약초 등급(A/B/C/S) · 점수 합계별 조합 결과 환' },
     { key: 'discord', name: '한월RPG 디스코드',
-      url: 'https://discord.gg/yA6MnmqGzy', fetched: '2026-08-12',
-      items: '게임 업데이트 공지 67건 (2026-05-01 ~ 08-12)' },
+      url: 'https://discord.gg/yA6MnmqGzy', fetched: '2026-09-08',
+      items: '게임 업데이트 공지 73건 (2026-05-01 ~ 09-05)' },
     { key: 'ingame', name: '인게임 확인 (직접 입력)',
       url: null, fetched: '2026-08-12',
       items: '대장장이 상점·제작 · 화로 레시피/시간 · 대장장이 조수(강화·능력이전·귀속해제·제작)' }
@@ -107,9 +107,15 @@
       url: 'https://yasu2947.github.io/',
       desc: '도깨비 스텟 계산' },
     // 랭킹
-    { cat: '랭킹', name: '한월 랭킹',
+    { cat: '랭킹', name: '한월 RPG 랭킹',
       url: 'https://hanwol-rank.skhidc.kr/',
-      desc: '서버 랭킹 조회' }
+      desc: '서버 공식 랭킹 — 전투력 · 레벨 · 생활 · 수련의탑 · 레이드 · 레이드 퍼클 · 문파' },
+    { cat: '랭킹', name: '한월 RPG 랭킹 — 레벨',
+      url: 'https://hanwol-rank.skhidc.kr/?category=level',
+      desc: '레벨 높은 순 랭킹' },
+    { cat: '랭킹', name: '한월 RPG 랭킹 — DPS',
+      url: 'https://hanwol-rank.skhidc.kr/dps.php',
+      desc: '허수아비 기준 DPS 랭킹' }
   ];
 
 
