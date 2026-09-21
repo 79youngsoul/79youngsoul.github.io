@@ -565,8 +565,14 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.14';
+var APP_VERSION = '2.14.15';
 var CHANGELOG = [
+  { v:'2.14.15', d:'2026-09-21', items:[
+    '🐛 <b>장비 제작 티어 순서 뒤집힘 수정</b> — 제작창 왼쪽 상단 → 오른쪽 순서는 '
+      + '<b>5·4·3·2·1티어</b>가 아니라 <b>1·2·3·4·5티어</b>다. '
+      + '티어 확률표(<b>1티어 30% · 2티어 30% · 3티어 25% · 4티어 10% · 5티어 5%</b>)와 '
+      + '장비 목록 <b>1T ~ 5T</b> 표기를 전부 바로잡았다',
+  ] },
   { v:'2.14.14', d:'2026-09-13', items:[
     '🏺 <b>2026-09-12 게임 업데이트 반영</b> — 의원 NPC에 <b>백환단</b>을 다른 아이템으로 교환 추가 · '
       + '<b>채집 항아리 스폰 개수 대폭 증가</b> · 항아리 탐색 시간 <b>5초 → 2초</b>. '
@@ -2281,7 +2287,7 @@ function paneGear(){
   var gearCards = G.SMITH_GEAR.map(function(g, i){
     var mats = Object.keys(g.mats).map(function(m){ return esc(m)+' ×'+g.mats[m]; }).join(' · ');
     var items = g.items.map(function(nm, k){
-      return '<span class="pill">'+(5-k)+'T '+esc(nm)+'</span>';
+      return '<span class="pill">'+(k+1)+'T '+esc(nm)+'</span>';
     }).join('');
     var parts = g.kind === '방어구'
       ? '<div class="m dim">부위: '+G.ARMOR_PARTS.join(' / ')+' (부위마다 1세트씩 필요)</div>' : '';
@@ -2311,7 +2317,7 @@ function paneGear(){
     + '<div class="card" style="margin-top:12px"><h2>🎲 제작대 티어 확률</h2>'
     + '<div class="tw"><table><thead><tr><th>티어</th><th>확률</th></tr></thead><tbody>'
     + tierRows+'</tbody></table></div>'
-    + '<div class="hint">아래 장비 목록의 <b>5T ~ 1T</b> 표기는 제작창 배치 순서에 대응합니다.</div></div>'
+    + '<div class="hint">아래 장비 목록의 <b>1T ~ 5T</b> 표기는 제작창 배치 순서에 대응합니다.</div></div>'
 
     + '<div class="card" style="margin-top:12px"><h2>🛡️ 레벨대별 재료</h2><div class="grid2">'+gearCards+'</div></div>'
 
