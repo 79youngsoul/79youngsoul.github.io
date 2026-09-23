@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>비공식 한월 스텟 계산기</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --card: rgba(30, 41, 59, .55);
+    --card-border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #facc15;
+    --green: #4ade80;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --pink: #f472b6;
+    --cyan: #22d3ee;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: "Pretendard","Segoe UI","맑은 고딕",sans-serif; }
+  body { background: radial-gradient(1200px 800px at 20% -10%, #1e3a8a33, transparent 60%), radial-gradient(900px 700px at 120% 110%, #7c3aed22, transparent 60%), var(--bg); min-height: 100vh; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; letter-spacing: -.02em; }
+  h1 .tag { color: var(--accent); }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .grid { display: grid; gap: 16px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 880px) {
+    .cols-2, .cols-3 { grid-template-columns: 1fr; }
+  }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 18px; backdrop-filter: blur(6px); }
+  .card h2 { margin: 0 0 14px; font-size: 16px; color: #cbd5e1; font-weight: 700; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .row label { color: #cbd5e1; font-size: 13px; }
+  input[type=number] { width: 100%; background: #0b1220; border: 1px solid #334155; color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 14px; -moz-appearance: textfield; }
+  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px #60a5fa33; }
+
+  .stat-row { display: grid; grid-template-columns: 90px auto 120px auto 1fr; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; border: 1px solid transparent; margin-bottom: 8px; }
+  .stat-row .name { font-weight: 700; font-size: 14px; }
+  .stat-row .effect { color: var(--muted); font-size: 11px; grid-column: 1 / -1; margin-top: -4px; }
+  .stat-row .stat-input { font-variant-numeric: tabular-nums; font-weight: 700; text-align: center; font-size: 16px; padding: 6px 8px; }
+  .btn { background: #0b1220; color: var(--text); border: 1px solid #334155; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; user-select: none; }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: scale(.96); }
+  .btn.plus { color: #4ade80; }
+  .btn.minus { color: #f87171; }
+
+  .str { border-color: #7f1d1d55; background: #7f1d1d14; }
+  .str .name { color: var(--red); }
+  .dex { border-color: #78350f55; background: #78350f14; }
+  .dex .name { color: var(--yellow); }
+  .int { border-color: #064e3b55; background: #064e3b14; }
+  .int .name { color: var(--pink); }
+  .luk { border-color: #581c8755; background: #581c8714; }
+  .luk .name { color: var(--purple); }
+
+  .bar-wrap { height: 10px; background: #0b1220; border-radius: 999px; border: 1px solid #334155; overflow: hidden; margin-top: 10px; }
+  .bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #a855f7); width: 0%; transition: width .2s; }
+  .points { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .points b { color: var(--text); font-size: 15px; }
+  .points .over { color: var(--red); }
+
+  .reset { background: #7f1d1d; color: #fecaca; border: 1px solid #dc2626; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+  .reset:hover { background: #991b1b; }
+
+  details { background: #0b1220; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  details[open] summary { color: var(--text); margin-bottom: 8px; }
+  .kv { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .kv b { color: var(--text); }
+  .note { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  .field { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field input { width: 120px; }
+
+  /* 전체 스텟 시트 (스크린샷 스타일) */
+  .stat-sheet { border: 1px solid #333; border-radius: 10px; background: #1a1a1a; overflow: hidden; }
+  .stat-sheet .title-bar { background: #2a2a2a; color: #e5e5e5; padding: 10px 14px; font-weight: 700; font-size: 14px; border-bottom: 1px solid #333; }
+  .stat-sheet .body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .stat-sheet .body > .col { display: flex; flex-direction: column; }
+  .stat-sheet .body > .col:first-child { border-right: 1px solid #2f2f2f; }
+  .stat-line { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid #262626; font-size: 13px; }
+  .stat-line:last-child { border-bottom: none; }
+  .stat-line .lbl { color: #b0b0b0; }
+  .stat-line .val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+  @media (max-width: 640px) {
+    .stat-sheet .body { grid-template-columns: 1fr; }
+    .stat-sheet .body > .col:first-child { border-right: none; }
+  }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>비공식 한월 <span class="tag">스텟 계산기</span></h1>
+  <div class="sub"><a href="../index.html" style="color:var(--accent);text-decoration:none">← 한월 공략소</a> · 스크린샷 자동 인식 · 제작자 79youngsoul · Claude Code</div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h2><span class="dot" style="background:var(--green)"></span> 📷 스크린샷 자동 인식 (OCR)</h2>
+    <div class="note" style="margin-bottom:10px;">
+      인게임 <b>"전체 스텟"</b> 창 스크린샷을 올리면 숫자를 읽어 입력칸을 자동으로 채웁니다. 원본·대비·반전·우측확대 <b>4패스 다수결</b>로 인식. 인터넷 연결 필요(첫 1회 엔진 다운로드).<br>
+      <b style="color:var(--accent,#fbbf24)">⚠️ 자동 인식은 정확하지 않을 수 있습니다 — 적용 전 아래 편집칸에서 값을 꼭 확인하세요.</b>
+    </div>
+    <div class="note" style="margin-bottom:10px; padding:8px 10px; background:#0b1220; border:1px solid #334155; border-radius:8px; font-size:11px; line-height:1.7;">
+      📌 <b style="color:var(--green)">좋은 사진 = 정확한 인식</b><br>
+      ✅ <b>"전체 스텟" 창이 열린 상태</b>에서 캡처 (오른쪽 수치 목록이 보여야 함)<br>
+      ✅ <b>해상도 높을수록 좋음</b> — 전체화면 캡처도 OK, 하지만 글자가 클수록 정확 (창 모드보다 큰 화면 권장)<br>
+      ✅ <b>또렷하게</b> — 흐림·압축·반투명 오버레이 없이. PNG 권장(JPG 압축은 숫자 뭉갬)<br>
+      ✅ 스텟 창만 잘라서 올리면 가장 정확 (배경 노이즈 ↓)<br>
+      ⚠️ 한글 게임폰트 OCR이라 <b>소수점·8↔6</b> 등 가끔 틀림 → 아래 편집칸에서 꼭 확인 후 적용
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <input id="ocrFile" type="file" accept="image/*" style="font-size:13px; color:var(--muted);">
+      <button id="ocrPaste" class="btn" style="width:auto; padding:0 14px; height:36px;">📋 클립보드 붙여넣기</button>
+      <span id="ocrStatus" class="note" style="font-size:12px;"></span>
+    </div>
+    <img id="ocrPreview" alt="" style="display:none; max-height:200px; margin-top:10px; border:1px solid #334155; border-radius:8px;">
+    <div id="ocrResult" style="display:none; margin-top:12px;">
+      <div class="grid cols-2" style="gap:10px;">
+        <div>
+          <div class="note" style="margin-bottom:6px;">📋 인식된 라벨 → 값 (수정 가능, 한 줄에 <b>라벨: 값</b>)</div>
+          <textarea id="ocrParsed" style="width:100%; height:200px; background:#0b1220; color:var(--text); border:1px solid #334155; border-radius:8px; padding:8px; font-size:12px; font-family:monospace; line-height:1.5;"></textarea>
+        </div>
+        <div>
+          <div class="note" style="margin-bottom:6px;">🔍 OCR 원본 텍스트 (참고용)</div>
+          <textarea id="ocrRaw" readonly style="width:100%; height:200px; background:#0b1220; color:var(--muted); border:1px solid #334155; border-radius:8px; padding:8px; font-size:11px; font-family:monospace; line-height:1.5;"></textarea>
+        </div>
+      </div>
+      <div id="ocrWarn" style="display:none; margin-top:10px; padding:10px 12px; background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.45); border-radius:8px; font-size:12px; line-height:1.6; color:#fde68a;"></div>
+      <button id="ocrApply" class="btn" style="width:auto; padding:0 18px; height:40px; margin-top:10px; background:linear-gradient(135deg,#0ea5e9,#22c55e); color:#fff; border:none; font-weight:700;">✅ 스냅샷에 적용</button>
+      <span id="ocrApplyMsg" class="note" style="font-size:12px; margin-left:10px;"></span>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h2><span class="dot"></span> 레벨 &amp; 스텟 포인트</h2>
+      <div class="row">
+        <label for="level">레벨 (0 ~ 200)</label>
+        <input id="level" type="number" min="0" max="200" step="1" value="0">
+      </div>
+      <div class="row">
+        <label for="extraPoints">남은 포인트</label>
+        <input id="extraPoints" type="number" min="0" step="1" value="0">
+      </div>
+      <div class="points">
+        <span>사용 <b id="used">0</b> / 총 <b id="totalPts">0</b></span>
+        <span id="remaining">남은 0</span>
+      </div>
+      <div class="bar-wrap"><div id="bar" class="bar"></div></div>
+      <div class="note" style="margin-top:10px">
+        ▶ "남은 포인트"는 인게임의 ⬢ 포인트 숫자를 그대로 입력 (현재 스텟에 이미 찍은 포인트가 반영된 경우)<br>
+        ▶ <button id="levelPtsBtn" style="background:#0b1220; color:var(--accent); border:1px solid #334155; border-radius:6px; padding:2px 8px; font-size:11px; cursor:pointer;">레벨×5 적용</button> — 초기 세팅(0부터 분배)할 때 사용<br>
+        ▶ 기본 체력 50 / 치명타 공격력 110%는 자동 추가하지 않음 — "전체 스텟 스냅샷"의 체력·치명타 공격력(%) 칸에 직접 입력
+      </div>
+      <div style="margin-top:12px">
+        <button class="reset" id="resetBtn">추가 분배 초기화</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot" style="background:var(--orange)"></span> 기본 스텟 효과</h2>
+      <div class="kv">
+        <b style="color:var(--red)">힘 (STR)</b> · 공격력 +1, 치명타 공격력 +0.1%<br>
+        <b style="color:var(--yellow)">민첩 (DEX)</b> · 공격력 +0.3%, 치명타 확률 +0.05%<br>
+        <b style="color:var(--pink)">생명력 (VIT)</b> · 체력 +5, 회피 +0.03%, 물약 회복량 +0.5%<br>
+        <b style="color:var(--purple)">행운 (LUK)</b> · 경험치 +0.2%, 드랍률 +0.2%
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--cyan)"></span> 🧠 자동 최적화</h2>
+    <div class="grid cols-3" style="align-items:end">
+      <div>
+        <div class="note" style="margin-bottom:6px">최적화 목표</div>
+        <select id="optGoal" style="width:100%; background:#0b1220; border:1px solid #334155; color:var(--text); border-radius:8px; padding:8px 10px; font-size:14px;">
+          <optgroup label="🎯 자동 최적화">
+            <option value="maxDmg">🔥 기대 데미지 (평균 · 생존 무시)</option>
+          </optgroup>
+          <optgroup label="📋 템플릿 (비율 분배)">
+            <option value="tpl1">🏹 레벨 60까지 · 힘3 : 생1 : 행1</option>
+            <option value="tpl2">⚡ 레벨 90까지 · 힘2 : 민1 : 생1 : 행1</option>
+            <option value="tpl3">🗡️ 레벨 110부터 · 민3 : 생1 : 행1</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <div class="note" style="margin-bottom:6px">시작 상태</div>
+        <select id="optMode" style="width:100%; background:#0b1220; border:1px solid #334155; color:var(--text); border-radius:8px; padding:8px 10px; font-size:14px;">
+          <option value="reset">🧹 모두 초기화 후 재분배</option>
+          <option value="keep">➕ 현재 유지, 남은 포인트만</option>
+        </select>
+      </div>
+      <div>
+        <button id="optBtn" class="btn" style="width:100%; height:40px; background:linear-gradient(135deg,#0ea5e9,#7c3aed); color:#fff; border:none; font-weight:700;">⚡ 자동 분배</button>
+      </div>
+    </div>
+    <label style="display:flex; align-items:center; gap:6px; margin-top:10px; font-size:13px; cursor:pointer;">
+      <input type="checkbox" id="optStep5"> 5의 배수로만 분배 (각 스텟 값이 5단위로 떨어짐)
+    </label>
+    <div id="optResult" class="note" style="margin-top:12px; padding:10px; background:#0b1220; border-radius:8px; border:1px solid #334155; display:none;"></div>
+    <div class="note" style="margin-top:10px; font-size:11px;">
+      현재 입력된 스냅샷 수치 기준으로 <b>기대 데미지(스킬 1타, 크리 확률 평균 반영)</b>가 최대가 되도록 남은 포인트를 분배합니다. 크리 터진 한 방이 아니라 평균 한 타 기준이라 지속 사냥·DPS에 맞습니다. 보스·일반 몹 모두 최적 분배는 같습니다 — 보스 공격력%·스킬 피해량% 같은 상수 배수는 스텟 간 순위에 영향이 없기 때문. 수치를 바꾼 뒤 다시 눌러야 재최적화됩니다.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--yellow)"></span> 🎯 목표 공격력 역계산</h2>
+    <div class="grid cols-3" style="align-items:end">
+      <div>
+        <div class="note" style="margin-bottom:6px">목표 공격력</div>
+        <input id="tgtAtk" type="number" step="0.01" min="0" value="0" style="width:100%">
+      </div>
+      <div>
+        <div class="note" style="margin-bottom:6px">기준</div>
+        <select id="tgtMode" style="width:100%; background:#0b1220; border:1px solid #334155; color:var(--text); border-radius:8px; padding:8px 10px; font-size:14px;">
+          <option value="disp">표시 공격력 (전체 스텟 창의 "공격력")</option>
+          <option value="final">최종 공격력 (최종 공격력% 포함)</option>
+        </select>
+      </div>
+      <div>
+        <button id="tgtBtn" class="btn" style="width:100%; height:40px; background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border:none; font-weight:700;">🎯 최소 포인트 계산</button>
+      </div>
+    </div>
+    <div id="tgtResult" class="note" style="margin-top:12px; padding:10px; background:#0b1220; border-radius:8px; border:1px solid #334155; display:none;"></div>
+    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button id="tgtApply" class="btn" style="display:none; width:auto; padding:0 18px; height:38px; background:linear-gradient(135deg,#0ea5e9,#22c55e); color:#fff; border:none; font-weight:700;">✅ 이 분배 적용</button>
+      <span id="tgtApplyMsg" class="note" style="font-size:12px;"></span>
+    </div>
+    <div class="note" style="margin-top:10px; font-size:11px;">
+      원하는 공격력만 딱 맞추는 <b>최소 포인트</b>(힘·민첩 조합)를 찾습니다. 공격력에 영향을 주는 건 힘(플랫 +1)과 민첩(공격력 +0.3%)뿐이라 두 스텟만 씁니다. 목표를 넘기지 않는 조합은 존재하지 않을 수 있어(스텟이 정수 단위) <b>목표 이상 중 최소</b>를 찾고, 동점이면 기대 데미지가 높은 쪽을 고릅니다. 남는 포인트는 생명력·행운에 자유롭게 쓰세요.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--cyan)"></span> 📋 전체 스텟 스냅샷</h2>
+    <div class="note" style="margin-bottom:12px;">인게임 "전체 스텟" 창(오른쪽 패널)의 모든 수치를 <b>그대로</b> 입력하세요. 추가 포인트의 순수 기여분(delta)만 더해서 결과가 표시됩니다.</div>
+    <div class="grid cols-2">
+      <div>
+        <div class="field"><label>공격력</label><input type="number" step="0.01" min="0" data-snap="attackFlat" value="0"></div>
+        <div class="field"><label>체력</label><input type="number" step="0.01" min="0" data-snap="hpFlat" value="0"></div>
+        <div class="field"><label style="color:#f87171">힘</label><input type="number" step="0.01" min="0" data-snap="strEff" value="0"></div>
+        <div class="field"><label style="color:#facc15">민첩</label><input type="number" step="0.01" min="0" data-snap="dexEff" value="0"></div>
+        <div class="field"><label style="color:#f472b6">생명력</label><input type="number" step="0.01" min="0" data-snap="vitEff" value="0"></div>
+        <div class="field"><label style="color:#c084fc">행운</label><input type="number" step="0.01" min="0" data-snap="lukEff" value="0"></div>
+        <div class="field"><label>스킬 피해량(%)</label><input type="number" step="0.01" min="0" data-snap="skillDmg" value="0"></div>
+        <div class="field"><label>치명타 확률(%)</label><input type="number" step="0.01" min="0" data-snap="critRate" value="0"></div>
+        <div class="field"><label>경험치 획득량(%)</label><input type="number" step="0.01" min="0" data-snap="expBonus" value="0"></div>
+        <div class="field"><label>드랍률(%)</label><input type="number" step="0.01" min="0" data-snap="dropRate" value="0"></div>
+        <div class="field"><label>물약 회복량(%)</label><input type="number" step="0.01" min="0" data-snap="potionRec" value="0"></div>
+      </div>
+      <div>
+        <div class="field"><label>공격력(%)</label><input type="number" step="0.01" min="0" data-snap="attackPercent" value="0"></div>
+        <div class="field"><label>체력(%)</label><input type="number" step="0.01" min="0" data-snap="hpPercent" value="0"></div>
+        <div class="field"><label style="color:#f87171">힘(%)</label><input type="number" step="0.01" min="0" data-snap="strPercent" value="0"></div>
+        <div class="field"><label style="color:#facc15">민첩(%)</label><input type="number" step="0.01" min="0" data-snap="dexPercent" value="0"></div>
+        <div class="field"><label style="color:#f472b6">생명력(%)</label><input type="number" step="0.01" min="0" data-snap="vitPercent" value="0"></div>
+        <div class="field"><label style="color:#c084fc">행운(%)</label><input type="number" step="0.01" min="0" data-snap="lukPercent" value="0"></div>
+        <div class="field"><label>최종 공격력(%)</label><input type="number" step="0.01" min="0" data-snap="finalAtkPct" value="0"></div>
+        <div class="field"><label>치명타 공격력(%)</label><input type="number" step="0.01" min="0" data-snap="critDmg" value="0"></div>
+        <div class="field"><label>보스 공격력(%)</label><input type="number" step="0.01" min="0" data-snap="bossAtk" value="0"></div>
+        <div class="field"><label>회피(%)</label><input type="number" step="0.01" min="0" data-snap="evasion" value="0"></div>
+        <div class="field"><label>저항(%)</label><input type="number" step="0.01" min="0" data-snap="resistance" value="0"></div>
+        <div class="field"><label>스킬속도(%)</label><input type="number" step="0.01" min="0" data-snap="skillSpeed" value="0"></div>
+      </div>
+    </div>
+    <div class="note" style="font-size:11px; margin-top:8px;">예(스크린샷 기준): 공격력 586.25, 체력 1562.99, 힘 223.39, 민첩 135.23, 생명력 28.05, 행운 296.66, 공격력% 50.17, 최종 공격력% 2.8, 치명타 확률% 6.76, 치명타 공격력% 132.34 …</div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--red)"></span> ➕ 추가 분배 포인트</h2>
+    <div class="note" style="margin-bottom:8px; font-size:11px;">위 "남은 포인트"를 각 스텟에 분배합니다. 계산에는 "전체 스텟 스냅샷 + 이 분배값"이 함께 사용됩니다.</div>
+
+    <div class="stat-row str" data-stat="strength">
+      <div class="name">힘</div>
+      <button class="btn minus" data-act="dec">−</button>
+      <input class="stat-input" type="number" step="1" min="0" id="val-strength" data-stat-input="strength" value="0">
+      <button class="btn plus" data-act="inc">+</button>
+      <div class="effect">공격력 +1 · 치명타 공격력 +0.1%</div>
+    </div>
+
+    <div class="stat-row dex" data-stat="agility">
+      <div class="name">민첩</div>
+      <button class="btn minus" data-act="dec">−</button>
+      <input class="stat-input" type="number" step="1" min="0" id="val-agility" data-stat-input="agility" value="0">
+      <button class="btn plus" data-act="inc">+</button>
+      <div class="effect">공격력 +0.3% · 치명타 확률 +0.05%</div>
+    </div>
+
+    <div class="stat-row int" data-stat="vitality">
+      <div class="name">생명력</div>
+      <button class="btn minus" data-act="dec">−</button>
+      <input class="stat-input" type="number" step="1" min="0" id="val-vitality" data-stat-input="vitality" value="0">
+      <button class="btn plus" data-act="inc">+</button>
+      <div class="effect">체력 +5 · 회피 +0.03% · 물약 회복량 +0.5%</div>
+    </div>
+
+    <div class="stat-row luk" data-stat="luck">
+      <div class="name">행운</div>
+      <button class="btn minus" data-act="dec">−</button>
+      <input class="stat-input" type="number" step="1" min="0" id="val-luck" data-stat-input="luck" value="0">
+      <button class="btn plus" data-act="inc">+</button>
+      <div class="effect">경험치 +0.2% · 드랍률 +0.2%</div>
+    </div>
+  </div>
+
+
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--accent)"></span> 계산 결과</h2>
+    <div class="stat-sheet">
+      <div class="title-bar">전체 스텟</div>
+      <div class="body" id="result"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><span class="dot" style="background:var(--green)"></span> 📜 업데이트 내역</h2>
+    <details open>
+      <summary><b style="color:var(--green)">v1.1</b> · 2026-07-28 — 목표 공격력 역계산 추가</summary>
+      <div class="kv">
+        ➕ <b>🎯 목표 공격력 역계산</b> — 원하는 공격력 입력 → 필요한 <b>최소 포인트</b>(힘·민첩 조합) 계산<br>
+        &nbsp;&nbsp;· 기준 선택: 표시 공격력 / 최종 공격력(최종 공격력% 포함)<br>
+        &nbsp;&nbsp;· 스텟이 정수 단위라 목표에 정확히 안 떨어짐 → <b>목표 이상 중 최소</b>, 동점이면 기대 데미지 큰 쪽<br>
+        &nbsp;&nbsp;· 생명력·행운은 공격력 무관 → 건드리지 않음. 남은 포인트 여유/부족 표시<br>
+        &nbsp;&nbsp;· <b>이 분배 적용</b> 버튼으로 바로 반영 (포인트 초과 시 확인창)
+      </div>
+    </details>
+    <details>
+      <summary><b>v1.0</b> · 초기 버전</summary>
+      <div class="kv">
+        · 레벨/남은 포인트 관리, 힘·민첩·생명력·행운 추가 분배<br>
+        · 전체 스텟 스냅샷 입력 → 추가 포인트 delta 반영한 전체 스텟 결과<br>
+        · 🧠 자동 최적화 — 기대 데미지 최대 분배(탐욕법), 5의 배수 옵션<br>
+        · 📋 템플릿 분배 — 힘3:생1:행1 / 힘2:민1:생1:행1 / 민3:생1:행1<br>
+        · 📷 스크린샷 OCR 자동 인식 — 4패스 다수결, 충돌·미인식 경고
+      </div>
+    </details>
+    <div class="note" style="font-size:11px; margin-top:8px;">※ v1.0 이전 세부 변경은 기록이 남아있지 않아 한 항목으로 묶었습니다.</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+(() => {
+  const state = {
+    level: 0,
+    extraPoints: 0,
+    stats: { strength: 0, agility: 0, vitality: 0, luck: 0 },  // 추가 분배 포인트
+    snapshot: {
+      attackFlat: 0, attackPercent: 0, finalAtkPct: 0,
+      hpFlat: 0, hpPercent: 0,
+      strEff: 0, strPercent: 0, dexEff: 0, dexPercent: 0,
+      vitEff: 0, vitPercent: 0, lukEff: 0, lukPercent: 0,
+      skillDmg: 0, critRate: 0, critDmg: 0, bossAtk: 0,
+      expBonus: 0, dropRate: 0, potionRec: 0,
+      evasion: 0, resistance: 0, skillSpeed: 0
+    }
+  };
+
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+  const levelEl = $('#level');
+  const resultEl = $('#result');
+  const usedEl = $('#used');
+  const totalPtsEl = $('#totalPts');
+  const remainingEl = $('#remaining');
+  const barEl = $('#bar');
+
+  const STAT_KEYS = ['strength','agility','vitality','luck'];
+
+  function used(statsSrc) {
+    const s = statsSrc || state.stats;
+    return STAT_KEYS.reduce((a,k)=>a+Math.max(0, s[k]||0), 0);
+  }
+  const MAX_POINTS = 100000; // 자동분배 루프 가드 (브라우저 멈춤 방지)
+  function total() {
+    const n = Math.floor(Number(state.extraPoints)) || 0;
+    return Math.max(0, Math.min(MAX_POINTS, n));
+  }
+
+  function calc(statsOverride) {
+    const s = statsOverride || state.stats;
+
+    const dStr = Math.max(0, s.strength||0);
+    const dDex = Math.max(0, s.agility ||0);
+    const dVit = Math.max(0, s.vitality||0);
+    const dLuk = Math.max(0, s.luck    ||0);
+
+    // 입력값(게임 "전체 스텟" 스냅샷) → 공통 모델 d 로 정규화
+    // 표시 능력치는 효과치(포인트×(1+스텟%)). 표시 공격력/체력엔 해당 %가 이미 포함됨.
+    const snap = state.snapshot;
+    const d = {
+      atkDisp: snap.attackFlat||0, atkPct: snap.attackPercent||0, finalAtkPct: snap.finalAtkPct||0,
+      hpDisp: snap.hpFlat||0, hpPct: snap.hpPercent||0,
+      strEff: snap.strEff||0, dexEff: snap.dexEff||0, vitEff: snap.vitEff||0, lukEff: snap.lukEff||0,
+      strPct: snap.strPercent||0, dexPct: snap.dexPercent||0, vitPct: snap.vitPercent||0, lukPct: snap.lukPercent||0,
+      skillDmgPct: snap.skillDmg||0, bossPct: snap.bossAtk||0,
+      critRate: snap.critRate||0, critDmg: snap.critDmg||0,
+      eva: snap.evasion||0, pot: snap.potionRec||0, exp: snap.expBonus||0, drop: snap.dropRate||0,
+      resistance: snap.resistance||0, skillSpeed: snap.skillSpeed||0
+    };
+
+    // 추가 포인트 → 효과치(스텟% 반영): 1포인트당 (1 + 스텟%/100) 만큼 능력치 상승
+    const strAdd = dStr * (1 + d.strPct/100);
+    const dexAdd = dDex * (1 + d.dexPct/100);
+    const vitAdd = dVit * (1 + d.vitPct/100);
+    const lukAdd = dLuk * (1 + d.lukPct/100);
+
+    const effStr = d.strEff + strAdd;
+    const effDex = d.dexEff + dexAdd;
+    const effVit = d.vitEff + vitAdd;
+    const effLuk = d.lukEff + lukAdd;
+
+    // 공격력: 표시값엔 공격력%가 이미 포함 → 베이스(무기+기존 힘효과) 역산 후, 힘효과 추가 + 새 공격력% 재적용
+    const attackBonus = d.atkPct + dexAdd * 0.3;                 // 새 공격력% = 장비% + 민첩효과×0.3
+    const atkBase = d.atkPct > -100 ? d.atkDisp / (1 + d.atkPct/100) : d.atkDisp;
+    const attackPower = (atkBase + strAdd) * (1 + attackBonus/100); // 새 표시 공격력
+    const finalAtk = attackPower * (1 + d.finalAtkPct/100);
+
+    const critRate = Math.min(100, d.critRate + dexAdd * 0.05);
+    const critDmg  = d.critDmg + strAdd * 0.1;
+    const expDmg = finalAtk * (1 + (critRate/100) * (critDmg/100 - 1));
+
+    // 스킬 1회 피해 = 기대 데미지 × (1+스킬피해량%) · 보스 데미지 = ×(1+보스공격력%)
+    const skillDmg = expDmg * (1 + d.skillDmgPct/100);
+    const bossDmg  = skillDmg * (1 + d.bossPct/100);
+
+    // 체력: 표시값엔 체력%가 이미 포함 → 베이스 역산 후 생명력효과×5 추가 후 재적용
+    const hpBase = d.hpPct > -100 ? d.hpDisp / (1 + d.hpPct/100) : d.hpDisp;
+    const totalHp = (hpBase + vitAdd * 5) * (1 + d.hpPct/100);
+    const eva  = d.eva + vitAdd * 0.03;
+    const pot  = d.pot + vitAdd * 0.5;
+    const exp  = d.exp + lukAdd * 0.2;
+    const drop = d.drop + lukAdd * 0.2;
+
+    return {
+      attackPower, attackBonus,
+      critRate, critDmg, skillDmg, bossDmg,
+      totalHp, eva, pot, exp, drop,
+      resistance: d.resistance, skillSpeed: d.skillSpeed,
+      effStr, effDex, effVit, effLuk,
+      dispSkillDmgPct: d.skillDmgPct, dispHpPct: d.hpPct,
+      dispStrPct: d.strPct, dispDexPct: d.dexPct, dispVitPct: d.vitPct, dispLukPct: d.lukPct,
+      dispFinalAtkPct: d.finalAtkPct, dispBossPct: d.bossPct
+    };
+  }
+
+  function fmt(n, d=2) {
+    if (!isFinite(n)) return '∞';
+    const v = Number(n);
+    const r = Math.round(v * 10**d) / 10**d;
+    return r.toLocaleString('ko-KR', { minimumFractionDigits: 0, maximumFractionDigits: d });
+  }
+  function sign(s) {
+    if (!s || s === '∞' || s[0] === '-' || s[0] === '+') return s;
+    return '+' + s;
+  }
+
+  function render() {
+    for (const k of STAT_KEYS) {
+      const el = document.getElementById('val-'+k);
+      if (el && document.activeElement !== el) el.value = state.stats[k];
+    }
+    const u = used(), t = total();
+    usedEl.textContent = u;
+    totalPtsEl.textContent = t;
+    const rem = t - u;
+    remainingEl.textContent = rem < 0 ? '초과 ' + Math.abs(rem) : '남은 ' + rem;
+    remainingEl.className = rem < 0 ? 'over' : '';
+    barEl.style.width = t > 0 ? Math.min(100, Math.max(0, (u/t)*100)) + '%' : '0%';
+
+    const r = calc();
+    const leftCol = [
+      { lbl: '공격력',          val: fmt(r.attackPower, 2) },
+      { lbl: '체력',            val: fmt(r.totalHp, 2) },
+      { lbl: '힘',              val: fmt(r.effStr, 2) },
+      { lbl: '민첩',            val: fmt(r.effDex, 2) },
+      { lbl: '생명력',          val: fmt(r.effVit, 2) },
+      { lbl: '행운',            val: fmt(r.effLuk, 2) },
+      { lbl: '스킬 피해량(%)',   val: fmt(r.dispSkillDmgPct, 2) + '%' },
+      { lbl: '치명타 확률(%)',   val: fmt(r.critRate, 2) + '%' },
+      { lbl: '경험치 획득량(%)', val: fmt(r.exp, 2) + '%' },
+      { lbl: '드랍률(%)',       val: fmt(r.drop, 2) + '%' },
+      { lbl: '물약 회복량(%)',   val: fmt(r.pot, 2) + '%' }
+    ];
+    const rightCol = [
+      { lbl: '공격력(%)',       val: fmt(r.attackBonus, 2) + '%' },
+      { lbl: '체력(%)',         val: fmt(r.dispHpPct, 2) + '%' },
+      { lbl: '힘(%)',           val: fmt(r.dispStrPct, 2) + '%' },
+      { lbl: '민첩(%)',         val: fmt(r.dispDexPct, 2) + '%' },
+      { lbl: '생명력(%)',       val: fmt(r.dispVitPct, 2) + '%' },
+      { lbl: '행운(%)',         val: fmt(r.dispLukPct, 2) + '%' },
+      { lbl: '최종 공격력(%)',   val: fmt(r.dispFinalAtkPct, 2) + '%' },
+      { lbl: '치명타 공격력(%)', val: fmt(r.critDmg, 2) + '%' },
+      { lbl: '보스 공격력(%)',   val: fmt(r.dispBossPct, 2) + '%' },
+      { lbl: '회피(%)',          val: fmt(r.eva, 2) + '%' },
+      { lbl: '저항(%)',          val: fmt(r.resistance, 2) + '%' },
+      { lbl: '스킬속도(%)',      val: fmt(r.skillSpeed, 2) + '%' }
+    ];
+    const lineHtml = ti => `<div class="stat-line"><span class="lbl">${ti.lbl}</span><span class="val">${sign(ti.val)}</span></div>`;
+    resultEl.innerHTML =
+      `<div class="col">${leftCol.map(lineHtml).join('')}</div>` +
+      `<div class="col">${rightCol.map(lineHtml).join('')}</div>`;
+  }
+
+  levelEl.addEventListener('input', e => {
+    let v = parseInt(e.target.value || '0', 10) || 0;
+    if (v < 0) v = 0;
+    if (v > 200) v = 200;
+    state.level = v;
+    if (String(v) !== e.target.value) e.target.value = v; // 범위 초과 입력 시 표시값도 클램프
+    render();
+  });
+
+  const extraPtsEl = document.getElementById('extraPoints');
+  extraPtsEl.addEventListener('input', e => {
+    state.extraPoints = Math.max(0, parseInt(e.target.value || '0', 10) || 0);
+    render();
+  });
+  document.getElementById('levelPtsBtn').addEventListener('click', () => {
+    state.extraPoints = Math.max(0, Math.min(200, state.level)) * 5;
+    extraPtsEl.value = state.extraPoints;
+    render();
+  });
+
+  // 스냅샷 입력
+  document.querySelectorAll('input[data-snap]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const k = inp.dataset.snap;
+      const v = parseFloat(e.target.value);
+      state.snapshot[k] = isFinite(v) ? v : 0;
+      render();
+    });
+  });
+
+  // stat +/- buttons + direct number input
+  $$('.stat-row').forEach(row => {
+    const key = row.dataset.stat;
+    row.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      const act = b.dataset.act;
+      if (act === 'inc') {
+        if (used() >= total()) return;
+        state.stats[key]++;
+      } else if (act === 'dec') {
+        if (state.stats[key] > 0) state.stats[key]--;
+      }
+      render();
+    });
+    let interval = null, timeout = null;
+    row.addEventListener('mousedown', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      const act = b.dataset.act;
+      const tick = () => {
+        if (act === 'inc') {
+          if (used() >= total()) return;
+          state.stats[key]++;
+        } else if (state.stats[key] > 0) {
+          state.stats[key]--;
+        }
+        render();
+      };
+      timeout = setTimeout(() => { interval = setInterval(tick, 50); }, 400);
+    });
+    const stop = () => { clearTimeout(timeout); clearInterval(interval); };
+    row.addEventListener('mouseup', stop);
+    row.addEventListener('mouseleave', stop);
+  });
+
+  // direct number input for stats
+  $$('input[data-stat-input]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const k = inp.dataset.statInput;
+      let v = parseInt(e.target.value, 10);
+      if (!isFinite(v) || v < 0) v = 0;
+      // 남은 포인트 초과분은 입력 즉시 클램프 (다른 스텟 보존). 초과 결과 일시 표시 방지.
+      const others = used() - state.stats[k];
+      const maxForThis = Math.max(0, total() - others);
+      if (v > maxForThis) v = maxForThis;
+      state.stats[k] = v;
+      if (String(v) !== e.target.value) e.target.value = v;
+      render();
+    });
+  });
+
+  // ==== OPTIMIZER ====  (maxDmg = 실효 데미지(스킬 1타) 최대화)
+  // 보스 공격력%는 분배와 무관한 상수 배수 → 점수에서 제외(skillDmg). 보스·일반 몹 모두 최적 분배 동일.
+  function scoreOf(r, goal) {
+    switch (goal) {
+      case 'maxDmg': return r.skillDmg;
+    }
+    return 0;
+  }
+
+  // step=1 기본. step=5면 5점씩 투입 → 각 스텟 값이 항상 5의 배수로 떨어짐.
+  function optimize(goal, keepCurrent, step) {
+    const OPT_STEP = step || 1;
+    const stats = keepCurrent
+      ? { ...state.stats }
+      : { strength: 0, agility: 0, vitality: 0, luck: 0 };
+    for (const k of STAT_KEYS) if (!(k in stats)) stats[k] = 0;
+    // step5 + 현재유지: 기존값이 5배수가 아니면 끝자리(1~4)가 그대로 남음 → 5배수로 내림.
+    if (OPT_STEP > 1) for (const k of STAT_KEYS) stats[k] = Math.floor(stats[k] / OPT_STEP) * OPT_STEP;
+    const limit = total();
+    let cur = used(stats);
+    if (cur > limit) {
+      for (const k of STAT_KEYS) stats[k] = 0;
+      cur = 0;
+    }
+    // 한 번에 OPT_STEP점씩 가장 이득 큰 스텟에 투입. step 미만 잔여는 5의 배수 유지 위해 미분배.
+    while (cur + OPT_STEP <= limit) {
+      const base = scoreOf(calc(stats), goal);
+      let bestKey = null, bestGain = -Infinity;
+      for (const k of STAT_KEYS) {
+        stats[k] += OPT_STEP;
+        const s = scoreOf(calc(stats), goal);
+        stats[k] -= OPT_STEP;
+        const gain = s - base;
+        if (gain > bestGain + 1e-12) {
+          bestGain = gain;
+          bestKey = k;
+        }
+      }
+      if (bestGain <= 0 || bestKey == null) {
+        bestKey = (goal === 'maxDmg') ? 'strength' : 'vitality';
+      }
+      stats[bestKey] += OPT_STEP;
+      cur += OPT_STEP;
+    }
+    return stats;
+  }
+
+  const TEMPLATES = {
+    tpl1: { label: '힘3 : 생1 : 행1', ratio: { strength:3, agility:0, vitality:1, luck:1 } },
+    tpl2: { label: '힘2 : 민1 : 생1 : 행1', ratio: { strength:2, agility:1, vitality:1, luck:1 } },
+    tpl3: { label: '민3 : 생1 : 행1', ratio: { strength:0, agility:3, vitality:1, luck:1 } }
+  };
+
+  function applyTemplate(ratio) {
+    const sum = STAT_KEYS.reduce((a,k)=>a+(ratio[k]||0), 0);
+    const t = total();
+    const s = { strength:0, agility:0, vitality:0, luck:0 };
+    if (sum <= 0) return s;
+    let acc = 0;
+    for (const k of STAT_KEYS) {
+      s[k] = Math.floor(t * (ratio[k]||0) / sum);
+      acc += s[k];
+    }
+    // 반올림 누락분은 비율 큰 스탯부터 +1씩 채움
+    const sorted = [...STAT_KEYS].sort((a,b)=>(ratio[b]||0)-(ratio[a]||0));
+    let rest = t - acc, i = 0;
+    while (rest > 0) {
+      s[sorted[i % sorted.length]]++;
+      rest--; i++;
+    }
+    return s;
+  }
+
+  function runOptimizer() {
+    const goal = $('#optGoal').value;
+    if (total() === 0) {
+      alert('"남은 포인트"가 0입니다. 인게임 ⬢ 포인트 값을 입력하거나, 0부터 분배라면 "레벨×5 적용"을 누르세요.');
+      return;
+    }
+    const goalName = $('#optGoal').selectedOptions[0].textContent;
+    const box = $('#optResult');
+
+    // 템플릿 분기
+    if (goal.startsWith('tpl')) {
+      const tpl = TEMPLATES[goal];
+      if (used() > 0 && !confirm(`템플릿(${tpl.label})으로 재분배할까요? 현재 분배는 덮어써집니다.`)) return;
+      const nextStats = applyTemplate(tpl.ratio);
+      state.stats = nextStats;
+      render();
+      box.style.display = 'block';
+      box.innerHTML = `<b>${goalName}</b> 적용 완료<br>배분: 힘 ${nextStats.strength} · 민첩 ${nextStats.agility} · 생명력 ${nextStats.vitality} · 행운 ${nextStats.luck}<br><span style="font-size:11px">총 ${total()}포인트를 비율 ${tpl.label}로 분배</span>`;
+      return;
+    }
+
+    // 자동 최적화
+    const mode = $('#optMode').value;
+    const keep = (mode === 'keep');
+    if (!keep && used() > 0) {
+      if (!confirm('현재 분배를 모두 초기화하고 재분배할까요?')) return;
+    }
+    const over = used() > total(); // 초과분배 상태면 before 기준이 무효 → 개선율 생략
+    const before = scoreOf(calc(), goal);
+    const step5 = $('#optStep5').checked;
+    const nextStats = optimize(goal, keep, step5 ? 5 : 1);
+    state.stats = nextStats;
+    render();
+    const after = scoreOf(calc(), goal);
+    box.style.display = 'block';
+    const delta = over
+      ? `초과분배 상태에서 재분배 — 개선율 생략`
+      : `기대 데미지 점수 ${fmt(before,3)} → <b style="color:var(--green)">${fmt(after,3)}</b> (${before > 0 ? ((after/before - 1)*100).toFixed(1) : '∞'}% 개선)`;
+    const leftover = total() - used(nextStats);
+    const leftMsg = leftover > 0 ? `<br><span style="font-size:11px;color:var(--green)">남은 ${leftover}점은 5의 배수 유지 위해 미분배</span>` : '';
+    box.innerHTML = `<b>${goalName}</b> 최적화 완료 · ${delta}<br>배분: 힘 ${nextStats.strength} · 민첩 ${nextStats.agility} · 생명력 ${nextStats.vitality} · 행운 ${nextStats.luck}${leftMsg}<br><span style="font-size:11px;color:#94a3b8">※ 점수 = 상대 비교용(스킬 배수·타수·보스 공격력% 등 상수 배수 제외). 분배 순위 판단엔 정확.</span>`;
+  }
+  $('#optBtn').addEventListener('click', runOptimizer);
+
+  // ==== 목표 공격력 역계산 ====
+  // 공격력 = (atkBase + 힘×(1+힘%)) × (1 + (장비공격력% + 민첩×(1+민첩%)×0.3)/100) [× (1+최종공격력%) 옵션]
+  // 힘·민첩만 관여 → 민첩을 0..상한 훑고 각 민첩에서 필요한 최소 힘을 역산. 합이 최소인 조합 채택.
+  const TGT_ITER_CAP = 200000; // 브라우저 멈춤 방지
+  function solveTargetAtk(target, useFinal) {
+    const snap = state.snapshot;
+    const atkPct  = snap.attackPercent || 0;
+    const strUnit = 1 + (snap.strPercent || 0) / 100;
+    const dexUnit = 1 + (snap.dexPercent || 0) / 100;
+    const atkBase = atkPct > -100 ? (snap.attackFlat || 0) / (1 + atkPct / 100) : (snap.attackFlat || 0);
+    const finalMul = useFinal ? (1 + (snap.finalAtkPct || 0) / 100) : 1;
+    if (!(finalMul > 0)) return { err: '최종 공격력%가 -100% 이하 — 계산 불가' };
+
+    const atkOf = (str, dex) =>
+      (atkBase + str * strUnit) * (1 + (atkPct + dex * dexUnit * 0.3) / 100) * finalMul;
+
+    if (atkOf(0, 0) >= target) return { str: 0, dex: 0, atk: atkOf(0, 0), already: true };
+
+    // 힘만으로 필요한 양 = 상한(유효 해). 민첩 탐색 범위도 이 값 이하(합≥민첩)
+    const strNeedAt = dex => {
+      const mult = (1 + (atkPct + dex * dexUnit * 0.3) / 100) * finalMul;
+      if (!(mult > 0)) return Infinity;
+      const need = (target / mult - atkBase) / strUnit;
+      if (!(strUnit > 0)) return need <= 0 ? 0 : Infinity;
+      return Math.max(0, Math.ceil(need - 1e-9));
+    };
+    let cap = strNeedAt(0);
+    if (!isFinite(cap)) cap = TGT_ITER_CAP;              // 힘% ≤ -100% 같은 이상 케이스
+    cap = Math.min(cap, TGT_ITER_CAP);
+
+    let best = null;
+    for (let dex = 0; dex <= cap; dex++) {
+      const str = strNeedAt(dex);
+      if (!isFinite(str)) continue;
+      const sum = str + dex;
+      if (best && sum > best.sum) continue;               // 이 민첩만으로 이미 초과 → 후보 아님
+      const atk = atkOf(str, dex);
+      if (atk < target - 1e-9) continue;                  // 반올림 안전장치
+      // 동점(포인트 수 같음)이면 기대 데미지 큰 쪽. 크리확률/크리공격력이 갈리므로 실제로 차이 남.
+      const score = calc({ strength: str, agility: dex, vitality: 0, luck: 0 }).skillDmg;
+      if (!best || sum < best.sum || (sum === best.sum && score > best.score)) {
+        best = { str, dex, sum, atk, score };
+      }
+    }
+    if (!best) return { err: `포인트 ${TGT_ITER_CAP.toLocaleString()}점 이내로 도달 불가 — 목표가 너무 높습니다` };
+    return { str: best.str, dex: best.dex, atk: best.atk, already: false };
+  }
+
+  let tgtSolution = null;
+  function runTargetAtk() {
+    const box = $('#tgtResult'), applyBtn = $('#tgtApply');
+    $('#tgtApplyMsg').textContent = '';
+    const target = parseFloat($('#tgtAtk').value);
+    const useFinal = $('#tgtMode').value === 'final';
+    const modeLbl = useFinal ? '최종 공격력' : '표시 공격력';
+    box.style.display = 'block';
+    if (!isFinite(target) || target <= 0) {
+      applyBtn.style.display = 'none'; tgtSolution = null;
+      box.innerHTML = '목표 공격력을 입력하세요.';
+      return;
+    }
+    const res = solveTargetAtk(target, useFinal);
+    if (res.err) {
+      applyBtn.style.display = 'none'; tgtSolution = null;
+      box.innerHTML = `<b style="color:var(--red)">${res.err}</b>`;
+      return;
+    }
+    if (res.already) {
+      applyBtn.style.display = 'none'; tgtSolution = null;
+      box.innerHTML = `추가 포인트 <b>0점</b> — 현재 스냅샷만으로 ${modeLbl} <b>${fmt(res.atk,2)}</b> 이미 목표(${fmt(target,2)}) 달성.<br><span style="font-size:11px">남은 포인트는 생명력·행운 등에 자유롭게 쓰세요.</span>`;
+      return;
+    }
+    tgtSolution = { strength: res.str, agility: res.dex };
+    const need = res.str + res.dex;
+    const t = total();
+    const budget = need <= t
+      ? `<span style="color:var(--green)">남은 포인트 ${t}점 중 ${need}점 사용 · 여유 ${t - need}점</span>`
+      : `<span style="color:var(--red)">남은 포인트 ${t}점보다 ${need - t}점 부족 — 레벨/포인트 더 필요</span>`;
+    const over = res.atk - target;
+    box.innerHTML =
+      `필요 최소 포인트 <b style="color:var(--yellow);font-size:15px">${need}점</b> — 힘 <b>${res.str}</b> · 민첩 <b>${res.dex}</b><br>` +
+      `결과 ${modeLbl} <b style="color:var(--green)">${fmt(res.atk,2)}</b> (목표 ${fmt(target,2)}${over > 0.005 ? ` · 초과 +${fmt(over,2)}` : ' · 정확히 일치'})<br>` +
+      budget +
+      `<br><span style="font-size:11px;color:#94a3b8">※ 생명력·행운은 공격력에 영향 없음 → 이 분배는 그 둘을 건드리지 않습니다.</span>`;
+    applyBtn.style.display = 'inline-flex';
+  }
+  $('#tgtBtn').addEventListener('click', runTargetAtk);
+  $('#tgtAtk').addEventListener('keydown', e => { if (e.key === 'Enter') runTargetAtk(); });
+  $('#tgtApply').addEventListener('click', () => {
+    if (!tgtSolution) return;
+    const nextUsed = tgtSolution.strength + tgtSolution.agility + state.stats.vitality + state.stats.luck;
+    if (nextUsed > total() &&
+        !confirm(`적용하면 남은 포인트(${total()})를 ${nextUsed - total()}점 초과합니다. 그래도 적용할까요?`)) return;
+    state.stats.strength = tgtSolution.strength;
+    state.stats.agility  = tgtSolution.agility;
+    render();
+    $('#tgtApplyMsg').textContent = `적용됨 — 힘 ${tgtSolution.strength} · 민첩 ${tgtSolution.agility}`;
+  });
+
+  $('#resetBtn').addEventListener('click', () => {
+    if (!confirm('스텟 분배를 초기화 할까요?')) return;
+    state.stats = { strength: 0, agility: 0, vitality: 0, luck: 0 };
+    render();
+  });
+
+  // ==== OCR: 스크린샷 → 스냅샷 자동 인식 ====
+  // 플랫(공격력·체력·力敏命幸) 라벨과 % 라벨이 같은 이름을 공유 → 값에 % 유무로 분기
+  const OCR_FLAT = {
+    '공격력':'attackFlat', '체력':'hpFlat',
+    '힘':'strEff', '민첩':'dexEff', '생명력':'vitEff', '행운':'lukEff'
+  };
+  const OCR_PCT = {
+    '공격력':'attackPercent', '체력':'hpPercent',
+    '힘':'strPercent', '민첩':'dexPercent', '생명력':'vitPercent', '행운':'lukPercent',
+    '최종공격력':'finalAtkPct', '치명타공격력':'critDmg', '보스공격력':'bossAtk',
+    '회피':'evasion', '저항':'resistance', '스킬속도':'skillSpeed',
+    '스킬피해량':'skillDmg', '치명타확률':'critRate',
+    '경험치획득량':'expBonus', '경험치':'expBonus', '드랍률':'dropRate', '드롭률':'dropRate',
+    '물약회복량':'potionRec'
+  };
+  // 한국어 라벨 한글-필드 보기용 (적용/표시 순서)
+  const SNAP_LABEL = {
+    __level:'레벨', __points:'남은 포인트',
+    attackFlat:'공격력', attackPercent:'공격력(%)', hpFlat:'체력', hpPercent:'체력(%)',
+    strEff:'힘', strPercent:'힘(%)', dexEff:'민첩', dexPercent:'민첩(%)',
+    vitEff:'생명력', vitPercent:'생명력(%)', lukEff:'행운', lukPercent:'행운(%)',
+    finalAtkPct:'최종 공격력(%)', critDmg:'치명타 공격력(%)', bossAtk:'보스 공격력(%)',
+    critRate:'치명타 확률(%)', skillDmg:'스킬 피해량(%)', skillSpeed:'스킬속도(%)',
+    evasion:'회피(%)', resistance:'저항(%)', expBonus:'경험치 획득량(%)',
+    dropRate:'드랍률(%)', potionRec:'물약 회복량(%)'
+  };
+
+  // 인게임 "전체 스텟" 패널은 2열(한 줄에 플랫+% 동시) → 줄단위가 아니라 전역 라벨스캔.
+  // 라벨 후보(긴 것부터: 부분일치 방지). 띄어쓰기 유연 처리 위해 정규화 키로 매칭.
+  const OCR_LABELS = ['최종공격력','치명타공격력','보스공격력','치명타확률','스킬피해량',
+    '경험치획득량','물약회복량','스킬속도','드랍률','드롭률',
+    '공격력','체력','생명력','민첩','행운','회피','저항','힘'];
+  const NORM = s => s.replace(/[()%\s·.:|]/g, '').replace(/[0-9]/g, '');
+
+  // OCR 텍스트 → { field: {value, signed, dec} }. 라벨 다음 부호/숫자/% 전역 스캔.
+  function parseOcrDetail(text) {
+    // 줄바꿈을 공백으로 — 2열이 줄을 공유하므로 라벨-숫자 인접성만 사용
+    const flat = text.replace(/[oO○●◯]\s*(?=\d)/g, '0').replace(/\s+/g, ' ');
+    const labelAlt = OCR_LABELS.map(NORM)
+      // 한글 사이에 OCR 공백이 끼어도 잡도록 글자 사이 \s* 허용
+      .map(k => k.split('').map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*'))
+      .join('|');
+    // 라벨 ~ 숫자 사이에 OCR 잡문자(")", "、", "_" 등) 최대 4자 허용. 단 +/- 부호는 안 먹음.
+    const re = new RegExp('(' + labelAlt + ')\\s*(\\(\\s*%\\s*\\))?[^0-9+\\-\\n]{0,4}([+\\-]?\\d[\\d,]*(?:\\.\\d+)?)\\s*(%?)', 'g');
+    const out = {}; // field -> { value, signed }
+    let m;
+    while ((m = re.exec(flat)) !== null) {
+      const key = NORM(m[1]);
+      const numTok = m[3];
+      const value = parseFloat(numTok.replace(/,/g, ''));
+      if (!isFinite(value)) continue;
+      const signed = /^[+\-]/.test(numTok);
+      // 하단 스텟효과 설명(예 "공격력 0.3% 상승")의 작은 계수 무시 — 무부호 & 절대값<1
+      if (!signed && Math.abs(value) < 1) continue;
+      const hasPercent = !!m[2] || m[4] === '%';
+      const field = hasPercent ? (OCR_PCT[key] ?? OCR_FLAT[key]) : (OCR_FLAT[key] ?? OCR_PCT[key]);
+      if (!field) continue;
+      const dec = numTok.includes('.');
+      const prev = out[field];
+      if (prev) {
+        if (prev.signed) continue;       // 이미 부호값(보너스 목록)으로 확정 → 고정
+        if (!signed) continue;            // 둘 다 무부호 → 첫 값 유지
+        // prev 무부호 + new 부호 → 부호값으로 교체
+      }
+      out[field] = { value, signed, dec };
+    }
+    return out; // field -> { value, signed, dec }
+  }
+
+  // ---- 순차 파서: sparse OCR(PSM 11/12)은 "라벨\n값\n라벨\n값…"을 패널 읽기순서대로 출력.
+  // 라벨 줄 바로 다음 값 줄을 그대로 페어링 → 2열 평탄화 근접스캔의 오매칭(값↔엉뚱라벨) 원천 차단.
+  // 값은 부호(+/-) 필수 → 좌측 분배패널 스핀박스 맨숫자(예: 행운 350)가 같은 라벨에 끼는 충돌 제거.
+  const OCR_KEYS = [...new Set([...Object.keys(OCR_FLAT), ...Object.keys(OCR_PCT)])];
+  const OCR_KEYSET = new Set(OCR_KEYS);
+  function lev1(a, b) { // 편집거리(≤1만 의미). 한글 1글자 오독(첩↔칩) 복구용.
+    const m = a.length, n = b.length; if (Math.abs(m - n) > 1) return 2;
+    const dp = Array.from({ length: m + 1 }, (_, i) => { const r = new Array(n + 1).fill(0); r[0] = i; return r; });
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+      dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    return dp[m][n];
+  }
+  function resolveOcrKey(k) {
+    if (OCR_KEYSET.has(k)) return k;
+    if (k.length < 2) return null;
+    let best = null, bd = 2;
+    for (const c of OCR_KEYS) { if (Math.abs(c.length - k.length) > 1) continue; const d = lev1(k, c); if (d < bd) { bd = d; best = c; } }
+    return bd <= 1 ? best : null;
+  }
+  const SEQ_VAL = /^[+\-]\d[\d,]*(?:\.\d+)?\s*%?$/; // 부호 필수
+  function parseOcrSeq(text) {
+    const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const out = {}; let pending = null;
+    for (const ln of lines) {
+      const clean = ln.replace(/[。、_¥]/g, ' ').trim();
+      if (SEQ_VAL.test(clean)) {
+        if (pending) {
+          const numTok = clean.replace(/[%\s]/g, '');
+          const value = parseFloat(numTok.replace(/,/g, ''));
+          if (isFinite(value)) {
+            const field = pending.pct ? (OCR_PCT[pending.key] ?? OCR_FLAT[pending.key]) : (OCR_FLAT[pending.key] ?? OCR_PCT[pending.key]);
+            if (field && !(field in out)) out[field] = { value, signed: true, dec: numTok.includes('.') };
+          }
+          pending = null;
+        }
+        continue;
+      }
+      if (/^[+\-]?\d/.test(clean)) { pending = null; continue; } // 부호없는 맨숫자(좌측패널) → 페어링 안 함
+      const key = resolveOcrKey(NORM(clean));
+      pending = key ? { key, pct: /%/.test(clean) } : null;
+    }
+    return out;
+  }
+  // 여러 패스(원본 + 전처리들) 병합. 값별 다수결 → 소수점 보유 → 첫 패스 순으로 채택.
+  // 패스 간 값이 갈리면 conflicts에 후보 전부 기록 → 사용자에게 "확인" 경고.
+  function mergeDetailN(maps) {
+    const merged = {};
+    const conflicts = [];
+    const keys = new Set();
+    maps.forEach(m => Object.keys(m).forEach(k => keys.add(k)));
+    for (const k of keys) {
+      const cands = maps.map(m => m[k]).filter(Boolean); // {value, signed, dec}
+      if (!cands.length) continue;
+      // 같은 값끼리 묶어 득표 집계 (소수점 보유 여부도 누적)
+      const byVal = new Map();
+      for (const c of cands) {
+        const e = byVal.get(c.value) || { value: c.value, count: 0, dec: false };
+        e.count++; e.dec = e.dec || c.dec;
+        byVal.set(c.value, e);
+      }
+      const arr = [...byVal.values()];
+      // 다수결 > 소수점 보유 > (Map 삽입순=첫 패스 우선)
+      arr.sort((a, b) => (b.count - a.count) || ((b.dec ? 1 : 0) - (a.dec ? 1 : 0)));
+      merged[k] = arr[0].value;
+      if (arr.length > 1) {
+        conflicts.push({ field: k, picked: arr[0].value, alts: arr.slice(1).map(e => e.value) });
+      }
+    }
+    return { merged, conflicts };
+  }
+
+  // 전체 스텟 패널에 항상 표시되는 항목 — 미인식 감지용(조용한 0 누락 방지)
+  const OCR_EXPECTED = ['attackFlat','attackPercent','finalAtkPct','hpFlat','hpPercent',
+    'strEff','strPercent','dexEff','dexPercent','vitEff','vitPercent','lukEff','lukPercent',
+    'critRate','critDmg','skillDmg','bossAtk','skillSpeed','evasion','resistance',
+    'expBonus','dropRate','potionRec'];
+  // % 항목 정상 상한(자문용). 넘으면 OCR 자릿수 오류 의심.
+  const PCT_FIELDS = new Set(['attackPercent','hpPercent','strPercent','dexPercent','vitPercent',
+    'lukPercent','finalAtkPct','critRate','critDmg','skillDmg','bossAtk','skillSpeed',
+    'evasion','resistance','expBonus','dropRate','potionRec']);
+  const PCT_SANE_MAX = 500;
+
+  // 병합 결과 + 충돌 → 경고 목록 생성
+  function buildOcrWarnings(merged, conflicts) {
+    const warn = [];
+    // 1) 패스 간 값 불일치 (OCR 자릿수/소수점 오류 강한 신호)
+    for (const c of conflicts) {
+      const lbl = SNAP_LABEL[c.field] || c.field;
+      warn.push(`⚠ <b>${lbl}</b> 패스 불일치: <b>${c.picked}</b> 채택 (다른 후보: ${c.alts.join(', ')}). 인게임 값 확인.`);
+    }
+    // 2) 미인식 항목 (값이 0으로 조용히 남는 칸)
+    const missing = OCR_EXPECTED.filter(f => !(f in merged));
+    if (missing.length) {
+      warn.push(`❓ 미인식 ${missing.length}개 (직접 입력 필요): ` +
+        missing.map(f => SNAP_LABEL[f] || f).join(', '));
+    }
+    // 3) % 항목 비정상 과대값 (자릿수 오류 의심)
+    for (const [f, v] of Object.entries(merged)) {
+      if (PCT_FIELDS.has(f) && Math.abs(v) > PCT_SANE_MAX) {
+        warn.push(`⚠ <b>${SNAP_LABEL[f] || f}</b> = ${v}% — 비정상적으로 큼. 자릿수 확인.`);
+      }
+    }
+    return warn;
+  }
+
+  // 레벨 · 남은 포인트 파싱 (전체 스텟 패널 헤더 "레벨 N", 중앙 ⬢ 포인트)
+  function parseMeta(text) {
+    const t = text.replace(/\s+/g, ' ');
+    const out = {};
+    const lv = t.match(/레\s*벨[^0-9]{0,4}(\d{1,3})/);
+    if (lv) { const v = parseInt(lv[1], 10); if (v >= 1 && v <= 200) out.__level = v; }
+    let pt = t.match(/(\d{1,4})\s*포\s*인\s*트/);
+    if (!pt) pt = t.match(/포\s*인\s*트[^0-9]{0,4}(\d{1,4})/);
+    if (pt) { const v = parseInt(pt[1], 10); if (v >= 0 && v <= 2000) out.__points = v; }
+    return out;
+  }
+
+  // 위치 기반 복구: '최종 공격력(%)'/'보스 공격력(%)'는 라벨 한글(최종/보스)이 OCR에서 자주 깨짐(EF, RIPE…).
+  // 패널 배치가 고정 → '스킬 피해량(%)' 행의 우측 칸 = 최종, '경험치 획득량(%)' 행의 우측 칸 = 보스.
+  // 앵커 스텟 값 다음에 오는 첫 '공격력(%)' 값을 회수. 라벨 매칭 실패 시 보조용(값이 이미 있으면 안 씀).
+  function recoverAdjacent(text) {
+    const t = text.replace(/\s+/g, ' ');
+    const out = {};
+    // 스킬피해량 값 → (잡문자/라틴 허용, 한글은 불허로 다음 한글라벨 침범 방지) → 공격력(%) 값
+    const numTok = '[+\\-]?\\d[\\d.,]*';
+    const reFinal = new RegExp('스\\s*킬\\s*피\\s*해\\s*량\\s*\\(?\\s*%?\\s*\\)?\\s*' + numTok + '\\s*%?[^가-힣]{0,8}?공\\s*격\\s*력\\s*\\(?\\s*%\\s*\\)?\\s*(' + numTok + ')');
+    const reBoss = new RegExp('경\\s*험\\s*치[^가-힣]{0,6}획\\s*득\\s*량\\s*\\(?\\s*%?\\s*\\)?\\s*' + numTok + '\\s*%?[^가-힣]{0,8}?공\\s*격\\s*력\\s*\\(?\\s*%\\s*\\)?\\s*(' + numTok + ')');
+    const mf = t.match(reFinal);
+    if (mf) { const v = parseFloat(mf[1].replace(/,/g, '')); if (isFinite(v) && Math.abs(v) <= 500) out.finalAtkPct = v; }
+    const mb = t.match(reBoss);
+    if (mb) { const v = parseFloat(mb[1].replace(/,/g, '')); if (isFinite(v) && Math.abs(v) <= 500) out.bossAtk = v; }
+    return out;
+  }
+
+  // 파싱 객체 → "라벨: 값" 편집 텍스트
+  function parsedToText(obj) {
+    const order = ['__level','__points',
+      'attackFlat','attackPercent','finalAtkPct','hpFlat','hpPercent',
+      'strEff','strPercent','dexEff','dexPercent','vitEff','vitPercent','lukEff','lukPercent',
+      'critRate','critDmg','skillDmg','bossAtk','skillSpeed',
+      'evasion','resistance','expBonus','dropRate','potionRec'];
+    return order.filter(k => k in obj).map(k => `${SNAP_LABEL[k]}: ${obj[k]}`).join('\n');
+  }
+
+  // 편집 텍스트 → { field: value } (라벨 한글 기준 역매핑)
+  const LABEL_TO_FIELD = Object.fromEntries(Object.entries(SNAP_LABEL).map(([f,l]) => [l, f]));
+  function textToParsed(text) {
+    const out = {};
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(/^\s*(.+?)\s*[:：]\s*(-?\d[\d,]*(?:\.\d+)?)/);
+      if (!m) continue;
+      const field = LABEL_TO_FIELD[m[1].trim()];
+      if (!field) continue;
+      out[field] = parseFloat(m[2].replace(/,/g, ''));
+    }
+    return out;
+  }
+
+  function applyParsed(obj) {
+    let n = 0;
+    for (const [field, val] of Object.entries(obj)) {
+      if (field === '__level') {
+        const v = Math.max(0, Math.min(1000, Math.floor(Number(val)) || 0));
+        state.level = v; const el = $('#level'); if (el) el.value = v; n++; continue;
+      }
+      if (field === '__points') {
+        const v = Math.max(0, Math.min(MAX_POINTS, Math.floor(Number(val)) || 0));
+        state.extraPoints = v; const el = $('#extraPoints'); if (el) el.value = v; n++; continue;
+      }
+      if (!(field in state.snapshot)) continue;
+      state.snapshot[field] = val;
+      const inp = document.querySelector(`input[data-snap="${field}"]`);
+      if (inp) inp.value = val;
+      n++;
+    }
+    render();
+    return n;
+  }
+
+  const ocrStatus = $('#ocrStatus');
+  const ocrResult = $('#ocrResult');
+  const ocrParsed = $('#ocrParsed');
+  const ocrRaw = $('#ocrRaw');
+  const ocrPreview = $('#ocrPreview');
+  const ocrWarn = $('#ocrWarn');
+
+  // 이미지 로드
+  function loadImage(src) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = rej;
+      img.src = src;
+    });
+  }
+  // 전처리: 작은 글자 인식 향상 (크롭 + 업스케일 + 그레이스케일 + 대비 + 선택적 반전) → 소수점 누락 방지
+  // invert=true: 게임 UI는 어두운 배경+밝은 글자 → Tesseract가 학습한 "밝은 배경+어두운 글자"로 뒤집어 정확도↑
+  // crop: {x,y,w,h} 비율(0~1). 우측 패널만 잘라 고배율로 보면 '최종/보스 공격력' 같은 작은 한글 라벨 인식↑
+  async function preprocess(src, opts) {
+    const { invert = false, crop = null } = opts || {};
+    const img = await loadImage(src);
+    const W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+    const cx = crop ? Math.round(W * crop.x) : 0;
+    const cy = crop ? Math.round(H * crop.y) : 0;
+    const cw = crop ? Math.round(W * crop.w) : W;
+    const ch = crop ? Math.round(H * crop.h) : H;
+    // 작은(크롭) 영역일수록 더 키움(소수점·획 보존). 캔버스 과대 방지로 긴 변 5000px 상한.
+    let scale = cw < 700 ? 4 : cw < 1200 ? 3 : cw < 1800 ? 2.5 : cw < 2600 ? 2 : 1.5;
+    if (cw * scale > 5000) scale = 5000 / cw;
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(cw * scale); cv.height = Math.round(ch * scale);
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, cx, cy, cw, ch, 0, 0, cv.width, cv.height);
+    const id = ctx.getImageData(0, 0, cv.width, cv.height);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      let g = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+      if (invert) g = 255 - g;                                  // 밝은글자↔어두운배경 반전
+      g = Math.max(0, Math.min(255, (g - 128) * 1.5 + 128));    // 중간값 기준 대비 스트레치
+      d[i] = d[i+1] = d[i+2] = g;
+    }
+    ctx.putImageData(id, 0, 0);
+    return cv;
+  }
+
+  async function runOcr(src) {
+    if (typeof Tesseract === 'undefined') {
+      ocrStatus.textContent = '⚠️ OCR 엔진 로드 실패 (인터넷 연결 확인).';
+      return;
+    }
+    ocrResult.style.display = 'none';
+    let curTag = '';
+    const logger = m => {
+      if (m.status === 'recognizing text') {
+        ocrStatus.textContent = `⏳ ${curTag} 인식 중… ${Math.round((m.progress||0)*100)}%`;
+      } else if (m.status) {
+        ocrStatus.textContent = `⏳ ${curTag} ${m.status}…`;
+      }
+    };
+    // 여러 패스 인식. 영구 워커 재사용(빠름)+PSM/DPI 파라미터 튜닝. 워커 실패 시 옛 방식 폴백.
+    async function recognizeAll(passes) {
+      const texts = [];
+      let worker = null;
+      try { worker = await Tesseract.createWorker('kor+eng', 1, { logger }); } catch (_) { worker = null; }
+      if (worker) {
+        try {
+          // DPI 명시(저DPI 경고/오인식 방지) + 단어 간격 보존(2열 라벨-숫자 분리 유지)
+          try { await worker.setParameters({ user_defined_dpi: '300', preserve_interword_spaces: '1' }); } catch (_) {}
+          for (const p of passes) {
+            if (!p.input) continue;
+            curTag = p.tag;
+            try { await worker.setParameters({ tessedit_pageseg_mode: p.psm }); } catch (_) {}
+            try { const r = await worker.recognize(p.input); texts.push((r.data && r.data.text) || ''); }
+            catch (_) { /* 개별 패스 실패 무시 */ }
+          }
+        } finally { try { await worker.terminate(); } catch (_) {} }
+      } else {
+        // 폴백: 편의 API(파라미터 제어 불가)
+        for (const p of passes) {
+          if (!p.input) continue;
+          curTag = p.tag;
+          try {
+            const r = await Tesseract.recognize(p.input, 'kor+eng', { logger });
+            texts.push((r.data && r.data.text) || '');
+          } catch (_) {}
+        }
+      }
+      return texts;
+    }
+    try {
+      ocrStatus.textContent = '⏳ 인식 중… (첫 1회는 엔진 다운로드로 느릴 수 있음)';
+      // 패스별 입력 준비 (전처리 실패해도 해당 패스만 건너뜀).
+      // sparse-text PSM(11=흩어진글자, 12=흩어진글자+OSD): 패널을 라벨·값 줄단위로 읽어 순차 파서가 정확 페어링.
+      // 반전+업스케일 전처리로 작은 한글/소수점 보존. 우측크롭은 전체화면 캡처용(좌측 분배패널 배제).
+      const passes = [{ input: src, tag: '1/4 원본', psm: '11' }];
+      try { passes.push({ input: await preprocess(src, { invert: true }), tag: '2/4 반전', psm: '11' }); } catch (_) {}
+      try { passes.push({ input: await preprocess(src, { invert: true }), tag: '3/4 반전(블록)', psm: '12' }); } catch (_) {}
+      try { passes.push({ input: await preprocess(src, { invert: true, crop: { x: 0.50, y: 0.10, w: 0.30, h: 0.55 } }), tag: '4/4 우측확대', psm: '11' }); } catch (_) {}
+      const texts = await recognizeAll(passes);
+      ocrRaw.value = texts.map((t, i) => (i ? `----- 패스 ${i+1} -----\n` : '') + t).join('\n');
+      // 1차: 순차 파서(sparse 읽기순서) 다수결 — 가장 정확.
+      const { merged, conflicts } = mergeDetailN(texts.map(parseOcrSeq));
+      // 2차: 순차가 놓친 필드만 기존 전역스캔 파서로 보강(공백 메우기).
+      const detailMerged = mergeDetailN(texts.map(parseOcrDetail)).merged;
+      for (const [k, v] of Object.entries(detailMerged)) if (!(k in merged)) merged[k] = v;
+      // 3차: 라벨 깨짐으로 누락된 최종/보스 공격력% → 위치 기반 복구(앵커 스텟 다음 칸)
+      const recovered = [];
+      for (const t of texts) {
+        const rec2 = recoverAdjacent(t);
+        for (const k of ['finalAtkPct', 'bossAtk']) {
+          if (!(k in merged) && (k in rec2)) { merged[k] = rec2[k]; recovered.push(k); }
+        }
+      }
+      // 경고는 스텟 항목 기준으로만 (레벨/포인트 합치기 전에 계산)
+      const warnings = buildOcrWarnings(merged, conflicts);
+      for (const k of recovered) {
+        warnings.unshift(`🧩 <b>${SNAP_LABEL[k]}</b> = ${merged[k]} — 라벨 깨져 <b>위치로 추정 복구</b>. 인게임 값 꼭 확인.`);
+      }
+      const parsed = merged;
+      // 레벨·남은 포인트도 같이 (뒤 패스부터 덮어 text1 우선)
+      for (let i = texts.length - 1; i >= 0; i--) Object.assign(parsed, parseMeta(texts[i]));
+      const cnt = Object.keys(parsed).length;
+      ocrParsed.value = parsedToText(parsed);
+      // 경고 패널
+      if (warnings.length) {
+        ocrWarn.innerHTML = '<b>🔎 확인 필요</b><br>' + warnings.join('<br>');
+        ocrWarn.style.display = 'block';
+      } else {
+        ocrWarn.style.display = 'none';
+      }
+      ocrResult.style.display = 'block';
+      ocrStatus.textContent = cnt > 0
+        ? `✅ ${cnt}개 항목 인식 (${texts.length}패스 다수결)${warnings.length ? ` · ⚠️ 확인 ${warnings.length}건` : ''}. 확인·수정 후 "스냅샷에 적용".`
+        : '⚠️ 인식된 스텟이 없음. 원본 텍스트를 참고해 직접 입력하세요.';
+    } catch (err) {
+      ocrStatus.textContent = '⚠️ 인식 실패: ' + (err && err.message ? err.message : err);
+    }
+  }
+
+  function loadImagePreview(blob) {
+    const url = URL.createObjectURL(blob);
+    ocrPreview.src = url;
+    ocrPreview.style.display = 'block';
+    return url;
+  }
+
+  $('#ocrFile').addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const url = loadImagePreview(file);
+    runOcr(url);
+  });
+
+  $('#ocrPaste').addEventListener('click', async () => {
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      ocrStatus.textContent = '⚠️ 이 브라우저는 클립보드 이미지 읽기를 지원 안 함. 파일 선택을 쓰세요.';
+      return;
+    }
+    try {
+      const items = await navigator.clipboard.read();
+      for (const it of items) {
+        const type = it.types.find(t => t.startsWith('image/'));
+        if (type) {
+          const blob = await it.getType(type);
+          const url = loadImagePreview(blob);
+          runOcr(url);
+          return;
+        }
+      }
+      ocrStatus.textContent = '⚠️ 클립보드에 이미지가 없음.';
+    } catch (err) {
+      ocrStatus.textContent = '⚠️ 클립보드 읽기 실패: ' + (err && err.message ? err.message : err);
+    }
+  });
+
+  // 페이지 어디서든 Ctrl+V 로 이미지 붙여넣기
+  window.addEventListener('paste', e => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type && it.type.startsWith('image/')) {
+        const blob = it.getAsFile();
+        if (blob) { const url = loadImagePreview(blob); runOcr(url); e.preventDefault(); return; }
+      }
+    }
+  });
+
+  $('#ocrApply').addEventListener('click', () => {
+    const obj = textToParsed(ocrParsed.value);
+    const n = applyParsed(obj);
+    $('#ocrApplyMsg').textContent = n > 0 ? `✅ ${n}개 적용됨 (스냅샷 모드).` : '⚠️ 적용할 값이 없음.';
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

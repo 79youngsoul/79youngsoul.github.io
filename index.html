@@ -375,6 +375,8 @@ th.sortable.desc::after{content:'▼';opacity:1;color:var(--acc)}
      title="약초 조합 계산기 원본">🧪 약초 계산기</a>
   <a class="btn sm" href="https://hanwol-rank.skhidc.kr/?category=level" target="_blank" rel="noopener"
      title="한월 RPG 랭킹 — 전투력·레벨·생활·수련의탑·레이드·DPS·문파">🏆 랭킹</a>
+  <a class="btn sm" href="stat/index.html" target="_blank" rel="noopener"
+     title="비공식 한월 스텟 계산기 — 남은 포인트를 기대 데미지 최대로 자동 분배">🗡️ 스텟 계산기</a>
   <button class="btn sm" id="btnVer">업데이트 내역</button>
   <button class="btn sm" id="btnCopy">요약 복사</button>
   <button class="btn sm" id="btnExport">내보내기</button>
@@ -508,6 +510,7 @@ th.sortable.desc::after{content:'▼';opacity:1;color:var(--acc)}
       인게임 확인
       <br>관련 링크:
       <a href="https://github.com/Pro-Days/SkillMacro/releases" target="_blank" rel="noopener">[ProDays] 매크로 및 최적화 계산기</a> ·
+      <a href="stat/index.html" target="_blank" rel="noopener">비공식 한월 스텟 계산기</a> ·
       <a href="https://yasu2947.github.io/" target="_blank" rel="noopener">[_Ya_Su] 도깨비 스텟 계산기</a> ·
       <a href="https://hanwol-rank.skhidc.kr/?category=level" target="_blank" rel="noopener">한월 RPG 랭킹</a>
       <span class="dim">(별개 도구 — 문의는 만든 분들께)</span>
@@ -565,8 +568,14 @@ var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':
 var KEY = 'hanwol-craft-v1';
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.16';
+var APP_VERSION = '2.14.17';
 var CHANGELOG = [
+  { v:'2.14.17', d:'2026-09-23', items:[
+    '🗡️ <b>비공식 한월 스텟 계산기 추가</b> — 상단에 <b>🗡️ 스텟 계산기</b> 버튼이 생겼다. '
+      + '레벨 · 남은 포인트 · <b>전체 스텟</b> 창 수치를 넣으면 공격력 · 체력 · 치명타 · <b>기대 데미지</b>를 계산하고, '
+      + '남은 포인트를 <b>기대 데미지 최대</b>가 되게 자동 분배한다. 스크린샷을 올리면 숫자를 자동 인식한다. '
+      + '<b>요약</b> 탭 관련 링크(계산기 · 도구)와 푸터에도 넣었다',
+  ] },
   { v:'2.14.16', d:'2026-09-21', items:[
     '🐛 <b>장비 제작 티어 순서 · 확률 뒤집힘 수정</b> — 제작창 왼쪽 상단 → 오른쪽 순서는 '
       + '<b>5·4·3·2·1티어</b>가 아니라 <b>1·2·3·4·5티어</b>다. '

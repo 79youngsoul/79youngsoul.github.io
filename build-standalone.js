@@ -392,6 +392,9 @@ if (!mapInfo) {
 }
 
 
+/* 스텟 계산기는 단일 파일에 안 들어가므로 올라간 사이트 주소로 */
+html = html.split('href="stat/index.html"').join('href="https://79youngsoul.github.io/stat/"');
+
 /* 단일 파일임을 표시 — 지도 안내 문구에서 헷갈리지 않게 */
 html = html.replace('<body>',
   '<body data-standalone="1">\n<!-- 단일 파일 빌드: node build-standalone.js -->');

@@ -66,7 +66,8 @@ function mb(n) { return (n / 1024 / 1024).toFixed(1) + 'MB'; }
 /* ---------- 담을 것 정리 ---------- */
 var APP_FILES = [
   'index.html', 'craft-core.js', 'game-data.js', 'game-updates.js', 'map-waypoints.js',
-  'map/index.html', 'map/overlays.js', 'map/heights.js'
+  'map/index.html', 'map/overlays.js', 'map/heights.js',
+  'stat/index.html'
 ];
 
 // 타일: map/tiles/<world>/<dim>/<mw>/<layer>/<kind>/<level>/*.webp

@@ -764,7 +764,7 @@ function readMapData(file) {
   ok('관련 링크 목록 존재', Array.isArray(G.EXTERNAL_LINKS) && G.EXTERNAL_LINKS.length > 0);
   ok('관련 링크 전부 이름·https 주소',
      G.EXTERNAL_LINKS.every(function (l) { return !!l.name && /^https:\/\//.test(l.url); }));
-  ok('관련 링크 15개', G.EXTERNAL_LINKS.length === 15, G.EXTERNAL_LINKS.length);
+  ok('관련 링크 16개', G.EXTERNAL_LINKS.length === 16, G.EXTERNAL_LINKS.length);
   ok('디스코드 채널 링크는 discord 표시', G.EXTERNAL_LINKS.filter(function (l) {
     return /discord\.com\/channels/.test(l.url);
   }).every(function (l) { return l.discord === true; }));
