@@ -566,10 +566,16 @@ var $ = function(s){return document.querySelector(s);};
 var $$ = function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
 var esc = function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
 var KEY = 'hanwol-craft-v1';
+var STAT_URL = 'stat/index.html';   // 이 사이트에 들어 있는 스텟 계산기 (단일 파일판은 빌드 때 사이트 주소로 바뀜)
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.17';
+var APP_VERSION = '2.14.18';
 var CHANGELOG = [
+  { v:'2.14.18', d:'2026-09-23', items:[
+    '🔎 <b>전체 검색에서 스텟 계산기 · 관련 링크 찾기</b> — <b>스텟</b>이나 <b>계산기</b>로 찾으면 '
+      + '<b>스텟 계산기</b>가 맨 위에 뜬다. 랭킹 · 위키 · 다른 계산기 같은 <b>관련 링크</b>도 이름으로 찾을 수 있고, '
+      + 'Enter 나 클릭하면 새 탭으로 열린다',
+  ] },
   { v:'2.14.17', d:'2026-09-23', items:[
     '🗡️ <b>비공식 한월 스텟 계산기 추가</b> — 상단에 <b>🗡️ 스텟 계산기</b> 버튼이 생겼다. '
       + '레벨 · 남은 포인트 · <b>전체 스텟</b> 창 수치를 넣으면 공격력 · 체력 · 치명타 · <b>기대 데미지</b>를 계산하고, '
@@ -3063,6 +3069,15 @@ function searchIndex(){
   G.ASSISTANT_ENHANCE.forEach(function(e){
     add('조수 강화', e, '대장장이 조수가 해주는 강화', 'npc', null, null, e);
   });
+  // 이 사이트의 스텟 계산기 — '스텟'으로 찾으면 맨 위에 오도록 이름을 '스텟 계산기'로
+  add('도구', '스텟 계산기', '비공식 한월 스텟 계산기 · 스텟 포인트 자동 분배 · 기대 데미지 · 스크린샷 인식', 'sum');
+  idx[idx.length-1].url = STAT_URL;
+  // 관련 링크 (랭킹 · 위키 · 다른 계산기 …) — 누르면 새 탭으로 연다
+  G.EXTERNAL_LINKS.forEach(function(l){
+    if(/\/stat\/$/.test(l.url)) return;   // 위 '스텟 계산기'와 같은 곳
+    add('관련 링크', l.name, l.cat+' · '+l.desc, 'sum');
+    idx[idx.length-1].url = l.url;
+  });
   G.GUIDE_VIDEOS.forEach(function(v){
     add('가이드 영상', v.title, v.tip, 'sum', null, null, null);
   });
@@ -3203,7 +3218,7 @@ function searchPreviewHtml(it){
     + (it.x !== null
         ? '<div class="pxy">좌표 x '+it.x+' / z '+it.z+'</div>' : '')
     + '<div class="pb">'
-    + '<button class="mini" data-pgo="1">'+esc(TAB_LABEL[it.tab]||it.tab)+' 탭에서 보기 ↵</button>'
+    + '<button class="mini" data-pgo="1">'+(it.url ? '새 탭에서 열기 ↗' : esc(TAB_LABEL[it.tab]||it.tab)+' 탭에서 보기 ↵')+'</button>'
     + (it.x !== null ? '<button class="mini" data-gmap="'+it.x+','+it.z+'">지도에서 보기</button>' : '')
     + '</div>';
 }
@@ -3243,6 +3258,7 @@ function renderBrowseList(){
 /** 검색 결과 클릭 → 해당 탭으로 이동 + 그 탭 검색어 채우기 */
 function gotoResult(it){
   if(!it) return;
+  if(it.url){ window.open(it.url, '_blank', 'noopener'); $('#gRes').classList.remove('on'); return; }
   S.tab = it.tab;
   if(it.q){
     if(it.tab === 'rec')  $('#p-rec')._q  = it.q;
