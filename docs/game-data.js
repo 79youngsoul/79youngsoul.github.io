@@ -118,7 +118,10 @@
       desc: '레벨 높은 순 랭킹' },
     { cat: '랭킹', name: '한월 RPG 랭킹 — DPS',
       url: 'https://hanwol-rank.skhidc.kr/dps.php',
-      desc: '허수아비 기준 DPS 랭킹' }
+      desc: '허수아비 기준 DPS 랭킹' },
+    { cat: '랭킹', name: '투다이스 레벨 랭킹',
+      url: 'https://twodicorank.skhidc.kr/',
+      desc: '투다이스 커뮤니티 멤버 레벨 · 경험치 순위' }
   ];
 
 

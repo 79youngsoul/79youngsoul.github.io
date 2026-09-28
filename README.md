@@ -101,7 +101,7 @@ node snapshot.js --force              # 같은 버전 덮어쓰기
 | 커뮤니티 | [한월RPG 디스코드](https://discord.gg/yA6MnmqGzy) `출처` · [유저 공략 채널](https://discord.com/channels/587152246433775640/1485166398841028749) (가입 후 인증 필요) |
 | 지도 · 자료 | [한월 위키(노션)](https://sulky-titanium-5df.notion.site/2df34cfb6e8d80c881adcced4bcc73ed?v=2df34cfb6e8d8189b10f000c8300abc6) · [HANWOL-WEBMAP](https://forky-g.github.io/HANWOL-WEBMAP/) `출처` · [확률 공개 시트](https://docs.google.com/spreadsheets/d/1bXZ8gICXNbS6Wn0z-YfMnqHLxjpEbSnrWbf854Lj9xY/edit) `출처` · [부적표 시트](https://docs.google.com/spreadsheets/d/1sXR0Dq3tM-S_O94Qu1vA_uXdDxM8cln7AR77iM0WsPw/edit?gid=1075389289) `출처` |
 | 계산기 · 도구 | [약초 조합 계산기](https://jeongsh214.github.io/herb_calculator/index.html) `출처` · [[ProDays] 매크로 및 최적화 계산기](https://github.com/Pro-Days/SkillMacro/releases) · [[_Ya_Su] 도깨비 스텟 계산기](https://yasu2947.github.io/) |
-| 랭킹 · 서버 | [한월 랭킹](https://hanwol-rank.skhidc.kr/) · [마인리스트](https://minelist.kr/servers/16703-hanwol.skhidc.kr) |
+| 랭킹 · 서버 | [한월 랭킹](https://hanwol-rank.skhidc.kr/) · [투다이스 레벨 랭킹](https://twodicorank.skhidc.kr/) · [마인리스트](https://minelist.kr/servers/16703-hanwol.skhidc.kr) |
 
 `game-data.js` 의 `EXTERNAL_LINKS` 에 `cat`·`name`·`url`·`desc` 만 넣으면 카드에 자동으로 뜬다.
 
