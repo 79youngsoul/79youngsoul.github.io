@@ -570,8 +570,20 @@ var KEY = 'hanwol-craft-v1';
 var STAT_URL = 'stat/index.html';   // 이 사이트에 들어 있는 스텟 계산기 (단일 파일판은 빌드 때 사이트 주소로 바뀜)
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.21';
+var APP_VERSION = '2.14.22';
 var CHANGELOG = [
+  { v:'2.14.22', d:'2026-10-02', items:[
+    '📢 <b>2026-09-27 게임 업데이트 반영</b> — 수련의탑 20층상자 보상 추가 · <b>영부완갑</b> 제작 추가 · '
+      + '조선장 <b>주작단 20개 → 현무단</b> 교환(실패 시 <b>봉황단</b>) · '
+      + '무림맹주 <b>은환단 · 명월단 · 태극단 10개 → 우물혈석</b> 교환',
+    '📝 <b>확인 대기 제작 · 교환 표 추가</b> — <b>NPC</b> 탭 맨 아래. 공지로 추가만 확인되고 '
+      + '재료 · 성공률 · 비용을 아직 모르는 <b>영부완갑 · 현무단 교환 · 우물혈석 교환</b>과 '
+      + '의원 NPC의 <b>청룡단 → 희귀약초상자 · 백환단 교환</b>을 모았다. 값을 모르면 계산이 틀려서 '
+      + '계산기 목표 목록에는 아직 안 넣었고, 확인되는 대로 옮긴다. 전체 검색에도 나온다',
+    '🛡️ <b>장신구 표에 영부완갑</b> — 완갑 줄에 <b>천옥완갑 다음</b>으로 넣었다(옵션 · 재료 · 비용 미확인)',
+    '💊 <b>영단 표 정리</b> — <b>봉황단</b>(현무단 교환 실패 시 · 효과 미확인) 추가. '
+      + '주작단 · 현무단 · 은환단 · 명월단 · 태극단 · 청룡단 · 백환단 획득처 칸에 새 교환처를 적었다',
+  ] },
   { v:'2.14.21', d:'2026-09-29', items:[
     '🏆 <b>투다이스 레벨 랭킹 추가</b> — 투다이스 커뮤니티 멤버들의 레벨 · 경험치 순위를 보는 '
       + '<a href="https://twodicorank.skhidc.kr/" target="_blank" rel="noopener">투다이스 레벨 랭킹</a>. '
@@ -2202,6 +2214,17 @@ function paneNpc(){
         + '<td class="ok">'+pct(c.p)+'</td></tr>';
     }).join('');
 
+  // 공지로 추가만 확인된 제작 · 교환 (재료·성공률·비용 미확인 — 계산기에는 안 들어감)
+  var pendingRows = (G.PENDING_CRAFTS||[]).filter(function(c){
+      return hit(c.name) || hit(c.npc) || hit(c.mats) || hit(c.note) || hit(c.fail||''); })
+    .map(function(c){
+      return '<tr><td>'+esc(c.name)+'</td><td class="dim">'+esc(c.npc)+'</td>'
+        + '<td style="text-align:left;white-space:normal">'+(c.mats?esc(c.mats):'<span class="dim">미확인</span>')
+        + (c.fail?' <span class="dim">(실패 시 '+esc(c.fail)+')</span>':'')+'</td>'
+        + '<td class="mono">'+esc(c.since)+'</td>'
+        + '<td style="text-align:left;white-space:normal" class="dim">'+esc(c.note)+'</td></tr>';
+    }).join('');
+
   var skillRows = G.SKILLS.filter(function(k){ return hit(k.name) || hit(k.info); })
     .map(function(k){
       return '<tr><td>'+esc(k.name)+'</td>'
@@ -2291,6 +2314,14 @@ function paneNpc(){
     + '<th>비용</th><th>성공률</th></tr></thead><tbody>'
     + (leaderRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
     + '<div class="hint">시공단·무림맹비급은 제작비 없이 흉폭한영기만 소모합니다.</div></div>'
+
+    + '<div class="card" style="margin-top:12px"><h2>📝 확인 대기 제작 · 교환 '
+    + '<span class="tag">'+(G.PENDING_CRAFTS||[]).length+'종 · 값 미확인</span></h2>'
+    + '<div class="tw"><table><thead><tr><th>아이템</th><th>NPC</th><th style="text-align:left">재료</th>'
+    + '<th>공지</th><th style="text-align:left">비고</th></tr></thead><tbody>'
+    + (pendingRows||'<tr><td colspan="5" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
+    + '<div class="hint">게임 공지로 <b>추가됐다는 것만</b> 확인된 항목입니다. 성공률 · 비용 · 정확한 재료가 '
+    + '확인되면 각 NPC 표와 계산기 목표 목록으로 옮깁니다.</div></div>'
 
     /* --- 도감 --- */
     + '<div class="sechead">📖 도감</div>'
@@ -3018,6 +3049,10 @@ function searchIndex(){
       + (r.fail ? ' · 실패 시 ' + r.fail : '')
       + (r.note ? ' · ' + r.note : '');
     add(kind, nm, desc, 'npc', null, null, nm);
+  });
+  (G.PENDING_CRAFTS||[]).forEach(function(c){
+    add(c.npc+' (확인 대기)', c.name, (c.mats ? c.mats+' · ' : '')+(c.fail ? '실패 시 '+c.fail+' · ' : '')
+        + '값 미확인 · '+c.note, 'npc', null, null, c.name);
   });
   Object.keys(G.SHOP_ITEMS).forEach(function(nm){
     var s = G.SHOP_ITEMS[nm];

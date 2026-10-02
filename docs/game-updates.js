@@ -18,11 +18,17 @@
   var SOURCE = {
     name: '디스코드 공지',
     url: 'https://discord.gg/yA6MnmqGzy',
-    fetched: '2026-09-12'
+    fetched: '2026-10-02'
   };
 
   /** @type {{date:?string,title:string,body:string[],tags:string[]}[]} 최신순 */
   var UPDATES = [
+    { date: '2026-09-27', kind: '업데이트', title: '2026-09-27 업데이트',
+      tags: ['던전', '제작', '약초'],
+      body: ['수련의탑 20층상자 보상 추가',
+             '영부완갑 제작 추가',
+             '주작단 20개로 현무단 교환 추가(조선장) 실패 시 봉황단 획득',
+             '은환단 명월단 태극단 10개로 우물혈석 교환 추가(무림맹주)'] },
     { date: '2026-09-12', kind: '업데이트', title: '2026-09-12 업데이트',
       tags: ['사냥터', '약초'],
       body: ['의원 npc에 백환단을 다른 아이템으로 교환할 수 있게 추가',

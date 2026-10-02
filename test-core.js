@@ -625,7 +625,13 @@ function readMapData(file) {
      G.ASSISTANT_CRAFTS.every(function (c) {
        return !!c.mats && c.p > 0 && c.p <= 1 && typeof c.cost === 'number';
      }));
-  ok('영단 19종', G.DAN.length === 19, G.DAN.length);
+  ok('영단 20종 (봉황단 포함)', G.DAN.length === 20, G.DAN.length);
+  // 2026-09-27 공지 — 값 미확인 제작은 표·검색에만 있고 계산기 역산에는 없다
+  ok('확인 대기 제작 5종', G.PENDING_CRAFTS.length === 5, G.PENDING_CRAFTS.length);
+  ok('확인 대기 제작은 계산기 목표(NPC_RECIPES)에 없음',
+     G.PENDING_CRAFTS.every(function (c) { return !G.NPC_RECIPES[c.name] || G.NPC_RECIPES[c.name].npc !== c.npc; }));
+  ok('장신구 완갑 줄에 영부완갑', G.SMITH_ACCESSORY.some(function (a) {
+     return a.kind === '완갑' && a.items.some(function (it) { return it.name === '영부완갑'; }); }));
   var danNames = {}, danDup = false;
   G.DAN.forEach(function (d) { if (danNames[d.name]) danDup = true; danNames[d.name] = 1; });
   ok('영단 이름 중복 없음', !danDup);

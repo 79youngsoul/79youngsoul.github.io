@@ -343,6 +343,7 @@ Promise.resolve(new JSDOM(html, {
   click($$('.tab').find(t => t.dataset.p === 'npc'));
   ok('NPC 탭에 조선장 표', /조선장/.test(txt('#p-npc')) && /5성그물/.test(txt('#p-npc')));
   ok('NPC 탭에 무림맹주 표', /무림맹주/.test(txt('#p-npc')) && /토벌패/.test(txt('#p-npc')));
+  ok('NPC 탭에 확인 대기 제작 표', /확인 대기 제작/.test(txt('#p-npc')) && /영부완갑/.test(txt('#p-npc')) && /봉황단/.test(txt('#p-npc')));
 
   // 주작단 — 실패 시 현무단 안내
   click($('#quick [data-q="__clear"]'));
@@ -732,6 +733,8 @@ Promise.resolve(new JSDOM(html, {
   ok('약초 조합 결과도 검색됨', /약초 조합/.test(txt('#gRes')));
   input($('#globalQ'), '우물혈석');
   ok('우물혈석도 검색됨', /우물혈석/.test(txt('#gRes')));
+  input($('#globalQ'), '영부완갑');
+  ok('확인 대기 제작도 검색됨', /확인 대기/.test(txt('#gRes')), txt('#gRes').slice(0, 120));
   input($('#globalQ'), '흉폭한영기');
   ok('레시피에만 나오는 재료도 검색됨',
     /제작 재료/.test(txt('#gRes')) && /흉폭한영기/.test(txt('#gRes')));

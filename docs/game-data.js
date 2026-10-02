@@ -547,6 +547,27 @@
     { name: '무림맹비급', mats: '흉폭한영기40', cost: 0, p: 1.00 }
   ];
 
+  /* ---- 확인 대기 제작 / 교환 ----
+   * 공지로 "추가됐다"는 것만 알고 재료·성공률·비용이 아직 없는 것들.
+   * 성공률·비용을 모르면 계산기가 틀린 값을 내므로 NPC_RECIPES(목표 역산)에는 넣지 않고
+   * 표·검색에만 "값 미확인"으로 보여 준다. 값이 확인되면 해당 NPC 표로 옮긴다.
+   * mats = 공지에 적힌 만큼만 (모르면 빈 문자열), since = 공지 날짜.
+   */
+  var PENDING_CRAFTS = [
+    { name: '영부완갑', npc: '대장장이 조수', mats: '', since: '2026-09-27',
+      note: '공지: 영부완갑 제작 추가. 천옥완갑 다음 단계로 보이며, 운해궁 암토령의 암령토'
+        + '(2026-08-29 공지 "추후 상위완갑 업그레이드 재료")가 쓰일 가능성이 높다' },
+    { name: '현무단', npc: '조선장', mats: '주작단20', since: '2026-09-27', fail: '봉황단',
+      note: '공지: 주작단 20개로 현무단 교환. 실패 시 봉황단 획득' },
+    { name: '우물혈석', npc: '무림맹주', mats: '은환단 · 명월단 · 태극단 10개', since: '2026-09-27',
+      note: '공지 원문 "은환단 명월단 태극단 10개로 우물혈석 교환" — 세 가지를 각 10개씩인지, '
+        + '아무거나 10개인지 확인 필요' },
+    { name: '희귀약초상자', npc: '의원', mats: '청룡단', since: '2026-09-11',
+      note: '공지: 의원 NPC에 청룡단 → 희귀약초상자 교환 추가 (필요 개수 미확인)' },
+    { name: '백환단 교환', npc: '의원', mats: '백환단', since: '2026-09-12',
+      note: '공지: 의원 NPC에 백환단을 다른 아이템으로 교환 추가 (교환 품목 · 개수 미확인)' }
+  ];
+
   /** 상점 구매가 (없으면 0) */
   var SHOP_ITEMS = {};
   SHIP_SHOP.concat(LIBRARIAN_SHOP).forEach(function (s) { SHOP_ITEMS[s.name] = s; });
@@ -575,7 +596,7 @@
     },
     {
       name: '조선장', x: -1023, y: 71, z: -1077,
-      role: '배장비 제작 (동력·대포·갑판·그물) · 주작단',
+      role: '배장비 제작 (동력·대포·갑판·그물) · 주작단 · 현무단 교환',
       note: '1성 배장비는 상점 구매 각 5,000전 · 2~5성은 승급 제작(무공정수 필요)'
         + ' · 주작단: 고래기름 1개, 95% (실패 시 현무단 1개)',
       shop: SHIP_SHOP,
@@ -593,7 +614,7 @@
     {
       // 좌표 미확인 — webmapWaypoints()/지도 주입에서는 제외된다
       name: '무림맹주',
-      role: '토벌패 · 시공단 · 무림맹비급 제작',
+      role: '토벌패 · 시공단 · 무림맹비급 제작 · 우물혈석 교환',
       note: '전부 성공률 100% · 토벌패만 10,000전(토벌석1, 무공정수20, 정철광3)'
         + ' · 시공단 흉폭한영기10 · 무림맹비급 흉폭한영기40 (제작비 없음)',
       crafts: LEADER_CRAFTS
@@ -777,22 +798,23 @@
     { name: '시공단', effect: '물약회복량(%) +3, 경험치획득량(%) +1', source: '무림 맹주 제작' },
     { name: '녹환단', effect: '힘(%) +1, 생명력(%) +1', source: '우물영단상자' },
     { name: '황환단', effect: '힘 +2, 민첩 +2, 생명력 +2, 행운 +2', source: '우물영단상자' },
-    { name: '태극단', effect: '보스공격력(%) +1, 힘 +3', source: '검성 레이드 보상' },
+    { name: '태극단', effect: '보스공격력(%) +1, 힘 +3', source: '검성 레이드 보상 · 무림맹주에서 은환단·명월단과 함께 우물혈석 교환 재료(2026-09-27)' },
     { name: '천경단', effect: '행운(%) +1, 공격력 +3', source: '사냥 시 확률 드랍' },
     { name: '자환단', effect: '민첩(%) +1, 행운(%) +1', source: '출석체크 7일차' },
     { name: '청환단', effect: '공격력 +3, 보스공격력(%) +1', source: '대장장이 제작' },
-    { name: '명월단', effect: '보스공격력(%) +1, 행운 +3', source: '오공 레이드 보상' },
+    { name: '명월단', effect: '보스공격력(%) +1, 행운 +3', source: '오공 레이드 보상 · 무림맹주에서 은환단·태극단과 함께 우물혈석 교환 재료(2026-09-27)' },
     { name: '적환단', effect: '체력 +15, 체력(%) +1', source: '탐험 획득 (현재 1개 남음)' },
     { name: '용혈단', effect: '체력(%) +3, 생명력 +5', source: '우물영기 100개, 우물혈석 1개, 토끼내단, 대장장이불 10개' },
     { name: '매화단', effect: '치명타공격력(%) +3, 체력 +5', source: '수련의 탑 퀘스트' },
     { name: '흑환단', effect: '저항(%) +3, 물약회복량(%) +3', source: '약초 제작 (조합법 미공개)' },
-    { name: '백환단', effect: '경험치획득량(%) +1, 드랍율(%) +1', source: '항아리 확률 드랍' },
-    { name: '은환단', effect: '최종공격력(%) +1', source: '장로쥐 레이드 보상' },
+    { name: '백환단', effect: '경험치획득량(%) +1, 드랍율(%) +1', source: '항아리 확률 드랍 · 의원 NPC에서 다른 아이템으로 교환 가능(2026-09-12)' },
+    { name: '은환단', effect: '최종공격력(%) +1', source: '장로쥐 레이드 보상 · 무림맹주에서 명월단·태극단과 함께 우물혈석 교환 재료(2026-09-27)' },
     { name: '금환단', effect: '스킬피해량(%) +1', source: '레벨 보상 및 히든 퀘스트' },
     { name: '옥환단', effect: '공격력(%) +1', source: '해상포인트' },
-    { name: '청룡단', effect: '경험치획득량(%) +1, 힘 +4', source: '희귀 약초 드랍 (낫으로 캐면 2개 획득 확률 상승)' },
-    { name: '주작단', effect: '경험치획득량(%) +1, 생명력 +4', source: '조선장 NPC 제작 (고래기름 1개, 10만전)' },
-    { name: '현무단', effect: '경험치획득량(%) +1, 행운 +4', source: '주작단 제작 실패 시 획득 (5% 확률)' }
+    { name: '청룡단', effect: '경험치획득량(%) +1, 힘 +4', source: '희귀 약초 드랍 (낫으로 캐면 2개 획득 확률 상승) · 의원 NPC에서 희귀약초상자로 교환 가능(2026-09-11)' },
+    { name: '주작단', effect: '경험치획득량(%) +1, 생명력 +4', source: '조선장 NPC 제작 (고래기름 1개, 10만전) · 20개로 조선장에서 현무단 교환(2026-09-27)' },
+    { name: '현무단', effect: '경험치획득량(%) +1, 행운 +4', source: '주작단 제작 실패 시 획득 (5% 확률) · 조선장에서 주작단 20개로 교환(2026-09-27)' },
+    { name: '봉황단', effect: '효과 미확인', source: '조선장 현무단 교환(주작단 20개) 실패 시 획득 (2026-09-27)' }
   ];
 
   /* ------------------------------------------------------------------
@@ -852,6 +874,10 @@
       .concat(ASSISTANT_CRAFTS.filter(function (c) { return /완갑$/.test(c.name); }).map(function (c) {
         return { name: c.name, stat: '옵션 미확인 · ' + c.mats + ' · ' + c.cost.toLocaleString('en-US') + '전'
           + (c.note ? ' (' + c.note + ')' : '') };
+      }))
+      // 아직 재료·비용을 모르는 완갑 (PENDING_CRAFTS)
+      .concat(PENDING_CRAFTS.filter(function (c) { return /완갑$/.test(c.name); }).map(function (c) {
+        return { name: c.name, stat: '옵션 미확인 · 제작 재료 · 비용 미확인 (' + c.since + ' 추가)' };
       })) }
   ];
 
@@ -1529,7 +1555,7 @@
     ASSISTANT_CRAFTS: ASSISTANT_CRAFTS,
     SHIP_PARTS: SHIP_PARTS, SHIP_TIERS: SHIP_TIERS, SHIP_SHOP: SHIP_SHOP,
     SHIP_SHOP_COST: SHIP_SHOP_COST, SHIPWRIGHT_CRAFTS: SHIPWRIGHT_CRAFTS,
-    LEADER_CRAFTS: LEADER_CRAFTS,
+    LEADER_CRAFTS: LEADER_CRAFTS, PENDING_CRAFTS: PENDING_CRAFTS,
     LIBRARIAN_CRAFTS: LIBRARIAN_CRAFTS, LIBRARIAN_SHOP: LIBRARIAN_SHOP,
     SHOP_ITEMS: SHOP_ITEMS, shopPrice: shopPrice,
     NPC_RECIPES: NPC_RECIPES, npcCraftNames: npcCraftNames, npcPlan: npcPlan,
