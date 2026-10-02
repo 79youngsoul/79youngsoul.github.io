@@ -570,8 +570,12 @@ var KEY = 'hanwol-craft-v1';
 var STAT_URL = 'stat/index.html';   // 이 사이트에 들어 있는 스텟 계산기 (단일 파일판은 빌드 때 사이트 주소로 바뀜)
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.22';
+var APP_VERSION = '2.14.23';
 var CHANGELOG = [
+  { v:'2.14.23', d:'2026-10-02', items:[
+    '🩸 <b>우물혈석 교환 값 확정</b> — 무림맹주에서 <b>은환단 · 명월단 · 태극단 각 10개 + 1,000,000전</b>으로 교환. '
+      + '확인 대기 표에서 <b>무림맹주 제작</b> 표로 옮겼고, 이제 계산기 목표 목록에서 우물혈석을 골라 역산할 수 있다',
+  ] },
   { v:'2.14.22', d:'2026-10-02', items:[
     '📢 <b>2026-09-27 게임 업데이트 반영</b> — 수련의탑 20층상자 보상 추가 · <b>영부완갑</b> 제작 추가 · '
       + '조선장 <b>주작단 20개 → 현무단</b> 교환(실패 시 <b>봉황단</b>) · '
@@ -2313,7 +2317,8 @@ function paneNpc(){
     + '<div class="tw"><table><thead><tr><th>아이템</th><th style="text-align:left">재료</th>'
     + '<th>비용</th><th>성공률</th></tr></thead><tbody>'
     + (leaderRows||'<tr><td colspan="4" class="dim">검색 결과 없음</td></tr>')+'</tbody></table></div>'
-    + '<div class="hint">시공단·무림맹비급은 제작비 없이 흉폭한영기만 소모합니다.</div></div>'
+    + '<div class="hint">시공단·무림맹비급은 제작비 없이 흉폭한영기만 소모합니다. '
+    + '우물혈석은 은환단 · 명월단 · 태극단을 <b>각 10개씩</b> 내고 100만전에 교환합니다.</div></div>'
 
     + '<div class="card" style="margin-top:12px"><h2>📝 확인 대기 제작 · 교환 '
     + '<span class="tag">'+(G.PENDING_CRAFTS||[]).length+'종 · 값 미확인</span></h2>'

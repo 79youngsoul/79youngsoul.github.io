@@ -627,7 +627,7 @@ function readMapData(file) {
      }));
   ok('영단 20종 (봉황단 포함)', G.DAN.length === 20, G.DAN.length);
   // 2026-09-27 공지 — 값 미확인 제작은 표·검색에만 있고 계산기 역산에는 없다
-  ok('확인 대기 제작 5종', G.PENDING_CRAFTS.length === 5, G.PENDING_CRAFTS.length);
+  ok('확인 대기 제작 4종', G.PENDING_CRAFTS.length === 4, G.PENDING_CRAFTS.length);
   ok('확인 대기 제작은 계산기 목표(NPC_RECIPES)에 없음',
      G.PENDING_CRAFTS.every(function (c) { return !G.NPC_RECIPES[c.name] || G.NPC_RECIPES[c.name].npc !== c.npc; }));
   ok('장신구 완갑 줄에 영부완갑', G.SMITH_ACCESSORY.some(function (a) {
@@ -818,8 +818,8 @@ function readMapData(file) {
   ok('없는 공략은 null', G.guideOf('기린단', '없는퀘스트') === null);
 
   /* NPC 제작 목표 역산 */
-  ok('NPC 제작 70종(명인 15+목걸이 3 · 조수 5 · 조선장 17 · 무림맹주 3 · 대장장이 9 · 서고관리인 18)',
-     G.npcCraftNames().length === 70, G.npcCraftNames().length);
+  ok('NPC 제작 71종(명인 15+목걸이 3 · 조수 5 · 조선장 17 · 무림맹주 4 · 대장장이 9 · 서고관리인 18)',
+     G.npcCraftNames().length === 71, G.npcCraftNames().length);
   ok('주문서상자 연쇄 (일류 ← 이류 ← 삼류)', (function () {
     var pl = G.npcPlan({ '일류주문서상자': 1 });
     return pl.steps.map(function (x) { return x.name; }).join('>') === '일류주문서상자>이류주문서상자'
@@ -954,8 +954,8 @@ function readMapData(file) {
      G.npcPlan({ '섬멸검법': 1 }).external['단섬검법'] === 1);
 
   /* 무림맹주 */
-  ok('무림맹주 제작 3종 전부 100%',
-     G.LEADER_CRAFTS.length === 3 && G.LEADER_CRAFTS.every(function (c) { return c.p === 1; }));
+  ok('무림맹주 제작 4종 전부 100%',
+     G.LEADER_CRAFTS.length === 4 && G.LEADER_CRAFTS.every(function (c) { return c.p === 1; }));
   ok('토벌패 = 토벌석1 + 무공정수20 + 정철광3 · 10,000전', (function () {
     var r = G.NPC_RECIPES['토벌패'];
     return r.cost === 10000 && r.mats['토벌석'] === 1
@@ -1022,6 +1022,7 @@ function readMapData(file) {
   G.npcCraftNames().forEach(function (k) { known[k] = 1; });
   G.POT_ITEMS.forEach(function (p) { known[p.item] = 1; });
   Object.keys(G.SHOP_ITEMS).forEach(function (k) { known[k] = 1; });   // 1성 배장비 등 상점 구매
+  G.DAN.forEach(function (d) { known[d.name] = 1; });   // 영단 (레이드 보상 등 — 우물혈석 교환 재료)
   // 화로·광산·NPC제작·상점 어디에도 없는 재료 = 사냥/퀘스트로만 구하는 것들.
   // 새 오타가 끼면 이 목록 밖의 이름이 튀어나온다.
   var OUTSIDE_MATS = ['삼류주문서상자', '무공정수', '정포완갑', '흉폭한영기', '빙백설화',
