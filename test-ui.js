@@ -277,6 +277,33 @@ Promise.resolve(new JSDOM(html, {
   click($('#btnDoneClear'));
   ok('진행 초기화', $$('#p-ord input[data-done]:checked').length === 0);
 
+  // ---- 전체 재료 보기 ----
+  click($$('.tab').find(t => t.dataset.p === 'sum'));
+  ok('재료 카드에 전환 버튼', !!$('#p-sum [data-needview="all"]') && !!$('#p-sum [data-needview="extra"]'));
+  click($('#p-sum [data-needview="all"]'));
+  const allTxt = txt('#p-sum');
+  ok('전체 재료: 목표·NPC 중간재·화로·광산·직접 재료 전부',
+     /전체 재료/.test(allTxt) && /한철단조석/.test(allTxt) && /접합제/.test(allTxt)
+       && /돌덩어리/.test(allTxt) && /향목가루/.test(allTxt), allTxt.slice(0, 120));
+  ok('전체 재료: 목표 표시', /한철단조석 <span class="badge s">목표/.test($('#p-sum').innerHTML));
+  ok('전체 재료 보기 저장', store(w).needView === 'all');
+  click($$('.tab').find(t => t.dataset.p === 'mat'));
+  ok('재료 탭에서도 전체 재료 유지', /전체 재료/.test(txt('#p-mat')) && /접합제/.test(txt('#p-mat')));
+  click($('#p-mat [data-needview="extra"]'));
+  ok('직접 구할 것으로 되돌리기', /직접 구해야 하는 재료/.test(txt('#p-mat')) && !$('#p-mat [data-needview="all"].on'));
+
+  // 확률 시뮬은 NPC 제작품을 광산 재료로 착각하면 안 된다
+  click($$('.tab').find(t => t.dataset.p === 'sim'));
+  input($('#simRuns'), '200');
+  click($('#btnSim'));
+  await new Promise(r => setTimeout(r, 600));
+  ok('시뮬: NPC 제작품이 광산 재료 표에 없음',
+     /p90|중앙값/.test(txt('#p-sim')) && !/한철단조석/.test(txt('#p-sim')) && /돌덩어리|갈옥/.test(txt('#p-sim')),
+     txt('#p-sim').slice(0, 200));
+  ok('시뮬: NPC 비용 제외 안내', /NPC 제작·상점 구매/.test(txt('#p-sim')));
+  input($('#targets input[data-tq="한철단조석"]'), '3');
+  ok('시뮬: 목표가 바뀌면 지난 결과 지움', !/중앙값/.test(txt('#p-sim')), txt('#p-sim').slice(0, 120));
+
   // 조수 제작(완갑)도 연쇄로
   click($('#quick [data-q="__clear"]'));
   $('#selItem').value = '취금완갑'; input($('#qty'), '1'); click($('#btnAdd'));

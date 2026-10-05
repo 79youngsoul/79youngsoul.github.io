@@ -570,8 +570,15 @@ var KEY = 'hanwol-craft-v1';
 var STAT_URL = 'stat/index.html';   // 이 사이트에 들어 있는 스텟 계산기 (단일 파일판은 빌드 때 사이트 주소로 바뀜)
 
 /* ---------------- 버전 / 업데이트 내역 ---------------- */
-var APP_VERSION = '2.14.23';
+var APP_VERSION = '2.14.24';
 var CHANGELOG = [
+  { v:'2.14.24', d:'2026-10-06', items:[
+    '📦 <b>전체 재료 보기</b> — "직접 구해야 하는 재료" 카드 오른쪽 <b>전체 재료</b> 버튼을 누르면 '
+      + '목표부터 NPC 제작 중간재 · 곡괭이 단계 · 화로 제작물 · 광산 재료 · 직접 구할 재료까지 <b>들어가는 아이템 전부</b>를 '
+      + '한 표로 본다 (요약 · 재료 · 제작 순서 탭 공통, 고른 보기는 기억됨)',
+    '🐞 <b>확률 시뮬 수정</b> — NPC 제작품(한철단조석 등)을 목표로 넣으면 광산 재료로 잘못 잡히던 문제. '
+      + '이제 NPC 제작을 풀어낸 화로 재료로 굴린다. 목표·옵션을 바꾸면 지난 시뮬 결과는 지운다',
+  ] },
   { v:'2.14.23', d:'2026-10-02', items:[
     '🩸 <b>우물혈석 교환 값 확정</b> — 무림맹주에서 <b>은환단 · 명월단 · 태극단 각 10개 + 1,000,000전</b>으로 교환. '
       + '확인 대기 표에서 <b>무림맹주 제작</b> 표로 옮겼고, 이제 계산기 목표 목록에서 우물혈석을 골라 역산할 수 있다',
@@ -1085,7 +1092,8 @@ var S = {
   fontScale: 'm',           // 글자 크기 s/m/l/xl
   recentQ: [],              // 최근 검색어 (최대 8개)
   mapRecent: [],            // 최근에 본 지도 좌표 (최대 8개)
-  presets: {}               // 이름 → 목표 조합 저장
+  presets: {},              // 이름 → 목표 조합 저장
+  needView: 'extra'         // 재료 카드: extra=직접 구할 것 / all=전체 재료
 };
 /* 초기화 때 되돌아갈 기본값 — 위 S 를 그대로 떠 놓는다 */
 var DEFAULTS = JSON.parse(JSON.stringify(S));
@@ -1283,6 +1291,7 @@ function enhanceTables(){
  * 3) 계산기가 모르는 재료(항아리·퀘스트 아이템 등)는 "직접 구할 재료"로 따로 모은다 */
 var NP = null;        // NPC 제작 계획
 var EXTRA = {};       // 계산기 밖에서 구해야 하는 재료
+var CORE_T = {};      // 화로·대장장이 계산기에 넘긴 목표 (NPC 제작을 풀어낸 뒤) — 확률 시뮬도 이걸 쓴다
 
 function isCoreItem(n){
   return !!C.FURNACE[n] || C.isTool(n) || C.BASE.indexOf(n) >= 0;
@@ -1301,6 +1310,7 @@ function calc(){
     if(isCoreItem(k)) coreTargets[k] = (coreTargets[k]||0) + NP.external[k];
     else EXTRA[k] = (EXTRA[k]||0) + NP.external[k];
   });
+  CORE_T = coreTargets;
   R = C.compute({
     targets:coreTargets, inventory:{}, fire:S.fire, slots:S.slots,
     successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
@@ -1341,27 +1351,93 @@ function npcStepsCard(){
     + '기대 시도 = 필요 개수 ÷ 성공률'+(S.integer?' (올림)':'')+'.</div></div>';
 }
 
-/** 계산기가 모르는 재료 (항아리·퀘스트 아이템 등) */
+/** 재료 카드 — "직접 구할 재료"(기본) ↔ "전체 재료" 전환.
+ *  직접 구할 재료 = 화로·광산으로 못 만드는 것(항아리·퀘스트·상점).
+ *  전체 재료 = 목표부터 광산 재료까지 계산에 들어간 모든 아이템. */
 function extraNeedCard(){
+  var all = allMatRows();
+  if(!all.length) return '';
   var ks = Object.keys(EXTRA);
-  if(!ks.length) return '';
-  ks.sort(function(a,b){ return EXTRA[b]-EXTRA[a]; });
+  var view = S.needView === 'all' ? 'all' : 'extra';
   var shopCost = R.shopCost || 0;
+  var seg = '<span class="sp" style="flex:1"></span>'
+    + '<button class="mtab'+(view==='extra'?' on':'')+'" data-needview="extra">직접 구할 것 '+ks.length+'</button>'
+    + '<button class="mtab'+(view==='all'?' on':'')+'" data-needview="all">전체 재료 '+all.length+'</button>';
+
+  if(view === 'all') return allMatCard(all, seg);
+
+  var body;
+  if(!ks.length){
+    body = '<div class="dim" style="font-size:13px">직접 구할 재료가 없습니다 — 전부 화로·광산·NPC 제작으로 계산됩니다. '
+      + '<b>전체 재료</b>를 누르면 들어가는 아이템을 전부 볼 수 있습니다.</div>';
+  }else{
+    ks.sort(function(a,b){ return EXTRA[b]-EXTRA[a]; });
+    body = '<div class="tw"><table><thead><tr><th>재료</th><th>필요량</th><th>상점가</th>'
+      + '<th style="text-align:left">구하는 곳</th></tr></thead><tbody>'
+      + ks.map(function(k){
+          var where = whereToGet(k);
+          var price = G ? G.shopPrice(k) : 0;
+          var qty = Math.round(EXTRA[k]);
+          return '<tr><td>'+esc(k)+'</td><td class="mono">'+N(qty)+'</td>'
+            + '<td class="mono'+(price?'':' dim')+'">'+(price?N(price*qty)+'전':'-')+'</td>'
+            + '<td style="text-align:left;white-space:normal" class="dim">'+where+'</td></tr>';
+        }).join('')
+      + '</tbody></table></div>'
+      + '<div class="hint">화로·광산으로 못 만드는 재료입니다. 상점가가 적힌 것은 NPC 상점에서 바로 살 수 있고, '
+      + '나머지는 항아리·사냥·퀘스트로 구하세요.</div>';
+  }
   return '<div class="card" style="margin-top:12px"><h2>🎒 직접 구해야 하는 재료 '
-    + '<span class="tag">'+ks.length+'종'+(shopCost?' · 상점 '+N(Math.round(shopCost))+'전':'')+'</span></h2>'
-    + '<div class="tw"><table><thead><tr><th>재료</th><th>필요량</th><th>상점가</th>'
-    + '<th style="text-align:left">구하는 곳</th></tr></thead><tbody>'
-    + ks.map(function(k){
-        var where = whereToGet(k);
-        var price = G ? G.shopPrice(k) : 0;
-        var qty = Math.round(EXTRA[k]);
-        return '<tr><td>'+esc(k)+'</td><td class="mono">'+N(qty)+'</td>'
-          + '<td class="mono'+(price?'':' dim')+'">'+(price?N(price*qty)+'전':'-')+'</td>'
-          + '<td style="text-align:left;white-space:normal" class="dim">'+where+'</td></tr>';
-      }).join('')
-    + '</tbody></table></div>'
-    + '<div class="hint">화로·광산으로 못 만드는 재료입니다. 상점가가 적힌 것은 NPC 상점에서 바로 살 수 있고, '
-    + '나머지는 항아리·사냥·퀘스트로 구하세요.</div></div>';
+    + (ks.length ? '<span class="tag">'+ks.length+'종'+(shopCost?' · 상점 '+N(Math.round(shopCost))+'전':'')+'</span>' : '')
+    + seg + '</h2>' + body + '</div>';
+}
+
+/** 계산에 들어간 아이템 전부 — 목표 → NPC 제작 → 대장장이 → 화로 → 광산 → 직접 구할 것 순.
+ *  한 아이템은 한 줄만 (만드는 쪽이 있으면 그 줄에 "목표" 표시만 붙인다). */
+function allMatRows(){
+  if(!R) return [];
+  var rows = [], seen = {};
+  function push(name, qty, kind, cls, note){
+    if(seen[name] !== undefined){ rows[seen[name]].qty += qty; return; }
+    seen[name] = rows.length;
+    rows.push({ name:name, qty:qty, kind:kind, cls:cls, note:note, target:!!S.targets[name] });
+  }
+  (NP ? NP.steps : []).forEach(function(st){
+    push(st.name, st.made, st.npc, 'n', '성공률 '+pct(st.p)+' · 시도 '+N(Math.round(st.attempts))+'회');
+  });
+  R.steps.slice().reverse().forEach(function(s){
+    if(s.buy) push(s.name, s.made, '상점', 'b', N(Math.round(s.cost))+'전');
+    else push(s.name, s.made, '대장장이', 's', '성공률 '+pct(s.rate)+' · 시도 '+N(Math.round(s.attempts))+'회');
+  });
+  R.furnace.slice().sort(function(a,b){ return b.depth-a.depth || b.count-a.count; }).forEach(function(f){
+    push(f.name, f.count, '화로', 'f', '1회 '+T(f.eachSec)+' · 합계 '+T(f.sec));
+  });
+  Object.keys(R.base).sort(function(a,b){ return R.base[b].total-R.base[a].total; }).forEach(function(k){
+    var w = G && G.whereToMine(k);
+    push(k, R.base[k].total, '광산', '', w ? w.colors.join('·')+'색 광산' : '');
+  });
+  Object.keys(EXTRA).sort(function(a,b){ return EXTRA[b]-EXTRA[a]; }).forEach(function(k){
+    var price = G ? G.shopPrice(k) : 0;
+    push(k, EXTRA[k], price?'상점':'직접', price?'b':'', '');
+  });
+  return rows;
+}
+
+function allMatCard(rows, seg){
+  var body = rows.map(function(r){
+    var qty = Math.round(r.qty);
+    var note = r.kind === '직접' || (r.kind === '상점' && !r.note)
+      ? whereToGet(r.name) : esc(r.note);
+    return '<tr><td><span class="badge '+r.cls+'">'+esc(r.kind)+'</span></td>'
+      + '<td>'+esc(r.name)+(r.target?' <span class="badge s">목표</span>':'')+'</td>'
+      + '<td class="mono">'+QC(qty)+'</td>'
+      + '<td style="text-align:left;white-space:normal" class="dim">'+(note||'-')+'</td></tr>';
+  }).join('');
+  return '<div class="card" style="margin-top:12px"><h2>📦 전체 재료 '
+    + '<span class="tag">'+rows.length+'종</span>' + seg + '</h2>'
+    + '<div class="tw"><table><thead><tr><th>구분</th><th>아이템</th><th>개수</th>'
+    + '<th style="text-align:left">비고</th></tr></thead><tbody>' + body + '</tbody></table></div>'
+    + '<div class="hint">목표부터 광산 재료까지 이 계산에 들어가는 아이템 전부입니다. '
+    + '만드는 아이템은 <b>만들 개수</b>, 광산·직접 구할 재료는 <b>모을 개수</b>입니다.</div></div>';
 }
 
 /** 재료 이름으로 획득처 추정 (항아리·약초·비급 데이터에서 찾음) */
@@ -1706,7 +1782,7 @@ function paneOrd(){
 
   html += '</div>';                       // 제작 순서 카드 닫기
 
-  if(Object.keys(EXTRA).length) html += extraNeedCard();
+  html += extraNeedCard();
   el.innerHTML = html;
 }
 
@@ -1752,8 +1828,20 @@ var SIM_MIN = 100, SIM_MAX = 100000;
 function clampRuns(n){ return Math.min(SIM_MAX, Math.max(SIM_MIN, Math.floor(n)||DEFAULTS.simRuns)); }
 function simRuns(){ return clampRuns(S.simRuns); }
 
+/* 시뮬 입력 — S.targets 를 그대로 넘기면 NPC 제작품(한철단조석 등)이 광산 재료로 잡히므로
+ * calc() 가 NPC 제작을 풀어낸 CORE_T 를 쓴다 */
+function simInput(){
+  return {
+    targets:CORE_T, inventory:{}, fire:S.fire, slots:S.slots,
+    successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
+    ignoreFail:S.ignoreFail, failConsumesMats:S.failConsumesMats, failConsumesBase:S.failConsumesBase
+  };
+}
+
 function paneSim(){
   var el = $('#p-sim');
+  // 목표·옵션이 바뀌었으면 지난 결과는 버린다 (다른 목표의 분포를 보여주지 않게)
+  if(SIM && SIM.key !== JSON.stringify(simInput())) SIM = null;
   var hasRandom = R.steps.some(function(s){ return s.rate < 1; });
   var head = '<div class="card"><h2>🎲 확률 시뮬레이션</h2>'
     + '<div class="row"><span style="flex:none">시행 횟수</span>'
@@ -1765,7 +1853,9 @@ function paneSim(){
     + '<div class="hint">' + (hasRandom
         ? '곡괭이 제작 실패를 실제로 굴려서 비용·재료 분포를 냅니다. p90 = "10번 중 9번은 이 이하".'
           + ' 시행 횟수는 100 ~ 100,000 사이 아무 숫자나 됩니다(많을수록 정확하지만 느립니다 · 10만 회는 몇 초 걸립니다).'
-        : '현재 목표에는 확률 요소가 없습니다. (실패 없음 옵션 또는 100% 레시피)') + '</div></div>';
+        : '현재 목표에는 확률 요소가 없습니다. (실패 없음 옵션 또는 100% 레시피)')
+    + ((NP && NP.cost) || R.shopCost ? ' NPC 제작·상점 구매('+N(Math.round((NP ? NP.cost : 0) + (R.shopCost||0)))+'전)는 시뮬에 넣지 않고 '
+        + '<b>화로·대장장이 부분만</b> 굴립니다 — NPC 제작으로 늘어난 화로 재료는 반영됩니다.' : '') + '</div></div>';
   if(!SIM){ el.innerHTML = head; return; }
 
   var a = SIM.attempts;
@@ -3671,6 +3761,10 @@ function bind(){
       else delete S.done[k];
       paneOrd(); save(); return;
     }
+    if((t=e.target.closest('[data-needview]'))){
+      S.needView = t.dataset.needview;
+      (PANES[S.tab] || paneSum)(); enhanceTables(); save(); return;
+    }
     if((t=e.target.closest('#btnDoneClear'))){ S.done={}; render(); return; }
     if((t=e.target.closest('#btnCopyMat'))){
       copyText(Object.keys(R.base).sort(function(a,b){return R.base[b].short-R.base[a].short;})
@@ -3694,11 +3788,8 @@ function bind(){
       t.disabled = true; t.textContent = '계산 중…';
       setTimeout(function(){
         try{
-          SIM = C.simulate({
-            targets:S.targets, inventory:{}, fire:S.fire, slots:S.slots,
-            successUp:S.successUp, costDown:S.costDown, furnaceTimeDown:S.furnaceTimeDown, vip:S.vip,
-            ignoreFail:S.ignoreFail, failConsumesMats:S.failConsumesMats, failConsumesBase:S.failConsumesBase
-          }, runs);
+          SIM = C.simulate(simInput(), runs);
+          SIM.key = JSON.stringify(simInput());
           paneSim(); toast(N(runs)+'회 시뮬 완료'+clampNote);
         }catch(err){ toast('시뮬 오류: '+err.message); }
       }, 20);
