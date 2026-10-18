@@ -188,6 +188,7 @@
         <select id="optGoal" style="width:100%; background:#0b1220; border:1px solid #334155; color:var(--text); border-radius:8px; padding:8px 10px; font-size:14px;">
           <optgroup label="🎯 자동 최적화">
             <option value="maxDmg">🔥 기대 데미지 (평균 · 생존 무시)</option>
+            <option value="crit100Dmg">💥 치명타 확률 100% + 최고 데미지</option>
           </optgroup>
           <optgroup label="📋 템플릿 (비율 분배)">
             <option value="tpl1">🏹 레벨 60까지 · 힘3 : 생1 : 행1</option>
@@ -609,6 +610,42 @@
     return 0;
   }
 
+  // 치명타 확률 100% + 최고 데미지:
+  // 1) 치확 100% 될 때까지 민첩만 투입 (치확은 민첩만 올림)
+  // 2) 남은 포인트는 데미지(공격력 × 치공) 증가폭 큰 쪽(힘/민첩)에 투입 — 힘은 공격력+치공, 민첩은 공격력%만.
+  // 반환 { stats, reached } — reached=false 면 포인트 부족으로 100% 못 채움(전부 민첩).
+  function optimizeCritDmg(keepCurrent, step) {
+    const OPT_STEP = step || 1;
+    const stats = keepCurrent
+      ? { ...state.stats }
+      : { strength: 0, agility: 0, vitality: 0, luck: 0 };
+    for (const k of STAT_KEYS) if (!(k in stats)) stats[k] = 0;
+    if (OPT_STEP > 1) for (const k of STAT_KEYS) stats[k] = Math.floor(stats[k] / OPT_STEP) * OPT_STEP;
+    const limit = total();
+    let cur = used(stats);
+    if (cur > limit) {
+      for (const k of STAT_KEYS) stats[k] = 0;
+      cur = 0;
+    }
+    while (calc(stats).critRate < 100 - 1e-9 && cur + OPT_STEP <= limit) {
+      stats.agility += OPT_STEP;
+      cur += OPT_STEP;
+    }
+    const reached = calc(stats).critRate >= 100 - 1e-9;
+    while (cur + OPT_STEP <= limit) {
+      const base = calc(stats).skillDmg;
+      stats.strength += OPT_STEP;
+      const gStr = calc(stats).skillDmg - base;
+      stats.strength -= OPT_STEP;
+      stats.agility += OPT_STEP;
+      const gDex = calc(stats).skillDmg - base;
+      stats.agility -= OPT_STEP;
+      stats[gDex > gStr + 1e-12 ? 'agility' : 'strength'] += OPT_STEP;
+      cur += OPT_STEP;
+    }
+    return { stats, reached };
+  }
+
   // step=1 기본. step=5면 5점씩 투입 → 각 스텟 값이 항상 5의 배수로 떨어짐.
   function optimize(goal, keepCurrent, step) {
     const OPT_STEP = step || 1;
@@ -701,8 +738,28 @@
       if (!confirm('현재 분배를 모두 초기화하고 재분배할까요?')) return;
     }
     const over = used() > total(); // 초과분배 상태면 before 기준이 무효 → 개선율 생략
-    const before = scoreOf(calc(), goal);
     const step5 = $('#optStep5').checked;
+
+    if (goal === 'crit100Dmg') {
+      const prev = calc();
+      const { stats: nextStats, reached } = optimizeCritDmg(keep, step5 ? 5 : 1);
+      state.stats = nextStats;
+      render();
+      const r = calc();
+      const leftover = total() - used(nextStats);
+      const leftMsg = leftover > 0 ? `<br><span style="font-size:11px;color:var(--green)">남은 ${leftover}점은 5의 배수 유지 위해 미분배</span>` : '';
+      const critMsg = reached
+        ? `치명타 확률 <b style="color:var(--green)">${fmt(r.critRate,2)}%</b>`
+        : `<b style="color:#f87171">포인트가 모자라서 치명타 확률 ${fmt(r.critRate,2)}%까지만 (전부 민첩에 투입)</b>`;
+      const dmgMsg = over
+        ? `기대 데미지 점수 <b style="color:var(--green)">${fmt(r.skillDmg,3)}</b>`
+        : `기대 데미지 점수 ${fmt(prev.skillDmg,3)} → <b style="color:var(--green)">${fmt(r.skillDmg,3)}</b>`;
+      box.style.display = 'block';
+      box.innerHTML = `<b>${goalName}</b> 완료 · ${critMsg} · ${dmgMsg}<br>공격력 ${fmt(r.attackPower,1)} · 치명타 공격력 ${fmt(r.critDmg,1)}%<br>배분: 힘 ${nextStats.strength} · 민첩 ${nextStats.agility} · 생명력 ${nextStats.vitality} · 행운 ${nextStats.luck}${leftMsg}<br><span style="font-size:11px;color:#94a3b8">※ 치확 100% 될 때까지 민첩 → 남은 포인트는 데미지(공격력 × 치명타 공격력)가 가장 많이 오르는 쪽(힘/민첩)에 투입.</span>`;
+      return;
+    }
+
+    const before = scoreOf(calc(), goal);
     const nextStats = optimize(goal, keep, step5 ? 5 : 1);
     state.stats = nextStats;
     render();
