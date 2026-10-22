@@ -627,7 +627,7 @@ function readMapData(file) {
      }));
   ok('영단 20종 (봉황단 포함)', G.DAN.length === 20, G.DAN.length);
   // 2026-09-27 공지 — 값 미확인 제작은 표·검색에만 있고 계산기 역산에는 없다
-  ok('확인 대기 제작 4종', G.PENDING_CRAFTS.length === 4, G.PENDING_CRAFTS.length);
+  ok('확인 대기 제작 6종', G.PENDING_CRAFTS.length === 6, G.PENDING_CRAFTS.length);
   ok('확인 대기 제작은 계산기 목표(NPC_RECIPES)에 없음',
      G.PENDING_CRAFTS.every(function (c) { return !G.NPC_RECIPES[c.name] || G.NPC_RECIPES[c.name].npc !== c.npc; }));
   ok('장신구 완갑 줄에 영부완갑', G.SMITH_ACCESSORY.some(function (a) {

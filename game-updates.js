@@ -18,11 +18,20 @@
   var SOURCE = {
     name: '디스코드 공지',
     url: 'https://discord.gg/yA6MnmqGzy',
-    fetched: '2026-10-02'
+    fetched: '2026-10-22'
   };
 
   /** @type {{date:?string,title:string,body:string[],tags:string[]}[]} 최신순 */
   var UPDATES = [
+    { date: '2026-10-22', kind: '업데이트', title: '2026-10-22 업데이트',
+      tags: ['사냥터'],
+      body: ['고래기름 드랍률 상향'] },
+    { date: '2026-10-11', kind: '업데이트', title: '2026-10-11 업데이트',
+      tags: ['퀘스트', '제작'],
+      body: ['대장장이조수에 자월완갑 금룡완갑 제작 추가(탑오르기-8 퀘스트 클리어자만 제작 가능)'] },
+    { date: '2026-10-07', kind: '업데이트', title: '2026-10-07 업데이트',
+      tags: ['모드'],
+      body: ['모장 업데이트로 인한 모드 수정(런처 재접속 필요)'] },
     { date: '2026-09-27', kind: '업데이트', title: '2026-09-27 업데이트',
       tags: ['던전', '제작', '약초'],
       body: ['수련의탑 20층상자 보상 추가',
